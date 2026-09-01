@@ -1,0 +1,180 @@
+# ================================================================
+# CEMENT INDUSTRY — Relationships Overlay  (self-contained)
+# ================================================================
+# Merged from: maintenance, reliability, energy_optimization,
+#              process_optimization relationships.
+# ================================================================
+
+relationships_overlay:
+
+  # ── Maintenance relationships ────────────────────────────────────────────────
+  equipment_has_strategy:
+    from_entity: equipment
+    to_entity: asset_strategy
+    source: sap_assets
+    type: HAS_STRATEGY
+    directed: true
+    dedupe_keys: [plant_code_id, normalized_asset]
+
+  wo_has_repair_action:
+    from_entity: work_order
+    to_entity: repair_action
+    source: sap_wo
+    type: INCLUDES_ACTION
+    directed: true
+    dedupe_keys: [plant_code_id, wo_number, action_seq]
+
+  repair_uses_material:
+    from_entity: repair_action
+    to_entity: material
+    source: sap_wo
+    type: USES_SPARE
+    directed: true
+    dedupe_keys: [plant_code_id, wo_number, action_seq, spare_material_code]
+
+  # ── Reliability relationships ────────────────────────────────────────────────
+  equipment_has_class:
+    from_entity: equipment
+    to_entity: equipment_class_taxonomy
+    source: sap_assets
+    type: CLASSIFIED_AS
+    directed: true
+    dedupe_keys: [plant_code_id, normalized_asset, class_code]
+
+  equipment_has_kpi:
+    from_entity: equipment
+    to_entity: reliability_kpi
+    source: computed
+    type: HAS_KPI
+    directed: true
+    dedupe_keys: [plant_code_id, normalized_asset, period_start]
+
+  equipment_has_state:
+    from_entity: equipment
+    to_entity: operating_state_log
+    source: timeseries
+    type: HAS_STATE
+    directed: true
+    dedupe_keys: [plant_code_id, normalized_asset, state_start]
+
+  state_triggered_by_wo:
+    from_entity: operating_state_log
+    to_entity: work_order
+    source: sap_wo
+    type: TRIGGERED_BY
+    directed: true
+    dedupe_keys: [plant_code_id, normalized_asset, state_start, wo_number]
+
+  class_has_failure_mode:
+    from_entity: equipment_class_taxonomy
+    to_entity: failure_mode
+    source: standards
+    type: HAS_TYPICAL_FAILURE
+    directed: true
+    dedupe_keys: [class_code, failure_mode_code]
+
+  # ── Energy optimization relationships ────────────────────────────────────────
+  equipment_has_meter:
+    from_entity: equipment
+    to_entity: energy_meter
+    source: documents
+    type: METERED_BY
+    directed: true
+    dedupe_keys: [plant_code_id, normalized_asset, meter_id]
+
+  process_unit_has_meter:
+    from_entity: process_unit
+    to_entity: energy_meter
+    source: documents
+    type: METERED_BY
+    directed: true
+    dedupe_keys: [plant_code_id, process_unit_code, meter_id]
+
+  meter_has_consumption:
+    from_entity: energy_meter
+    to_entity: energy_consumption
+    source: computed
+    type: RECORDED
+    directed: true
+    dedupe_keys: [plant_code_id, meter_id, period_start]
+
+  meter_has_parent:
+    from_entity: energy_meter
+    to_entity: energy_meter
+    source: documents
+    type: SUB_METER_OF
+    directed: true
+    dedupe_keys: [plant_code_id, meter_id, parent_meter_id]
+
+  process_unit_has_baseline:
+    from_entity: process_unit
+    to_entity: energy_baseline
+    source: documents
+    type: HAS_BASELINE
+    directed: true
+    dedupe_keys: [plant_code_id, process_unit_code, baseline_id]
+
+  process_unit_has_energy_kpi:
+    from_entity: process_unit
+    to_entity: energy_kpi
+    source: computed
+    type: HAS_ENERGY_KPI
+    directed: true
+    dedupe_keys: [plant_code_id, process_unit_code, period_start, energy_type]
+
+  # ── Process optimization relationships ───────────────────────────────────────
+  tag_has_parameter:
+    from_entity: timeseries_metadata
+    to_entity: process_parameter
+    source: documents
+    type: HAS_SETPOINT
+    directed: true
+    dedupe_keys: [plant_code_id, tag_name, parameter_type]
+
+  tag_has_alarm:
+    from_entity: timeseries_metadata
+    to_entity: process_alarm
+    source: timeseries
+    type: TRIGGERED_ALARM
+    directed: true
+    dedupe_keys: [plant_code_id, tag_name, alarm_id]
+
+  sif_has_loop_element:
+    from_entity: safety_instrumented_function
+    to_entity: safety_loop
+    source: documents
+    type: COMPRISES
+    directed: true
+    dedupe_keys: [plant_code_id, sif_id, loop_element_seq]
+
+  sif_has_proof_test:
+    from_entity: safety_instrumented_function
+    to_entity: proof_test
+    source: documents
+    type: TESTED_BY
+    directed: true
+    dedupe_keys: [plant_code_id, sif_id, test_date]
+
+  loop_element_is_tag:
+    from_entity: safety_loop
+    to_entity: timeseries_metadata
+    source: documents
+    type: MONITORS
+    directed: true
+    dedupe_keys: [plant_code_id, sif_id, loop_element_seq, tag_name]
+
+  process_unit_has_kpi:
+    from_entity: process_unit
+    to_entity: process_kpi
+    source: computed
+    type: HAS_PROCESS_KPI
+    directed: true
+    dedupe_keys: [plant_code_id, process_unit_code, kpi_name, period_start]
+
+  proof_test_wo:
+    from_entity: proof_test
+    to_entity: work_order
+    source: sap_wo
+    type: PERFORMED_UNDER
+    directed: true
+    dedupe_keys: [plant_code_id, sif_id, test_date, wo_number]

@@ -1,0 +1,180 @@
+# ================================================================
+# COMMON — CDM Base Configuration Template
+# ================================================================
+# Shared by ALL use-case profiles. Parameters use {{VAR}} syntax.
+# The pipeline template engine substitutes before execution.
+# ================================================================
+
+cdm:
+  name: "{{PLANT_CODE}}_cdm"
+  version: "2.0"
+  plant_code_id: "{{PLANT_CODE}}"
+
+execution:
+  mode: backend
+  incremental: true
+  batch_size: 25000
+  transaction_enabled: true
+
+logging:
+  level: INFO
+  audit_enabled: true
+  conflict_logging: true
+
+sources:
+  # Primary inputs (post-MAT, canonical column names)
+  pid: PNID_INFORMATION_COMPLETE
+  sap_assets: SAP_ASSETS_CANON
+  sap_bom: SAP_BOM_CANON
+  timeseries: TIMESERIES_METADATA_CANON
+  documents: DOC_METADATA_CANON
+  fmea: FMEA_CANON
+  safety_limits: SAFETY_TRIP_LIMITS_CANON
+  standards: ISO_FIELD_REGISTRY
+
+  # SAP PM sub-sources
+  sap_wo: SAP_PM_WO_CANON
+  sap_notification: SAP_PM_NOTIFICATION_CANON
+  sap_task_list: SAP_PM_TASK_LIST_CANON
+  sap_maintenance_plan: SAP_PM_MAINT_PLAN_CANON
+  sap_work_center: SAP_PM_WORK_CENTER_CANON
+  sap_failure_catalog: SAP_PM_FAILURE_CATALOG_CANON
+
+  # SAP MM sub-sources
+  sap_material_master: SAP_MM_MATERIAL_MASTER_CANON
+  sap_vendor_master: SAP_MM_VENDOR_MASTER_CANON
+  sap_po: SAP_MM_PURCHASE_ORDER_CANON
+  sap_gr: SAP_MM_GOODS_RECEIPT_CANON
+  sap_invoice: SAP_MM_INVOICE_CANON
+
+document_processing:
+  document_types:
+    Maintenance:
+      xlsx_pattern: "maintenance_tasks_*.xlsx"
+      document_type: "Maintenance"
+      title_cols: [equipment_name, maintenance_category]
+      equipment_col: equipment_name
+      description_col: tasks
+      source_columns:
+        - equipment_number
+        - equipment_name
+        - maintenance_category
+        - maintenance_type
+        - tasks
+        - frequency
+        - tools_required
+        - measurements
+
+    SOP:
+      xlsx_pattern: "sop_sections_*.xlsx"
+      document_type: "SOP"
+      title_cols: [section_title]
+      equipment_col: section_title
+      description_col: section_content
+      source_columns:
+        - section_number
+        - section_title
+        - section_content
+        - operational_controls
+        - quality_controls
+        - critical_parameters
+        - safety_requirements
+        - emergency_procedures
+        - standard_procedures
+
+    OEM:
+      xlsx_pattern: "oem_equipment_*.xlsx"
+      document_type: "OEM"
+      title_cols: [section_name, subsection_name, equipment_name]
+      equipment_col: equipment_name
+      description_col: technical_specifications
+      source_columns:
+        - section_number
+        - section_name
+        - subsection_name
+        - equipment_name
+        - technical_specifications
+        - installation_requirements
+        - commissioning_steps
+        - operating_parameters
+        - warranty_conditions
+        - recommended_spares
+
+consolidation:
+  target_tables:
+    - equipment
+    - equipment_pid
+    - equipment_sap
+    - asset_cross_reference
+    - functional_location
+    - equipment_connectivity
+    - timeseries_metadata
+    - document_metadata
+    - material
+    - work_order
+    - task_list
+    - asset_relationship
+    - failure_mode
+    - failure_cause
+    - failure_effect
+
+  equipment_source_priority:
+    - PID
+    - SAP
+    - TS
+    - DOCS
+
+  source_dirs:
+    PID: pnid_out
+    TS: ts_out
+    DOCS: docs_out
+    SAP: sap_out
+    FMEA: fmea_out
+
+  output_subdirs:
+    equipment: entities
+    equipment_pid: entities
+    equipment_sap: entities
+    asset_cross_reference: entities
+    functional_location: entities
+    equipment_connectivity: entities
+    timeseries_metadata: entities
+    document_metadata: entities
+    material: entities
+    work_order: entities
+    task_list: entities
+    asset_relationship: relationships
+    failure_mode: entities
+    failure_cause: entities
+    failure_effect: entities
+
+  source_files:
+    equipment:
+      PID: entities/equipment.csv
+      SAP: entities/equipment_sap.parquet
+      TS: entities/equipment.csv
+      DOCS: entities/equipment.csv
+    equipment_pid:
+      PID: entities/equipment_pid.csv
+    equipment_sap:
+      SAP: entities/equipment_sap.csv
+    asset_cross_reference:
+      SAP: entities/asset_cross_reference.csv
+    functional_location:
+      SAP: entities/functional_location.csv
+      PID: entities/functional_location.csv
+    equipment_connectivity:
+      PID: entities/equipment_connection.csv
+    timeseries_metadata:
+      TS: entities/timeseries_metadata.csv
+    material:
+      SAP: entities/material.csv
+    work_order:
+      SAP: entities/work_order.csv
+    task_list:
+      SAP: entities/task_list.csv
+    document_metadata:
+      DOCS: entities/document_metadata.csv
+    asset_relationship:
+      PID: relationships/asset_relationship.csv
+      TS: relationships/ts_relationship.csv

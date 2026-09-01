@@ -1,0 +1,4 @@
+timeseries:
+  retention:
+    value: '90'
+    unit: days

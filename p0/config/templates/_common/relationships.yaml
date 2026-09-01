@@ -1,0 +1,131 @@
+# ================================================================
+# COMMON — Core Relationship Definitions
+# ================================================================
+
+relationships:
+
+  # PROCESS CONNECTIVITY
+  pid_connectivity:
+    from_entity: equipment
+    to_entity: equipment
+    source: pid
+    type: FLOW
+    directed: true
+    dedupe_keys: [plant_code_id, from_equipment_ref, to_equipment_ref, connection_type]
+
+  # ASSET ↔ HIERARCHY
+  equipment_to_floc:
+    from_entity: equipment
+    to_entity: functional_location
+    source: sap_assets
+    type: LOCATED_AT
+    directed: true
+    dedupe_keys: [plant_code_id, normalized_asset, floc]
+
+  equipment_to_process_unit:
+    from_entity: equipment
+    to_entity: process_unit
+    source: pid
+    type: PART_OF_PROCESS_UNIT
+    directed: true
+    dedupe_keys: [plant_code_id, normalized_asset, process_unit_code]
+
+  # MAINTENANCE LINKAGE
+  wo_to_equipment:
+    from_entity: work_order
+    to_entity: equipment
+    source: sap_wo
+    type: EXECUTED_ON
+    directed: true
+    dedupe_keys: [plant_code_id, wo_number, normalized_asset]
+
+  notif_to_equipment:
+    from_entity: notification
+    to_entity: equipment
+    source: sap_notification
+    type: REPORTED_ON
+    directed: true
+    dedupe_keys: [plant_code_id, notification_id, normalized_asset]
+
+  task_list_to_equipment:
+    from_entity: task_list
+    to_entity: equipment
+    source: sap_task_list
+    type: APPLIES_TO
+    directed: true
+    dedupe_keys: [plant_code_id, task_list_id, operation_no, normalized_asset]
+
+  plan_to_equipment:
+    from_entity: maintenance_plan
+    to_entity: equipment
+    source: sap_maintenance_plan
+    type: SCHEDULES
+    directed: true
+    dedupe_keys: [plant_code_id, plan_id, normalized_asset]
+
+  # BOM / MATERIAL GRAPH
+  equipment_has_bom_item:
+    from_entity: equipment
+    to_entity: bom_item
+    source: sap_bom
+    type: HAS_BOM_ITEM
+    directed: true
+    dedupe_keys: [plant_code_id, normalized_asset, bom_id, item_no]
+
+  bom_item_is_material:
+    from_entity: bom_item
+    to_entity: material
+    source: sap_bom
+    type: IS_MATERIAL
+    directed: true
+    dedupe_keys: [plant_code_id, bom_id, item_no, material_code]
+
+  # PROCUREMENT LINKAGE
+  po_to_vendor:
+    from_entity: purchase_order
+    to_entity: vendor
+    source: sap_po
+    type: PURCHASED_FROM
+    directed: true
+    dedupe_keys: [po_number, po_item, vendor_code]
+
+  po_to_material:
+    from_entity: purchase_order
+    to_entity: material
+    source: sap_po
+    type: ORDERS_MATERIAL
+    directed: true
+    dedupe_keys: [po_number, po_item, material_code]
+
+  gr_to_po:
+    from_entity: goods_receipt
+    to_entity: purchase_order
+    source: sap_gr
+    type: RECEIPT_AGAINST
+    directed: true
+    dedupe_keys: [gr_number, gr_item, po_number, po_item]
+
+  invoice_to_po:
+    from_entity: invoice
+    to_entity: purchase_order
+    source: sap_invoice
+    type: INVOICED_AGAINST
+    directed: true
+    dedupe_keys: [invoice_number, invoice_item, po_number, po_item]
+
+  # TIMESERIES / DOCUMENT LINKAGE
+  equipment_timeseries:
+    from_entity: equipment
+    to_entity: timeseries_metadata
+    source: timeseries
+    type: HAS_TAG
+    directed: true
+    dedupe_keys: [plant_code_id, normalized_asset, tag_name]
+
+  equipment_document:
+    from_entity: equipment
+    to_entity: document
+    source: documents
+    type: HAS_DOCUMENT
+    directed: true
+    dedupe_keys: [plant_code_id, normalized_asset, document_id]

@@ -1,0 +1,20 @@
+{
+    "items": [
+        {
+            "name": "Hoppers/Bins",
+            "description": "Large conical or rectangular steel containers holding bulk clinker, gypsum, or fly ash above the feeding line.",
+        },
+        {
+            "name": "Weigh feeders / Belt feeders",
+            "description": "Horizontal conveyor belts with load cells, continuously measuring and controlling material flow rate.",
+        },
+        {
+            "name": "Rotary feeders / Airlocks",
+            "description": "Cylindrical housings with a rotating vane rotor that meters material while sealing air between zones.",
+        },
+        {
+            "name": "Feed chute",
+            "description": "Inclined enclosed duct or pipe guiding material directly into the mill inlet.",
+        },
+    ]
+}

@@ -1,0 +1,6 @@
+document_processing:
+  document_types:
+    custom_a:
+      document_type: A
+      source_columns:
+      - f1

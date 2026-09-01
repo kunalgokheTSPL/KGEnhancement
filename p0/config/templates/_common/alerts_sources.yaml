@@ -1,0 +1,73 @@
+version: "1.0"
+
+alerts:
+  label: "Alerts"
+
+  target_table: alerts
+
+  supported_extensions:
+    - ".xlsx"
+    - ".xls"
+
+  sheets:
+    - name: "Open Alerts"
+      alert_status: "open"
+
+    - name: "Closed Alerts"
+      alert_status: "closed"
+
+  column_mapping:
+    "Index": source_index
+    "Region": region
+    "Field": field_name
+    "OEM": oem
+    "Unit Type": unit_type
+    "Tag Number": tag_number
+    "Priority": priority
+    "Status": status
+    "Title": title
+    "Description": description
+    "Tag": tag
+    "Current Action": current_action
+    "Action Taken": action_taken
+    "Date Open": date_open
+    "Date closed": date_closed
+    "Equipment Class": equipment_class
+    "Subunit": subunit
+    "Maintainable Item": maintainable_item
+    "Fault Category": fault_category
+
+  required_source_columns:
+    - "Description"
+
+  preferred_equipment_column: "Tag Number"
+
+  equipment_resolution:
+    preserve_source_column: true
+    source_column: tag_number
+    target_column: equipment_id
+
+    primary:
+      method: tag_number
+      source_column: tag_number
+      match_against: pnid_equipment_id
+
+    fallback:
+      method: description
+      source_column: description
+      match_against: pnid_equipment_id
+
+  derived_columns:
+    alert_status:
+      source: sheet
+
+    source_file:
+      source: metadata
+
+    equipment_id:
+      source: equipment_resolution
+
+  lineage_columns:
+    - plant_code_id
+    - upload_batch_id
+    - source_file

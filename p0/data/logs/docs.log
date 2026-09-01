@@ -1,0 +1,6 @@
+2026-08-13T12:51:26  INFO      cdm.connector.docs:811  [docs/upload] START  job_id=59a8c295-5978-458d-8348-3eccfb95eb8e  doc_type=equipment_manuals  files=1  rustfs=s3://staging-pt/p0/staging-pt/e2e_95b004da_testcase/documents/equipment_manuals
+2026-08-13T12:51:27  INFO      cdm.connector.docs:856  [docs/upload] UPLOADED e2e_manual.pdf (0.8 KB) → s3://staging-pt/p0/staging-pt/e2e_95b004da_testcase/documents/equipment_manuals/e2e_manual.pdf
+2026-08-13T12:51:28  INFO      cdm.connector.docs:903  [docs/upload] SUMMARY  job_id=59a8c295-5978-458d-8348-3eccfb95eb8e  accepted=1  rejected=0  rustfs=s3://staging-pt/p0/staging-pt/e2e_95b004da_testcase/documents/equipment_manuals
+2026-08-25T18:24:31  INFO      cdm.connector.docs:1002  [docs/upload] START  job_id=46aaafa7-4b29-4cff-a647-2db717375fdc  doc_types=sop  files=1  rustfs=s3://abfs://bronze/p0/staging-pt/plant_1_testcase/documents
+2026-08-25T18:24:31  INFO      cdm.connector.docs:1133  [docs/upload] UPLOADED scope_guard_sop.pdf (0.1 KB) → s3://abfs://bronze/p0/staging-pt/plant_1_testcase/documents/sop/scope_guard_sop.pdf
+2026-08-25T18:24:31  INFO      cdm.connector.docs:1396  [docs/upload] SUMMARY  job_id=46aaafa7-4b29-4cff-a647-2db717375fdc  accepted=1  rejected=0  rustfs=s3://abfs://bronze/p0/staging-pt/plant_1_testcase/documents

@@ -1,0 +1,277 @@
+domain: integrity
+label: Asset Integrity
+description: 'Corrosion, inspection, and structural-integrity view of each asset — what could fail structurally,
+  how it''s performing, what''s been found, and what''s being done about it.
+
+  '
+layers:
+  asset:
+    standard: ISO 15926, ISO 14224, ISA-95, ISO 8000
+    fields:
+    - name: Equipment
+      status: backed
+      key_column: normalized_asset
+      source_label: Asset Master
+      sources:
+      - table: equipment
+        column: equipment_tag
+        label: Asset Master
+      - table: inspection_record_aif
+        column: functional_location
+        label: AIF FLOC
+      - table: containment_event_gloc
+        column: equipment_ref
+        label: GLOC
+    - name: Area
+      status: backed
+      key_column: normalized_asset
+      source_label: Asset Master
+      sources:
+      - table: equipment
+        column: area
+        label: Asset Master
+      - table: inspection_record_aif
+        column: platform
+        label: AIF
+      - table: containment_event_lopc
+        column: location
+        label: LOPC
+    - name: Process Unit
+      status: backed
+      source_table: equipment
+      source_column: process_unit
+      key_column: normalized_asset
+      source_label: Asset Master
+    - name: Component
+      status: backed
+      key_column: equipment_id
+      source_label: SAP
+      sources:
+      - table: failure_mode
+        column: subsystem_component
+        label: SAP
+      - table: containment_event_lopc
+        column: component_type
+        label: LOPC
+    - name: Sensor / Tag
+      status: backed
+      source_table: timeseries_metadata
+      source_column: tag_name
+      key_column: normalized_asset
+      source_label: Historian
+  process:
+    standard: ISO 15926, ISA-88/95
+    fields:
+    - name: Process Stream
+      status: not_yet_backed
+      note: No stream/flow-path column exists anywhere in schema.yaml.
+    - name: Process Variable
+      status: not_yet_backed
+      note: timeseries_metadata has tag_name/description but no controlled variable-type (Temperature/Pressure/Flow)
+        column.
+    - name: Operating Condition
+      status: not_yet_backed
+      note: No operating-condition column exists anywhere in schema.yaml.
+    - name: Material Property
+      status: not_yet_backed
+      note: Only present today as unstructured document_metadata.extracted_entities JSON, not a queryable
+        column.
+    - name: Process Connection
+      status: backed
+      source_table: equipment_connectivity
+      source_column: medium
+      key_column: from_equipment_ref
+      source_label: P&ID
+  performance:
+    standard: ISO 14224, IEC 61511, ISO 22400
+    fields:
+    - name: KPI
+      status: not_yet_backed
+      note: No KPI-name column exists anywhere in base schema.yaml (reliability_kpi carries MTBF/MTTR
+        as fixed columns via an industry overlay, not a name+value row).
+    - name: Operating Limit
+      status: backed
+      source_table: timeseries_metadata
+      source_column: safety_limit_h
+      key_column: normalized_asset
+      source_label: Historian
+    - name: Risk Score
+      status: backed
+      sources:
+      - table: inspection_record_aif
+        column: priority
+        label: AIF Priority
+      - table: containment_event_gloc
+        column: severity
+        label: GLOC Severity
+      - table: containment_event_lopc
+        column: risk_factor
+        label: LOPC Risk Factor
+      key_column: normalized_asset
+    - name: Health Score
+      status: not_yet_backed
+      note: No equipment-health-score column exists anywhere in schema.yaml.
+    - name: Inspection Status
+      status: backed
+      key_column: normalized_asset
+      source_label: Inspection
+      sources:
+      - table: inspection_record
+        column: result
+        label: Inspection
+      - table: inspection_record_aif
+        column: status
+        label: AIF
+      - table: containment_event_gloc
+        column: final_status
+        label: GLOC
+  knowledge:
+    standard: ISO 14224, IEC 61511, DAMA-DMBOK
+    fields:
+    - name: Damage Mechanism
+      status: backed
+      sources:
+      - table: containment_event_lopc
+        column: damage_mechanism
+        label: LOPC
+      - table: containment_event_lopc
+        column: secondary_damage_mechanism
+        label: LOPC (secondary)
+      - table: inspection_record_aif
+        column: corrosion_mechanism
+        label: AIF
+      key_column: normalized_asset
+    - name: Failure Mode
+      status: backed
+      key_column: equipment_id
+      source_label: SAP
+      sources:
+      - table: failure_mode
+        column: failure_mode_text
+        label: SAP
+      - table: containment_event_lopc
+        column: component_type
+        label: LOPC
+      - table: containment_event_gloc
+        column: fault_code
+        label: GLOC
+    - name: Root Cause
+      status: backed
+      key_column: equipment_id
+      source_label: FMEA
+      sources:
+      - table: failure_cause
+        column: failure_cause_text
+        label: FMEA
+      - table: containment_event_lopc
+        column: damage_mechanism
+        label: LOPC
+    - name: Diagnostic Pattern
+      status: not_yet_backed
+      note: No diagnostic-pattern column exists anywhere in schema.yaml.
+    - name: Integrity Rule
+      status: not_yet_backed
+      note: This is the Symbolic AI / Rule Engine's output — explicitly deferred/out of scope this phase,
+        no backing table exists yet.
+  action:
+    standard: IEC 62443, ISA-88, IEC 61511
+    fields:
+    - name: Inspection
+      status: backed
+      source_table: inspection_record
+      source_column: inspection_type
+      key_column: normalized_asset
+      source_label: Inspection
+    - name: Inspection Finding
+      status: backed
+      key_column: normalized_asset
+      source_label: Inspection
+      sources:
+      - table: inspection_record
+        column: findings
+        label: Inspection
+      - table: inspection_record_aif
+        column: description
+        label: AIF
+      - table: containment_event_gloc
+        column: findings
+        label: GLOC
+      - table: containment_event_lopc
+        column: description
+        label: LOPC
+    - name: Work Order
+      status: backed
+      key_column: equipment_ref
+      source_label: SAP Work Order
+      sources:
+      - table: work_order
+        column: wo_number
+        label: SAP Work Order
+      - table: inspection_record_aif
+        column: work_order_no
+        label: AIF
+      - table: containment_event_gloc
+        column: work_order_no
+        label: GLOC
+    - name: Maintenance Action
+      status: backed
+      key_column: equipment_ref
+      source_label: SAP Work Order
+      sources:
+      - table: work_order
+        column: maint_activity_type
+        label: SAP Work Order
+      - table: inspection_record_aif
+        column: action_party
+        label: AIF Action Party
+      - table: containment_event_gloc
+        column: action_party
+        label: GLOC Action Party
+    - name: Recommendation
+      status: backed
+      key_column: normalized_asset
+      source_label: Inspection
+      sources:
+      - table: inspection_record
+        column: recommendations
+        label: Inspection
+      - table: inspection_record_aif
+        column: recommendation
+        label: AIF
+      - table: containment_event_gloc
+        column: recommendation
+        label: GLOC
+    - name: Safety Event
+      status: backed
+      key_column: equipment_id
+      source_label: Process Safety Event
+      standard: IEC 61511 (loss-of-containment scope); API 754 (PSE tiering)
+      sources:
+      - table: document_metadata
+        column: document_type
+        label: Process Safety Event
+      - table: containment_event_lopc
+        column: incident_classification
+        label: LOPC
+      - table: containment_event_gloc
+        column: fault_code
+        label: GLOC
+  business:
+    standard: ISA-95, ISO 50001
+    fields:
+    - name: Production Impact
+      status: not_yet_backed
+      note: No production-impact column exists anywhere in schema.yaml.
+    - name: Cost Element
+      status: not_yet_backed
+      note: No cost/currency column exists anywhere in schema.yaml.
+    - name: Business Objective
+      status: not_yet_backed
+      note: asset_strategy.notes is free text and not a reliable semantic match -- not claiming it as
+        backed.
+    - name: Value Measure
+      status: not_yet_backed
+      note: No value/benefit-measure column exists anywhere in schema.yaml.
+    - name: Production Plan
+      status: not_yet_backed
+      note: No production-plan column exists anywhere in schema.yaml.

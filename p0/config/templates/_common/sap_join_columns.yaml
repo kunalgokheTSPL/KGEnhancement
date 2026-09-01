@@ -1,0 +1,160 @@
+version: '1.0'
+notes:
+  - Default join column mappings for each merge step in the SAP merge pipeline.
+  - Derived from sap_merging_impl.py run_sap_merges() function.
+  - Users can override these via user_config.yaml sap_processing.join_overrides.
+  - Virtual tables (WO, TL, MAT) represent intermediate merge results.
+  - The key format is: <left_table>_<right_table> under each pipeline.
+
+pipelines:
+  workorder:
+    description: Work Order merge pipeline (AUFK as base)
+    merge_steps:
+      aufk_afko:
+        left_table: AUFK
+        right_table: AFKO
+        join_columns: [AUFNR]
+        how: left
+        description: Merge order header to order master
+
+      aufk_afvc:
+        left_table: AUFK
+        right_table: AFVC
+        join_columns: [AUFNR]
+        how: left
+        description: Merge operations to order
+
+      afvc_afvv:
+        left_table: AFVC
+        right_table: AFVV
+        join_columns: [AUFPL, APLZL]
+        how: left
+        description: Merge operation quantities/dates
+
+      wo_qmel:
+        left_table: WO
+        right_table: QMEL
+        join_columns: [AUFNR]
+        how: left
+        description: Merge quality notifications
+
+      wo_qmsm:
+        left_table: WO
+        right_table: QMSM
+        join_columns: [QMNUM]
+        how: left
+        description: Merge notification tasks
+
+      wo_jest:
+        left_table: WO
+        right_table: JEST
+        join_columns: [OBJNR]
+        how: left
+        description: Merge object statuses
+
+      wo_jsto:
+        left_table: WO
+        right_table: JSTO
+        join_columns: [OBJNR]
+        how: left
+        description: Merge status objects
+
+      wo_resb:
+        left_table: WO
+        right_table: RESB
+        join_columns: [AUFNR]
+        how: left
+        description: Enrich with material reservations
+
+      wo_coep:
+        left_table: WO
+        right_table: COEP
+        join_columns: [AUFNR]
+        how: left
+        description: Enrich with cost line items
+
+      wo_equi:
+        left_table: WO
+        right_table: EQUI
+        join_columns: [EQUNR]
+        how: left
+        description: Enrich with equipment master
+
+      wo_iflot:
+        left_table: WO
+        right_table: IFLOT
+        join_columns: [TPLNR]
+        how: left
+        description: Enrich with functional location
+
+  floc:
+    description: Functional Location pipeline (EQUI as base)
+    merge_steps:
+      equi_iflot:
+        left_table: EQUI
+        right_table: IFLOT
+        join_columns: [TPLNR]
+        how: left
+        description: Merge equipment with functional location
+
+      equi_iloa:
+        left_table: EQUI
+        right_table: ILOA
+        join_columns: [ILOAN]
+        how: left
+        description: Merge location account assignment
+
+  tasklist:
+    description: Task List pipeline (PLKO as base)
+    merge_steps:
+      plko_mapl:
+        left_table: PLKO
+        right_table: MAPL
+        join_columns: [PLNNR, PLNAL]
+        how: left
+        description: Merge material assignment to task list
+
+      plko_plpo:
+        left_table: PLKO
+        right_table: PLPO
+        join_columns: [PLNNR]
+        how: left
+        description: Merge operations to task list
+
+      tl_equi:
+        left_table: TL
+        right_table: EQUI
+        join_columns: [EQUNR]
+        how: left
+        description: Merge equipment master to task list
+
+  material:
+    description: Material pipeline (MARA as base)
+    merge_steps:
+      mara_marc:
+        left_table: MARA
+        right_table: MARC
+        join_columns: [MATNR]
+        how: left
+        description: Merge plant data to material master
+
+      marc_mard:
+        left_table: MARC
+        right_table: MARD
+        join_columns: [MATNR, WERKS]
+        how: left
+        description: Merge storage data to plant data
+
+      mat_resb:
+        left_table: MAT
+        right_table: RESB
+        join_columns: [MATNR]
+        how: left
+        description: Enrich with material reservations
+
+      mat_coep:
+        left_table: MAT
+        right_table: COEP
+        join_columns: [AUFNR]
+        how: left
+        description: Enrich with cost line items

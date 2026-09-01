@@ -1,0 +1,202 @@
+# ================================================================
+# OIL & GAS INDUSTRY — Relationships Overlay  (self-contained)
+# ================================================================
+# Merged from: maintenance, reliability, asset_integrity,
+#              process_optimization, sustainability_esg relationships.
+# ================================================================
+
+relationships:
+
+  # ── Maintenance relationships ────────────────────────────────────────────────
+
+  - name: equipment_work_orders
+    from: equipment
+    to: work_order
+    join_on: normalized_asset
+    cardinality: one_to_many
+    description: "All work orders raised against each equipment item"
+
+  - name: work_order_repair_actions
+    from: work_order
+    to: repair_action
+    join_on: wo_number
+    cardinality: one_to_many
+    description: "Repair actions performed under a work order"
+
+  - name: equipment_asset_strategy
+    from: equipment
+    to: asset_strategy
+    join_on: normalized_asset
+    cardinality: one_to_one
+    description: "Current maintenance strategy assigned to asset"
+
+  # ── Reliability relationships ────────────────────────────────────────────────
+
+  - name: equipment_reliability_kpi
+    from: equipment
+    to: reliability_kpi
+    join_on: normalized_asset
+    cardinality: one_to_many
+    description: "Reliability KPIs computed for each asset over periods"
+
+  - name: equipment_operating_states
+    from: equipment
+    to: operating_state_log
+    join_on: normalized_asset
+    cardinality: one_to_many
+    description: "Operating state log entries for each asset"
+
+  - name: equipment_class_taxonomy_equipment
+    from: equipment_class_taxonomy
+    to: equipment
+    join_on: class_code = equipment_class_code
+    cardinality: one_to_many
+    description: "Equipment classified by taxonomy class"
+
+  - name: equipment_class_taxonomy_failure_mode
+    from: equipment_class_taxonomy
+    to: failure_mode
+    join_on: class_code = equipment_class_code
+    cardinality: one_to_many
+    description: "Typical failure modes per equipment class"
+
+  - name: equipment_class_parent
+    from: equipment_class_taxonomy
+    to: equipment_class_taxonomy
+    join_on: parent_class_code = class_code
+    cardinality: many_to_one
+    description: "Hierarchical parent of a class in the taxonomy"
+
+  # ── Asset Integrity relationships ────────────────────────────────────────────
+
+  - name: equipment_inspections
+    from: equipment
+    to: inspection_record
+    join_on: normalized_asset
+    cardinality: one_to_many
+    description: "Inspection history for each equipment item"
+
+  - name: equipment_thickness_measurements
+    from: equipment
+    to: thickness_measurement
+    join_on: normalized_asset
+    cardinality: one_to_many
+    description: "Thickness readings recorded for each asset"
+
+  - name: equipment_condition_assessments
+    from: equipment
+    to: condition_assessment
+    join_on: normalized_asset
+    cardinality: one_to_many
+    description: "Condition assessments performed on each asset"
+
+  - name: corrosion_loop_measurements
+    from: corrosion_loop
+    to: thickness_measurement
+    join_on: loop_id = corrosion_loop_id
+    cardinality: one_to_many
+    description: "Thickness measurements grouped by corrosion loop"
+
+  - name: inspection_work_order
+    from: inspection_record
+    to: work_order
+    join_on: related_wo_number = wo_number
+    cardinality: many_to_one
+    description: "Work order created from inspection findings"
+
+  # ── Process Optimization relationships ───────────────────────────────────────
+
+  - name: timeseries_process_parameter
+    from: timeseries_metadata
+    to: process_parameter
+    join_on: tag_name
+    cardinality: one_to_many
+    description: "Process limits and targets for each sensor tag"
+
+  - name: timeseries_process_alarm
+    from: timeseries_metadata
+    to: process_alarm
+    join_on: tag_name
+    cardinality: one_to_many
+    description: "Alarm events for each sensor tag"
+
+  - name: sif_safety_loops
+    from: safety_instrumented_function
+    to: safety_loop
+    join_on: sif_id
+    cardinality: one_to_many
+    description: "Elements composing a safety instrumented function"
+
+  - name: sif_proof_tests
+    from: safety_instrumented_function
+    to: proof_test
+    join_on: sif_id
+    cardinality: one_to_many
+    description: "Proof test results for each SIF"
+
+  - name: safety_loop_timeseries
+    from: safety_loop
+    to: timeseries_metadata
+    join_on: tag_name
+    cardinality: many_to_one
+    description: "Tag association for each safety loop element"
+
+  - name: process_kpi_process_unit
+    from: process_parameter
+    to: process_kpi
+    join_on: process_unit_code
+    cardinality: many_to_many
+    description: "KPIs associated with process units via parameters"
+
+  - name: timeseries_sif
+    from: timeseries_metadata
+    to: safety_instrumented_function
+    join_on: sif_id
+    cardinality: many_to_one
+    description: "Tags marked as safety-critical with SIF linkage"
+
+  # ── Sustainability & ESG relationships ───────────────────────────────────────
+
+  - name: emission_record_factor
+    from: emission_record
+    to: emission_factor
+    join_on: emission_factor_id = factor_id
+    cardinality: many_to_one
+    description: "Emission factor used for calculation"
+
+  - name: emission_record_equipment
+    from: emission_record
+    to: equipment
+    join_on: normalized_asset
+    cardinality: many_to_one
+    description: "Equipment linked to emission source"
+
+  - name: waste_record_process_unit
+    from: waste_record
+    to: process_parameter
+    join_on: process_unit_code
+    cardinality: many_to_many
+    description: "Process units generating waste streams"
+
+  - name: permit_emission_source
+    from: environmental_permit
+    to: emission_record
+    join_on: plant_code_id
+    cardinality: one_to_many
+    description: "Emissions tracked against environmental permits"
+
+  - name: esg_kpi_emission
+    from: esg_kpi
+    to: emission_record
+    join_on: plant_code_id
+    cardinality: one_to_many
+    description: "Emission records contributing to ESG KPIs"
+
+  # ── Cross-cutting ───────────────────────────────────────────────────────────
+
+  - name: operating_state_work_order
+    from: operating_state_log
+    to: work_order
+    join_on: related_wo_number = wo_number
+    cardinality: many_to_one
+    description: "Work order associated with a downtime state"

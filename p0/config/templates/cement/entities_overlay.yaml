@@ -1,0 +1,561 @@
+# ================================================================
+# CEMENT INDUSTRY — Entity Overlay  (self-contained)
+# ================================================================
+# Merged from: maintenance, reliability, energy_optimization,
+#              process_optimization + cement-specific extensions.
+# Standards: ISA-95, ISO 14224, ISO 50001, IEC 61511
+# ================================================================
+
+entities_overlay:
+
+  # ── Equipment extensions (cement-specific + reliability) ─────────────────────
+  equipment:
+    additional_attributes:
+      # Cement-specific
+      equipment_section:
+        from: [sap_assets.equipment_section]
+        required: false
+        description: "Plant section: raw_preparation | pyro_processing | cement_grinding | packing | utilities"
+      clinker_line:
+        from: [sap_assets.clinker_line]
+        required: false
+        description: "Which clinker line the equipment belongs to"
+      # Reliability (ISO 14224)
+      equipment_class_code:
+        from: [sap_assets.equipment_class_code, documents.equipment_class_code]
+        required: false
+        description: "FK to equipment_class_taxonomy"
+      installation_date:
+        from: [sap_assets.installation_date, documents.installation_date]
+        required: false
+      design_life_years:
+        from: [sap_assets.design_life_years, documents.design_life_years]
+        required: false
+
+  # ── Work order extensions (maintenance + cement-specific) ────────────────────
+  work_order:
+    additional_attributes:
+      actual_start:
+        from: [sap_wo.actual_start]
+        required: false
+      actual_finish:
+        from: [sap_wo.actual_finish]
+        required: false
+      downtime_hours:
+        from: [sap_wo.downtime_hours]
+        required: false
+      labor_hours:
+        from: [sap_wo.labor_hours]
+        required: false
+      maintenance_classification:
+        from: [sap_wo.maintenance_classification]
+        required: false
+        description: "ISO 14224: corrective | preventive | predictive | condition_based"
+      cost_total:
+        from: [sap_wo.cost_total]
+        required: false
+      # Cement-specific
+      production_impact:
+        from: [sap_wo.production_impact]
+        required: false
+        description: "clinker_loss_tonnes during maintenance"
+      shutdown_required:
+        from: [sap_wo.shutdown_required]
+        required: false
+        description: "Whether kiln/mill shutdown was needed"
+
+  # ── Notification extensions (maintenance) ────────────────────────────────────
+  notification:
+    additional_attributes:
+      consequence_code:
+        from: [sap_notification.consequence_code]
+        required: false
+      detection_method_code:
+        from: [sap_notification.detection_method_code]
+        required: false
+      downtime_hours:
+        from: [sap_notification.downtime_hours]
+        required: false
+
+  # ── Asset Strategy (maintenance — ISO 55000 / ISO 14224) ─────────────────────
+  asset_strategy:
+    canonical_table: asset_strategy
+    identity_keys: [plant_code_id, normalized_asset]
+    sources: [sap_assets, documents]
+    attributes:
+      plant_code_id:
+        from: [sap_assets.plant_code_id]
+        required: true
+      normalized_asset:
+        from: [sap_assets.normalized_asset]
+        required: true
+      strategy_type:
+        from: [documents.strategy_type]
+        required: false
+        description: "run_to_failure | time_based | condition_based | predictive | proactive"
+      criticality_rank:
+        from: [sap_assets.criticality, documents.criticality_rank]
+        required: false
+      review_date:
+        from: [documents.review_date]
+        required: false
+
+  # ── Repair Action (maintenance — ISO 14224 Section 9) ────────────────────────
+  repair_action:
+    canonical_table: repair_action
+    identity_keys: [plant_code_id, wo_number, action_seq]
+    sources: [sap_wo]
+    attributes:
+      plant_code_id:
+        from: [sap_wo.plant_code_id]
+        required: true
+      wo_number:
+        from: [sap_wo.wo_number]
+        required: true
+      action_seq:
+        from: [sap_wo.operation_no]
+        required: true
+      action_type:
+        from: [sap_wo.activity_type]
+        required: false
+        description: "repair | replace | adjust | overhaul | modify | inspect"
+      component_replaced:
+        from: [sap_wo.component]
+        required: false
+      spare_material_code:
+        from: [sap_wo.material_code]
+        required: false
+      labor_hours:
+        from: [sap_wo.labor_hours]
+        required: false
+
+  # ── Equipment Class Taxonomy (reliability — ISO 14224) ───────────────────────
+  equipment_class_taxonomy:
+    canonical_table: equipment_class_taxonomy
+    identity_keys: [class_code]
+    sources: [standards, documents]
+    attributes:
+      class_code:
+        from: [standards.class_code]
+        required: true
+        description: "ISO 14224 equipment class code"
+      class_name:
+        from: [standards.class_name]
+        required: true
+      parent_class_code:
+        from: [standards.parent_class_code]
+        required: false
+      level:
+        from: [standards.level]
+        required: true
+        description: "1=industry, 2=plant_type, 3=category, 4=class, 5=subclass"
+      equipment_category:
+        from: [standards.equipment_category]
+        required: false
+        description: "rotating | static | electrical | instrument | safety | piping"
+      typical_failure_modes:
+        from: [standards.typical_failure_modes]
+        required: false
+
+  # ── Reliability KPI (reliability) ────────────────────────────────────────────
+  reliability_kpi:
+    canonical_table: reliability_kpi
+    identity_keys: [plant_code_id, normalized_asset, period_start]
+    sources: [computed]
+    attributes:
+      plant_code_id:
+        from: [computed.plant_code_id]
+        required: true
+      normalized_asset:
+        from: [computed.normalized_asset]
+        required: true
+      period_start:
+        from: [computed.period_start]
+        required: true
+      period_end:
+        from: [computed.period_end]
+        required: true
+      mtbf_hours:
+        from: [computed.mtbf_hours]
+        required: false
+      mttr_hours:
+        from: [computed.mttr_hours]
+        required: false
+      mdt_hours:
+        from: [computed.mdt_hours]
+        required: false
+      availability:
+        from: [computed.availability]
+        required: false
+      failure_rate:
+        from: [computed.failure_rate]
+        required: false
+      failure_count:
+        from: [computed.failure_count]
+        required: false
+      total_downtime_hours:
+        from: [computed.total_downtime_hours]
+        required: false
+      total_operating_hours:
+        from: [computed.total_operating_hours]
+        required: false
+
+  # ── Operating State Log (reliability) ────────────────────────────────────────
+  operating_state_log:
+    canonical_table: operating_state_log
+    identity_keys: [plant_code_id, normalized_asset, state_start]
+    sources: [sap_wo, timeseries, documents]
+    attributes:
+      plant_code_id:
+        from: [sap_wo.plant_code_id, timeseries.plant_code_id]
+        required: true
+      normalized_asset:
+        from: [sap_wo.normalized_asset, timeseries.normalized_asset]
+        required: true
+      state_start:
+        from: [sap_wo.actual_start, timeseries.state_start]
+        required: true
+      state_end:
+        from: [sap_wo.actual_finish, timeseries.state_end]
+        required: false
+      operating_state:
+        from: [sap_wo.operating_state, timeseries.operating_state]
+        required: true
+        description: "running | standby | planned_shutdown | unplanned_shutdown | maintenance"
+
+  # ── Energy Meter (energy optimization — ISO 50001) ───────────────────────────
+  energy_meter:
+    canonical_table: energy_meter
+    identity_keys: [plant_code_id, meter_id]
+    sources: [timeseries, documents]
+    attributes:
+      plant_code_id:
+        from: [timeseries.plant_code_id, documents.plant_code_id]
+        required: true
+      meter_id:
+        from: [timeseries.meter_id, documents.meter_id]
+        required: true
+      meter_name:
+        from: [documents.meter_name]
+        required: false
+      energy_type:
+        from: [documents.energy_type]
+        required: true
+        description: "electricity | natural_gas | steam | fuel_oil | compressed_air | cooling_water | pet_coke | coal"
+      unit_of_measure:
+        from: [documents.unit_of_measure, timeseries.unit]
+        required: true
+      normalized_asset:
+        from: [timeseries.normalized_asset, documents.normalized_asset]
+        required: false
+      process_unit_code:
+        from: [documents.process_unit_code]
+        required: false
+      is_main_meter:
+        from: [documents.is_main_meter]
+        required: false
+      parent_meter_id:
+        from: [documents.parent_meter_id]
+        required: false
+
+  # ── Energy Consumption (energy optimization) ─────────────────────────────────
+  energy_consumption:
+    canonical_table: energy_consumption
+    identity_keys: [plant_code_id, meter_id, period_start]
+    sources: [timeseries, computed]
+    attributes:
+      plant_code_id:
+        from: [timeseries.plant_code_id, computed.plant_code_id]
+        required: true
+      meter_id:
+        from: [timeseries.meter_id, computed.meter_id]
+        required: true
+      period_start:
+        from: [computed.period_start]
+        required: true
+      period_end:
+        from: [computed.period_end]
+        required: true
+      consumption_value:
+        from: [computed.consumption_value]
+        required: true
+      peak_demand:
+        from: [computed.peak_demand]
+        required: false
+      load_factor:
+        from: [computed.load_factor]
+        required: false
+      cost:
+        from: [computed.cost]
+        required: false
+
+  # ── Energy Baseline (energy optimization — ISO 50001) ────────────────────────
+  energy_baseline:
+    canonical_table: energy_baseline
+    identity_keys: [plant_code_id, baseline_id]
+    sources: [documents, computed]
+    attributes:
+      plant_code_id:
+        from: [documents.plant_code_id]
+        required: true
+      baseline_id:
+        from: [documents.baseline_id]
+        required: true
+      process_unit_code:
+        from: [documents.process_unit_code]
+        required: false
+      energy_type:
+        from: [documents.energy_type]
+        required: true
+      baseline_period_start:
+        from: [documents.baseline_period_start]
+        required: true
+      baseline_period_end:
+        from: [documents.baseline_period_end]
+        required: true
+      baseline_consumption:
+        from: [documents.baseline_consumption]
+        required: true
+      baseline_production_volume:
+        from: [documents.baseline_production_volume]
+        required: false
+      sec_baseline:
+        from: [computed.sec_baseline]
+        required: false
+        description: "Specific Energy Consumption baseline (energy/production unit)"
+
+  # ── Energy KPI (energy optimization) ─────────────────────────────────────────
+  energy_kpi:
+    canonical_table: energy_kpi
+    identity_keys: [plant_code_id, process_unit_code, period_start, energy_type]
+    sources: [computed]
+    attributes:
+      plant_code_id:
+        from: [computed.plant_code_id]
+        required: true
+      process_unit_code:
+        from: [computed.process_unit_code]
+        required: false
+      energy_type:
+        from: [computed.energy_type]
+        required: true
+      period_start:
+        from: [computed.period_start]
+        required: true
+      period_end:
+        from: [computed.period_end]
+        required: true
+      total_consumption:
+        from: [computed.total_consumption]
+        required: true
+      specific_energy_consumption:
+        from: [computed.specific_energy_consumption]
+        required: false
+      energy_intensity:
+        from: [computed.energy_intensity]
+        required: false
+      improvement_vs_baseline_pct:
+        from: [computed.improvement_vs_baseline_pct]
+        required: false
+
+  # ── Process Parameter (process optimization — cement-specific) ───────────────
+  process_parameter:
+    canonical_table: process_parameter
+    identity_keys: [plant_code_id, tag_name, parameter_type]
+    sources: [timeseries, documents]
+    attributes:
+      plant_code_id:
+        from: [timeseries.plant_code_id, documents.plant_code_id]
+        required: true
+      tag_name:
+        from: [timeseries.tag_name, documents.tag_name]
+        required: true
+      parameter_type:
+        from: [documents.parameter_type]
+        required: true
+        description: "setpoint | target | optimal_range | control_limit"
+      value_low:
+        from: [documents.value_low]
+        required: false
+      value_target:
+        from: [documents.value_target]
+        required: false
+      value_high:
+        from: [documents.value_high]
+        required: false
+      unit:
+        from: [timeseries.unit, documents.unit]
+        required: false
+      process_unit_code:
+        from: [documents.process_unit_code]
+        required: false
+
+  # ── Process Alarm (process optimization — ISA-18.2) ──────────────────────────
+  process_alarm:
+    canonical_table: process_alarm
+    identity_keys: [plant_code_id, alarm_id]
+    sources: [timeseries]
+    attributes:
+      plant_code_id:
+        from: [timeseries.plant_code_id]
+        required: true
+      alarm_id:
+        from: [timeseries.alarm_id]
+        required: true
+      tag_name:
+        from: [timeseries.tag_name]
+        required: true
+      alarm_type:
+        from: [timeseries.alarm_type]
+        required: false
+        description: "high | low | high_high | low_low | rate_of_change | deviation"
+      alarm_priority:
+        from: [timeseries.alarm_priority]
+        required: false
+        description: "critical | high | medium | low | journal"
+      alarm_time:
+        from: [timeseries.alarm_time]
+        required: true
+      return_to_normal_time:
+        from: [timeseries.rtn_time]
+        required: false
+      acknowledged_time:
+        from: [timeseries.ack_time]
+        required: false
+      duration_seconds:
+        from: [timeseries.duration_seconds]
+        required: false
+
+  # ── Safety Instrumented Function (process optimization — IEC 61511) ──────────
+  safety_instrumented_function:
+    canonical_table: safety_instrumented_function
+    identity_keys: [plant_code_id, sif_id]
+    sources: [documents]
+    attributes:
+      plant_code_id:
+        from: [documents.plant_code_id]
+        required: true
+      sif_id:
+        from: [documents.sif_id]
+        required: true
+      sif_name:
+        from: [documents.sif_name]
+        required: false
+      sil_rating:
+        from: [documents.sil_rating]
+        required: true
+        description: "1 | 2 | 3 | 4"
+      process_unit_code:
+        from: [documents.process_unit_code]
+        required: false
+      hazard_description:
+        from: [documents.hazard_description]
+        required: false
+      demand_mode:
+        from: [documents.demand_mode]
+        required: false
+        description: "low_demand | high_demand | continuous"
+      pfd_avg:
+        from: [documents.pfd_avg]
+        required: false
+      proof_test_interval_months:
+        from: [documents.proof_test_interval]
+        required: false
+
+  # ── Safety Loop (process optimization) ───────────────────────────────────────
+  safety_loop:
+    canonical_table: safety_loop
+    identity_keys: [plant_code_id, sif_id, loop_element_seq]
+    sources: [documents]
+    attributes:
+      plant_code_id:
+        from: [documents.plant_code_id]
+        required: true
+      sif_id:
+        from: [documents.sif_id]
+        required: true
+      loop_element_seq:
+        from: [documents.loop_element_seq]
+        required: true
+      element_type:
+        from: [documents.element_type]
+        required: true
+        description: "sensor | logic_solver | final_element"
+      tag_name:
+        from: [documents.tag_name]
+        required: false
+      normalized_asset:
+        from: [documents.normalized_asset]
+        required: false
+      manufacturer:
+        from: [documents.manufacturer]
+        required: false
+      model:
+        from: [documents.model]
+        required: false
+      failure_rate:
+        from: [documents.failure_rate]
+        required: false
+
+  # ── Proof Test (process optimization — IEC 61511) ────────────────────────────
+  proof_test:
+    canonical_table: proof_test
+    identity_keys: [plant_code_id, sif_id, test_date]
+    sources: [documents, sap_wo]
+    attributes:
+      plant_code_id:
+        from: [documents.plant_code_id, sap_wo.plant_code_id]
+        required: true
+      sif_id:
+        from: [documents.sif_id]
+        required: true
+      test_date:
+        from: [documents.test_date, sap_wo.actual_finish]
+        required: true
+      test_result:
+        from: [documents.test_result]
+        required: true
+        description: "pass | fail | partial"
+      test_coverage_pct:
+        from: [documents.test_coverage_pct]
+        required: false
+      tester:
+        from: [documents.tester]
+        required: false
+      related_wo_number:
+        from: [sap_wo.wo_number]
+        required: false
+      findings:
+        from: [documents.findings]
+        required: false
+
+  # ── Process KPI (process optimization) ───────────────────────────────────────
+  process_kpi:
+    canonical_table: process_kpi
+    identity_keys: [plant_code_id, process_unit_code, kpi_name, period_start]
+    sources: [computed]
+    attributes:
+      plant_code_id:
+        from: [computed.plant_code_id]
+        required: true
+      process_unit_code:
+        from: [computed.process_unit_code]
+        required: false
+      kpi_name:
+        from: [computed.kpi_name]
+        required: true
+      period_start:
+        from: [computed.period_start]
+        required: true
+      period_end:
+        from: [computed.period_end]
+        required: true
+      kpi_value:
+        from: [computed.kpi_value]
+        required: true
+      kpi_unit:
+        from: [computed.kpi_unit]
+        required: false
+      target_value:
+        from: [computed.target_value]
+        required: false

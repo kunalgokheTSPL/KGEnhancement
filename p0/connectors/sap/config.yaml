@@ -1,0 +1,423 @@
+# ═══════════════════════════════════════════════════════════════
+# SAP / EAM Connector — All Sources Configuration
+# ═══════════════════════════════════════════════════════════════
+# Covers SAP systems and IBM Maximo (both provide equipment,
+# work orders, materials, notifications, task lists).
+
+data_type: sap
+
+# ── Common settings (shared across file-based sources) ──────
+common:
+  file_format: auto                   # auto | csv | parquet | xlsx
+  encoding: "utf-8"
+  tables: null                        # null = ingest all files found
+
+  filters:
+    max_file_size_mb: 500
+
+# ── Source-specific settings ────────────────────────────────
+sources:
+
+  # ═══════════════════════════════════════════
+  # FILE-BASED SOURCES (exported table files)
+  # ═══════════════════════════════════════════
+
+  # ── Local Filesystem ──────────────────────
+  local:
+    base_path: "./data/staging/sap"
+
+  # ── AWS S3 ────────────────────────────────
+  s3:
+    bucket: "${S3_SAP_BUCKET}"
+    prefix: "raw/sap"
+    connection:
+      region: "${AWS_REGION:-us-east-1}"
+      access_key: "${AWS_ACCESS_KEY_ID}"
+      secret_key: "${AWS_SECRET_ACCESS_KEY}"
+      role_arn: "${AWS_ROLE_ARN:-}"
+      use_ssl: true
+
+  # ── Azure Data Lake Storage Gen2 ──────────
+  adls:
+    container: "${ADLS_SAP_CONTAINER}"
+    prefix: "raw/sap"
+    connection:
+      account_name: "${ADLS_ACCOUNT_NAME}"
+      account_key: "${ADLS_ACCOUNT_KEY:-}"
+      sas_token: "${ADLS_SAS_TOKEN:-}"
+      tenant_id: "${AZURE_TENANT_ID:-}"
+      client_id: "${AZURE_CLIENT_ID:-}"
+      client_secret: "${AZURE_CLIENT_SECRET:-}"
+
+  # ── Google Cloud Storage ──────────────────
+  gcs:
+    bucket: "${GCS_SAP_BUCKET}"
+    prefix: "raw/sap"
+    connection:
+      project_id: "${GCP_PROJECT_ID}"
+      service_account_json: "${GOOGLE_APPLICATION_CREDENTIALS:-}"
+
+  # ── Microsoft OneDrive / SharePoint ───────
+  onedrive:
+    folder_path: "/Documents/CDM/sap"
+    drive_id: "${ONEDRIVE_DRIVE_ID:-}"
+    site_id: "${ONEDRIVE_SITE_ID:-}"
+    connection:
+      tenant_id: "${AZURE_TENANT_ID}"
+      client_id: "${ONEDRIVE_CLIENT_ID}"
+      client_secret: "${ONEDRIVE_CLIENT_SECRET}"
+      scopes: ["https://graph.microsoft.com/.default"]
+
+  # ═══════════════════════════════════════════
+  # SAP SYSTEM CONNECTORS (direct access)
+  # ═══════════════════════════════════════════
+
+  # ── SAP BW/4HANA (ODP / RFC) ──────────────
+  sap_bw4hana:
+    connection:
+      host: "${SAP_BW4_HOST}"
+      instance_number: "${SAP_BW4_INSTANCE:-00}"
+      client: "${SAP_BW4_CLIENT:-100}"
+      user: "${SAP_BW4_USER}"
+      password: "${SAP_BW4_PASSWORD}"
+      language: "EN"
+      use_ssl: true
+      snc_partner_name: "${SAP_BW4_SNC_PARTNER:-}"
+      snc_lib: "${SAP_BW4_SNC_LIB:-}"
+    extraction:
+      method: odp
+      odp_context: BW
+      delta_mode: full
+      package_size: 50000
+    tables:
+      - name: "EQUI"
+        description: "Equipment Master"
+        fields: ["EQUNR", "EQTYP", "EQART", "HERST", "TYPBZ", "BAUJJ",
+                 "BRGEW", "GEWEI", "ANSWT", "WAESSION", "TPLNR", "SWERK"]
+      - name: "IFLOT"
+        description: "Functional Location"
+        fields: ["TPLNR", "FLTYP", "IWERK", "STORT", "BEBER", "MSGRP"]
+      - name: "AUFK"
+        description: "Work Order Header"
+        fields: ["AUFNR", "AUART", "AUTYP", "KTEXT", "ERDAT", "ERNAM",
+                 "AEDAT", "BUKRS", "WERKS", "GSBER"]
+      - name: "QMEL"
+        description: "Notification Header"
+        fields: ["QMNUM", "QMART", "QMTXT", "ERDAT", "ERNAM",
+                 "EQUNR", "TPLNR", "AUSVN", "AUSBS"]
+    batch:
+      max_parallel: 4
+      retry_count: 3
+      retry_delay_seconds: 30
+      timeout_seconds: 3600
+
+  # ── SAP ERP 6.0 (RFC) ────────────────────
+  sap_erp6:
+    connection:
+      ashost: "${SAP_ERP6_HOST}"
+      sysnr: "${SAP_ERP6_SYSNR:-00}"
+      client: "${SAP_ERP6_CLIENT:-100}"
+      user: "${SAP_ERP6_USER}"
+      passwd: "${SAP_ERP6_PASSWORD}"
+      lang: "EN"
+      saprouter: "${SAP_ERP6_SAPROUTER:-}"
+      mshost: "${SAP_ERP6_MSHOST:-}"
+      msserv: "${SAP_ERP6_MSSERV:-}"
+      group: "${SAP_ERP6_GROUP:-PUBLIC}"
+    extraction:
+      method: rfc_read_table
+      function_module: "RFC_READ_TABLE"
+      row_limit: 0
+      package_size: 50000
+      delimiter: "|"
+    tables:
+      - name: "EQUI"
+        description: "Equipment Master"
+        fields: ["EQUNR", "EQTYP", "EQART", "HERST", "TYPBZ", "BAUJJ",
+                 "BRGEW", "GEWEI", "ANSWT", "WAESSION", "TPLNR", "SWERK"]
+        where: "SPRAS = 'EN'"
+      - name: "IFLOT"
+        description: "Functional Location"
+        fields: ["TPLNR", "FLTYP", "IWERK", "STORT", "BEBER", "MSGRP"]
+      - name: "AUFK"
+        description: "Work Order Header"
+        fields: ["AUFNR", "AUART", "AUTYP", "KTEXT", "ERDAT", "ERNAM",
+                 "AEDAT", "BUKRS", "WERKS", "GSBER"]
+      - name: "AFKO"
+        description: "Work Order Dates"
+        fields: ["AUFNR", "GLTRP", "GSTRP", "FTRMS", "GLTRS", "GSTRS",
+                 "GETRI", "GSTRI"]
+      - name: "AFVC"
+        description: "Work Order Operations"
+        fields: ["AUFPL", "APLZL", "VORNR", "LTXA1", "ARBID", "WERKS",
+                 "ANZZL", "DAESSION"]
+      - name: "QMEL"
+        description: "Notification Header"
+        fields: ["QMNUM", "QMART", "QMTXT", "ERDAT", "ERNAM",
+                 "EQUNR", "TPLNR", "AUSVN", "AUSBS"]
+      - name: "PLKO"
+        description: "Task List Header"
+        fields: ["PLNTY", "PLNNR", "PLNAL", "LOESSION", "KTEXT",
+                 "WERKS", "VERWE", "STATU"]
+      - name: "PLPO"
+        description: "Task List Operations"
+        fields: ["PLNTY", "PLNNR", "PLNAL", "PLNKN", "VORNR",
+                 "LTXA1", "ARBID", "DAESSION"]
+      - name: "MARA"
+        description: "Material Master"
+        fields: ["MATNR", "MTART", "MATKL", "MEINS", "BRGEW", "NTGEW", "GEWEI"]
+      - name: "MAKT"
+        description: "Material Description"
+        fields: ["MATNR", "SPRAS", "MAKTX"]
+        where: "SPRAS = 'EN'"
+      - name: "LFA1"
+        description: "Vendor Master"
+        fields: ["LIFNR", "NAME1", "NAME2", "LAND1", "ORT01", "STRAS"]
+      - name: "CRHD"
+        description: "Work Center Header"
+        fields: ["OBJID", "ARBPL", "WERKS", "VERWE"]
+    batch:
+      max_parallel: 2
+      retry_count: 3
+      retry_delay_seconds: 30
+      timeout_seconds: 3600
+
+  # ── SAP HANA (direct SQL) ────────────────
+  sap_hana:
+    connection:
+      host: "${SAP_HANA_HOST}"
+      port: "${SAP_HANA_PORT:-30015}"
+      user: "${SAP_HANA_USER}"
+      password: "${SAP_HANA_PASSWORD}"
+      database: "${SAP_HANA_DATABASE:-}"
+      schema: "${SAP_HANA_SCHEMA:-SAPABAp1}"
+      encrypt: true
+      sslValidateCertificate: false
+    extraction:
+      method: sql
+      fetch_size: 50000
+      timeout_seconds: 3600
+    tables:
+      - name: "EQUI"
+        description: "Equipment Master"
+        query: null
+        fields: ["EQUNR", "EQTYP", "EQART", "HERST", "TYPBZ", "BAUJJ",
+                 "BRGEW", "GEWEI", "ANSWT", "WAESSION", "TPLNR", "SWERK"]
+        where: null
+      - name: "IFLOT"
+        description: "Functional Location"
+        fields: ["TPLNR", "FLTYP", "IWERK", "STORT", "BEBER", "MSGRP"]
+      - name: "AUFK"
+        description: "Work Order Header"
+        fields: ["AUFNR", "AUART", "AUTYP", "KTEXT", "ERDAT", "ERNAM",
+                 "AEDAT", "BUKRS", "WERKS", "GSBER"]
+      - name: "AFKO"
+        description: "Work Order Dates"
+        fields: ["AUFNR", "GLTRP", "GSTRP", "FTRMS", "GLTRS", "GSTRS"]
+      - name: "QMEL"
+        description: "Notification Header"
+        fields: ["QMNUM", "QMART", "QMTXT", "ERDAT", "ERNAM",
+                 "EQUNR", "TPLNR", "AUSVN", "AUSBS"]
+      - name: "MARA"
+        description: "Material Master"
+        fields: ["MATNR", "MTART", "MATKL", "MEINS", "BRGEW", "NTGEW", "GEWEI"]
+      - name: "LFA1"
+        description: "Vendor Master"
+        fields: ["LIFNR", "NAME1", "NAME2", "LAND1", "ORT01"]
+    batch:
+      max_parallel: 4
+      retry_count: 3
+      retry_delay_seconds: 10
+
+  # ── SAP S/4HANA Cloud (OData v4) ─────────
+  sap_s4hana_cloud:
+    connection:
+      base_url: "${SAP_S4C_BASE_URL}"
+      auth_type: oauth2
+      token_url: "${SAP_S4C_TOKEN_URL}"
+      client_id: "${SAP_S4C_CLIENT_ID}"
+      client_secret: "${SAP_S4C_CLIENT_SECRET}"
+      username: "${SAP_S4C_USER:-}"
+      password: "${SAP_S4C_PASSWORD:-}"
+      communication_scenario: "SAP_COM_0532"
+      use_ssl: true
+      verify_ssl: true
+    extraction:
+      method: odata
+      api_version: "v4"
+      page_size: 5000
+      max_pages: 0
+      timeout_seconds: 300
+    entities:
+      - name: "A_Equipment"
+        sap_table: "EQUI"
+        description: "Equipment Master"
+        select: ["Equipment", "EquipmentType", "EquipmentCategory",
+                 "Manufacturer", "ModelNumber", "ConstructionYear",
+                 "FunctionalLocation", "MaintenancePlant"]
+        filter: null
+      - name: "A_FunctionalLocation"
+        sap_table: "IFLOT"
+        description: "Functional Location"
+        select: ["FunctionalLocation", "FuncLocationDesc",
+                 "MaintenancePlant", "Location", "Room"]
+      - name: "A_MaintenanceOrder"
+        sap_table: "AUFK"
+        description: "Maintenance Order"
+        select: ["MaintenanceOrder", "MaintenanceOrderType",
+                 "MaintenanceOrderDesc", "CreationDate",
+                 "Equipment", "FunctionalLocation", "MaintenancePlant"]
+      - name: "A_MaintenanceNotification"
+        sap_table: "QMEL"
+        description: "Notification"
+        select: ["MaintenanceNotification", "NotificationType",
+                 "NotificationText", "CreationDate",
+                 "Equipment", "FunctionalLocation"]
+      - name: "A_Product"
+        sap_table: "MARA"
+        description: "Material Master"
+        select: ["Product", "ProductType", "ProductGroup",
+                 "BaseUnit", "GrossWeight", "NetWeight"]
+    batch:
+      max_parallel: 4
+      retry_count: 3
+      retry_delay_seconds: 10
+
+  # ── SAP S/4HANA On-Premise (RFC) ─────────
+  sap_s4hana_onprem:
+    connection:
+      ashost: "${SAP_S4OP_HOST}"
+      sysnr: "${SAP_S4OP_SYSNR:-00}"
+      client: "${SAP_S4OP_CLIENT:-100}"
+      user: "${SAP_S4OP_USER}"
+      passwd: "${SAP_S4OP_PASSWORD}"
+      lang: "EN"
+      saprouter: "${SAP_S4OP_SAPROUTER:-}"
+      mshost: "${SAP_S4OP_MSHOST:-}"
+      msserv: "${SAP_S4OP_MSSERV:-}"
+      group: "${SAP_S4OP_GROUP:-PUBLIC}"
+      odata_base_url: "${SAP_S4OP_ODATA_URL:-}"
+      odata_user: "${SAP_S4OP_ODATA_USER:-}"
+      odata_password: "${SAP_S4OP_ODATA_PASSWORD:-}"
+    extraction:
+      method: rfc_read_table
+      function_module: "/BODS/RFC_READ_TABLE2"
+      package_size: 50000
+      delimiter: "|"
+      prefer_odata: false
+    tables:
+      - name: "EQUI"
+        description: "Equipment Master"
+        fields: ["EQUNR", "EQTYP", "EQART", "HERST", "TYPBZ", "BAUJJ",
+                 "BRGEW", "GEWEI", "ANSWT", "WAESSION", "TPLNR", "SWERK"]
+      - name: "IFLOT"
+        description: "Functional Location"
+        fields: ["TPLNR", "FLTYP", "IWERK", "STORT", "BEBER", "MSGRP"]
+      - name: "AUFK"
+        description: "Work Order Header"
+        fields: ["AUFNR", "AUART", "AUTYP", "KTEXT", "ERDAT", "ERNAM",
+                 "AEDAT", "BUKRS", "WERKS", "GSBER"]
+      - name: "AFKO"
+        description: "Work Order Dates"
+        fields: ["AUFNR", "GLTRP", "GSTRP", "FTRMS", "GLTRS", "GSTRS"]
+      - name: "AFVC"
+        description: "Work Order Operations"
+        fields: ["AUFPL", "APLZL", "VORNR", "LTXA1", "ARBID", "WERKS"]
+      - name: "QMEL"
+        description: "Notification Header"
+        fields: ["QMNUM", "QMART", "QMTXT", "ERDAT", "ERNAM",
+                 "EQUNR", "TPLNR", "AUSVN", "AUSBS"]
+      - name: "PLKO"
+        description: "Task List Header"
+        fields: ["PLNTY", "PLNNR", "PLNAL", "KTEXT", "WERKS", "VERWE", "STATU"]
+      - name: "PLPO"
+        description: "Task List Operations"
+        fields: ["PLNTY", "PLNNR", "PLNAL", "PLNKN", "VORNR", "LTXA1", "ARBID"]
+      - name: "MARA"
+        description: "Material Master"
+        fields: ["MATNR", "MTART", "MATKL", "MEINS", "BRGEW", "NTGEW", "GEWEI"]
+      - name: "MAKT"
+        description: "Material Description"
+        fields: ["MATNR", "SPRAS", "MAKTX"]
+        where: "SPRAS = 'EN'"
+      - name: "LFA1"
+        description: "Vendor Master"
+        fields: ["LIFNR", "NAME1", "NAME2", "LAND1", "ORT01"]
+      - name: "CRHD"
+        description: "Work Center Header"
+        fields: ["OBJID", "ARBPL", "WERKS", "VERWE"]
+    batch:
+      max_parallel: 2
+      retry_count: 3
+      retry_delay_seconds: 30
+      timeout_seconds: 3600
+
+  # ═══════════════════════════════════════════
+  # IBM MAXIMO (EAM / CMMS)
+  # ═══════════════════════════════════════════
+
+  # ── IBM Maximo (REST / OSLC API) ──────────
+  maximo:
+    connection:
+      base_url: "${MAXIMO_BASE_URL}"          # e.g. https://maximo.company.com/maximo
+      auth_type: apikey                        # apikey | basic | oauth2
+      api_key: "${MAXIMO_API_KEY:-}"
+      username: "${MAXIMO_USER:-}"
+      password: "${MAXIMO_PASSWORD:-}"
+      # OAuth2 (Maximo Application Suite 8.x)
+      token_url: "${MAXIMO_TOKEN_URL:-}"
+      client_id: "${MAXIMO_CLIENT_ID:-}"
+      client_secret: "${MAXIMO_CLIENT_SECRET:-}"
+      verify_ssl: true
+      timeout_seconds: 300
+
+    extraction:
+      api_version: "oslc"              # oslc | rest (nextgen)
+      page_size: 500                   # oslc.pageSize
+      max_pages: 0                     # 0 = all
+      lean: true                       # lean=1 (smaller payloads)
+
+    # Maximo object structures to extract
+    object_structures:
+      - name: "MXASSET"
+        description: "Assets / Equipment"
+        select: ["assetnum", "description", "status", "assettype",
+                 "location", "parent", "manufacturer", "vendor",
+                 "serialnum", "installdate", "priority",
+                 "siteid", "orgid"]
+        where: null
+      - name: "MXWO"
+        description: "Work Orders"
+        select: ["wonum", "description", "status", "worktype",
+                 "reportdate", "schedstart", "schedfinish",
+                 "actstart", "actfinish", "assetnum", "location",
+                 "jpnum", "crewid", "lead", "priority",
+                 "siteid", "orgid"]
+        where: "status != 'CAN'"
+      - name: "MXSR"
+        description: "Service Requests"
+        select: ["ticketid", "description", "status", "reportdate",
+                 "assetnum", "location", "siteid", "orgid"]
+        where: null
+      - name: "MXJOBPLAN"
+        description: "Job Plans (Task Lists)"
+        select: ["jpnum", "description", "status", "pluscrevnum",
+                 "siteid", "orgid"]
+        where: null
+      - name: "MXINVENTORY"
+        description: "Inventory / Materials"
+        select: ["itemnum", "description", "status", "category",
+                 "orderunit", "issueunit", "curbal",
+                 "location", "siteid", "orgid"]
+        where: null
+      - name: "MXPM"
+        description: "Preventive Maintenance"
+        select: ["pmnum", "description", "status", "frequency",
+                 "frequnit", "assetnum", "jpnum",
+                 "siteid", "orgid"]
+        where: null
+
+    batch:
+      max_parallel: 4
+      retry_count: 3
+      retry_delay_seconds: 15

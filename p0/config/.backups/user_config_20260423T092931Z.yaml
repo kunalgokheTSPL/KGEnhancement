@@ -1,0 +1,5 @@
+timeseries:
+  retention:
+    value: '90'
+    unit: days
+industry: oil_gas

@@ -1,0 +1,268 @@
+# ================================================================
+# Standard Document Type Catalog
+# ================================================================
+# Default extraction fields per document type. The Documents upload
+# modal pre-populates its field list from here so users don't have to
+# retype standard fields every time.
+#
+# Users can still add / edit / remove fields per upload; their changes
+# are saved to user_config.yaml (document_processing.document_types.<key>.
+# source_columns) and override these defaults for that doc type.
+#
+# Served to the frontend via GET /api/config/document-types.
+# ================================================================
+version: "1.0"
+
+categories:
+  - category: Design Documents
+    types:
+      - key: equipment_datasheets
+        label: Equipment Datasheets
+        fields:
+          - {name: Equipment Tag,            desc: "The one tag this sheet describes, exactly as printed; a sheet covering several tags gets one entry per tag"}
+          - {name: Equipment Name,           desc: "Name or service description given to that tag"}
+          - {name: Manufacturer,             desc: "OEM or vendor named on the sheet"}
+          - {name: Model Number,             desc: "Manufacturer model or part number"}
+          - {name: Serial Number,            desc: "Serial or works number of this one unit"}
+          - {name: Design Pressure,          desc: "Rated pressure with the unit as printed"}
+          - {name: Design Temperature,       desc: "Rated temperature with the unit as printed"}
+          - {name: Material of Construction, desc: "Body or shell material as written"}
+          - {name: Capacity / Rating,        desc: "Flow, power or throughput rating with its unit"}
+          - {name: Unit,                     desc: "Process unit, area or system the tag sits in"}
+          - {name: Service,                  desc: "Duty the equipment performs in that unit"}
+      - key: cause_effect_matrix
+        label: Cause & Effect Matrix
+        fields:
+          - {name: Cause Tag,           desc: "Initiating input tag, exactly as printed; one entry per cause-effect pair, never a whole matrix row"}
+          - {name: Effect Tag,          desc: "Resulting output tag, exactly as printed"}
+          - {name: Cause Description,   desc: "The cause condition as written"}
+          - {name: Effect Description,  desc: "The resulting action as written"}
+          - {name: Logic,               desc: "Voting or gating logic between the cause and the effect"}
+          - {name: SIF / SIL,           desc: "Safety function reference and its integrity level"}
+          - {name: Node / System,       desc: "Node or system the pair belongs to"}
+          - {name: Unit,                desc: "Process unit or area the pair sits in"}
+
+  - category: Operations Documents
+    types:
+      - key: sop
+        label: SOP (Standard Operating Procedures)
+        fields:
+          - {name: Procedure ID,       desc: "Reference of the procedure this step belongs to; one entry per step, never the whole procedure in one entry"}
+          - {name: Title,              desc: "Title of the procedure"}
+          - {name: Step Number,        desc: "Number or letter of this one step as printed"}
+          - {name: Steps,              desc: "This one step, as written; not the list of them"}
+          - {name: Equipment Tag,      desc: "The one tag this step acts on, exactly as printed; a step naming several tags gets one entry per tag"}
+          - {name: Applicable Unit,    desc: "Process unit or area the procedure applies to"}
+          - {name: System,             desc: "Plant system the procedure covers"}
+          - {name: Safety Precautions, desc: "PPE, hazard or permit requirement stated for this step"}
+          - {name: Revision,           desc: "Revision number and date of the procedure"}
+      - key: startup_shutdown
+        label: Start-up / Shutdown Procedures
+        fields:
+          - {name: Procedure ID,    desc: "Reference of the procedure this step belongs to; one entry per step"}
+          - {name: Unit / Equipment, desc: "Target equipment or system as the document names it"}
+          - {name: Equipment Tag,   desc: "The one tag this step acts on, exactly as printed; a step naming several tags gets one entry per tag"}
+          - {name: Mode,            desc: "Whether the step belongs to start-up or to shutdown"}
+          - {name: Step Number,     desc: "Number or letter of this one step as printed"}
+          - {name: Pre-conditions,  desc: "Condition required before this step runs"}
+          - {name: Steps,           desc: "This one step, as written; not the list of them"}
+          - {name: Interlock Checks, desc: "Interlock or trip verified at this step"}
+          - {name: Unit,            desc: "Process unit or area the procedure sits in"}
+      - key: operating_manuals
+        label: Operating Manuals
+        fields:
+          - {name: Equipment / System,   desc: "Target equipment or subsystem as the manual names it"}
+          - {name: Equipment Tag,        desc: "The one tag this limit applies to, exactly as printed; a limit covering several tags gets one entry per tag"}
+          - {name: Parameter,            desc: "The one parameter being limited, such as a pressure, temperature or flow; one entry per parameter"}
+          - {name: Operating Parameters, desc: "Normal operating range for that parameter, as written"}
+          - {name: Normal Min,           desc: "Low end of the normal range, number only"}
+          - {name: Normal Max,           desc: "High end of the normal range, number only"}
+          - {name: Alarm Setpoints,      desc: "Alarm or trip value for that parameter, as written"}
+          - {name: Alarm Type,           desc: "Which alarm the setpoint is, such as high, high-high, low or low-low"}
+          - {name: Engineering Unit,     desc: "Unit the values are stated in"}
+          - {name: Emergency Actions,    desc: "Action prescribed when that limit is breached"}
+          - {name: Unit,                 desc: "Process unit or area the equipment sits in"}
+      - key: log_sheets
+        label: Log Sheets / Shift Reports
+        fields:
+          - {name: Shift Date, desc: "Date of the shift"}
+          - {name: Shift,      desc: "Shift identifier as printed"}
+          - {name: Operator,   desc: "Name or code of the shift operator"}
+          - {name: Equipment Tag, desc: "The one tag this reading was taken on, exactly as printed; a column heading naming a tag applies to every reading beneath it"}
+          - {name: Parameter,  desc: "What was measured; one entry per reading, never a row of them"}
+          - {name: Reading Value, desc: "The value recorded, exactly as written"}
+          - {name: Reading Unit,  desc: "Unit the value is stated in"}
+          - {name: Reading Time,  desc: "Time the reading was taken, as written"}
+          - {name: Readings,   desc: "The observation as written when it is not a single measured value"}
+          - {name: Incidents,  desc: "One incident or deviation noted during the shift"}
+          - {name: Unit,       desc: "Process unit or area the reading belongs to"}
+      - key: batch_reports
+        label: Batch Reports (Cement / Blending)
+        fields:
+          - {name: Batch ID,            desc: "Reference of this one batch; one entry per measured parameter of the batch"}
+          - {name: Batch Date,          desc: "Date the batch was produced"}
+          - {name: Product,             desc: "Product type or blend grade produced"}
+          - {name: Equipment Tag,       desc: "The one tag of the mill, kiln or line that produced it, exactly as printed"}
+          - {name: Raw Mix Ratio,       desc: "Proportion of one component in the mix, with the component named"}
+          - {name: Parameter,           desc: "The one quality parameter measured, such as fineness, loss on ignition or free lime"}
+          - {name: Value,               desc: "Value of that parameter, exactly as written"}
+          - {name: Engineering Unit,    desc: "Unit the value is stated in"}
+          - {name: Quality Parameters,  desc: "Quality result as written when it is not a single named parameter"}
+          - {name: Production Quantity, desc: "Quantity produced, number and unit as written"}
+          - {name: Unit,                desc: "Process unit, line or area the batch was produced in"}
+
+  - category: Maintenance Documents
+    types:
+      - key: maintenance_manuals
+        label: Maintenance Manuals
+        fields:
+          - {name: Equipment Tag,    desc: "The one tag this task is written for, exactly as printed; a task covering several tags gets one entry per tag"}
+          - {name: Task ID,          desc: "Reference of this one task where the manual numbers them"}
+          - {name: Maintenance Type, desc: "Whether the task is preventive, predictive or corrective"}
+          - {name: Task Description, desc: "This one task, as written; one entry per task, never a whole task list"}
+          - {name: Frequency,        desc: "Interval the task is performed at, as written"}
+          - {name: Duration,         desc: "Time the task is expected to take"}
+          - {name: Discipline,       desc: "Trade or discipline that performs the task"}
+          - {name: Spare Parts,      desc: "One spare part the task needs, with its part number where given"}
+          - {name: Tools Required,   desc: "Tools or equipment the task needs"}
+          - {name: Unit,             desc: "Process unit or area the tag sits in"}
+      - key: rca_reports
+        label: RCA Reports
+        fields:
+          - {name: Incident ID,       desc: "Reference of this one failure; one entry per cause the report identifies"}
+          - {name: Equipment,         desc: "Failed equipment as the report names it"}
+          - {name: Equipment Tag,     desc: "The one tag that failed, exactly as printed; never the equipment noun in front of it"}
+          - {name: Failure Mode,      desc: "How the equipment failed"}
+          - {name: Failure Mechanism, desc: "Mechanism behind the failure, such as wear, fatigue or corrosion"}
+          - {name: Root Cause,        desc: "One cause the report identifies; a report naming several gets one entry each"}
+          - {name: Cause Type,        desc: "Whether that cause is stated as immediate, contributing or root"}
+          - {name: Detection Method,  desc: "How the failure was detected"}
+          - {name: Corrective Action, desc: "One action taken or recommended against that cause"}
+          - {name: Downtime Hours,    desc: "Lost availability caused by the failure, number only"}
+          - {name: Date of Failure,   desc: "When the failure occurred"}
+          - {name: Unit,              desc: "Process unit or area the equipment sits in"}
+
+  - category: Safety & Compliance Documents
+    types:
+      - key: hazop
+        label: HAZOP (Hazard and Operability Study)
+        fields:
+          - {name: Node,           desc: "Process section under study; one entry per deviation line of the worksheet, never a whole node"}
+          - {name: Equipment Tag,  desc: "The one tag the node covers, exactly as printed; a node listing several tags gets one entry per tag"}
+          - {name: Guide Word,     desc: "Guide word applied to the parameter"}
+          - {name: Parameter,      desc: "Process parameter the guide word was applied to"}
+          - {name: Deviation,      desc: "The deviation as the worksheet states it"}
+          - {name: Cause,          desc: "One cause of that deviation; a line listing several gets one entry each"}
+          - {name: Consequence,    desc: "Consequence that follows from that cause"}
+          - {name: Safeguard,      desc: "One existing safeguard against it"}
+          - {name: Recommendation, desc: "One recommended action; never several rolled into one entry"}
+          - {name: Action Party,   desc: "Party the recommendation is assigned to"}
+          - {name: Action Status,  desc: "Where the recommendation stands"}
+          - {name: Risk Ranking,   desc: "Severity, likelihood or risk rank as printed"}
+          - {name: Unit,           desc: "Process unit or area the node sits in"}
+      - key: jsa_jha
+        label: JSA / JHA (Job Safety / Hazard Analysis)
+        fields:
+          - {name: Job Title,       desc: "Name of the job; one entry per hazard of one step, never a whole job"}
+          - {name: Step,            desc: "This one job step, as written"}
+          - {name: Equipment Tag,   desc: "The one tag the step is performed on, exactly as printed"}
+          - {name: Hazard,          desc: "One hazard identified for that step"}
+          - {name: Risk Level,      desc: "Risk rating assigned to that hazard"}
+          - {name: Control Measure, desc: "One control against that hazard"}
+          - {name: Responsible Party, desc: "Role accountable for the control"}
+          - {name: Permit Required, desc: "Permit the step requires, when one is named"}
+          - {name: Unit,            desc: "Process unit, area or location the job is done in"}
+      - key: ptw
+        label: Permit to Work (PTW)
+        fields:
+          - {name: Permit Number, desc: "Reference of this one permit; one entry per permit"}
+          - {name: Permit Type,   desc: "Class of work the permit covers"}
+          - {name: Equipment Tag, desc: "The one tag the work is done on, exactly as printed; a permit naming several tags gets one entry per tag"}
+          - {name: Work Description, desc: "The work the permit authorises, as written"}
+          - {name: Location,      desc: "Work location as the permit states it"}
+          - {name: Valid From,    desc: "Start date and time of validity"}
+          - {name: Valid To,      desc: "Expiry date and time"}
+          - {name: Issued By,     desc: "Issuing authority or role"}
+          - {name: Status,        desc: "Where the permit stands, such as open, closed or cancelled"}
+          - {name: Precautions,   desc: "One precaution the permit requires"}
+          - {name: Unit,          desc: "Process unit or area the work sits in"}
+      - key: msds_sds
+        label: MSDS / SDS (Material Safety Data Sheet)
+        fields:
+          - {name: Product Name,          desc: "Chemical or product this sheet covers; one entry per material, never a group"}
+          - {name: Material Code,         desc: "Plant material or stock code for it, exactly as printed"}
+          - {name: CAS Number,            desc: "Chemical Abstracts Service number"}
+          - {name: Hazard Classification, desc: "Hazard class assigned to the material"}
+          - {name: Physical State,        desc: "Form the material is in, such as liquid, solid or gas"}
+          - {name: Flash Point,           desc: "Flash point with its unit as printed"}
+          - {name: Exposure Limit,        desc: "Occupational exposure limit with its unit"}
+          - {name: First Aid Measures,    desc: "First aid stated for one route of exposure"}
+          - {name: Storage Conditions,    desc: "Storage requirement as written"}
+          - {name: PPE Required,          desc: "One item of protective equipment required"}
+          - {name: Used In Unit,          desc: "Process unit or area the material is used in"}
+      - key: incident_reports
+        label: Incident / Accident Reports
+        fields:
+          - {name: Incident ID,       desc: "Reference of this one incident; one entry per incident"}
+          - {name: Date / Time,       desc: "When the incident occurred, as written"}
+          - {name: Equipment Tag,     desc: "The one tag involved, exactly as printed; an incident naming several tags gets one entry per tag"}
+          - {name: Location,          desc: "Where the incident occurred, as written"}
+          - {name: Description,       desc: "What happened, as the report states it"}
+          - {name: Severity,          desc: "Severity or category assigned to the incident"}
+          - {name: Injury / Damage,   desc: "Injury or damage sustained"}
+          - {name: Immediate Cause,   desc: "Direct cause the report identifies"}
+          - {name: Root Cause,        desc: "Underlying cause where the report states one"}
+          - {name: Corrective Action, desc: "One action taken or recommended"}
+          - {name: Status,            desc: "Where the incident stands, such as open or closed"}
+          - {name: Unit,              desc: "Process unit or area the incident occurred in"}
+      - key: erp_plan
+        label: Emergency Response Plan (ERP)
+        fields:
+          - {name: Scenario,           desc: "Emergency scenario; one entry per response action, never a whole plan"}
+          - {name: Trigger Condition,  desc: "Condition that puts the scenario into effect"}
+          - {name: Equipment Tag,      desc: "The one tag the scenario concerns, exactly as printed, where the plan names one"}
+          - {name: Response Action,    desc: "One action the plan prescribes for that scenario"}
+          - {name: Response Team,      desc: "Role or team accountable for that action"}
+          - {name: Assembly Point,     desc: "Designated assembly or evacuation point"}
+          - {name: Communication Plan, desc: "Who is notified and in what order"}
+          - {name: Equipment,          desc: "Emergency equipment or resource the action needs"}
+          - {name: Unit,               desc: "Process unit or area the scenario applies to"}
+
+  - category: Operational Events
+    types:
+      - key: alerts
+        label: Alerts
+        fields:
+          - {name: Alert ID,        desc: "Reference of this one alert; one entry per alert, never a group of them"}
+          - {name: Equipment Tag,   desc: "The one tag this alert was raised against; a heading covering several tags gets one entry per tag"}
+          - {name: Alert Title,     desc: "Short title of the condition detected"}
+          - {name: Description,     desc: "What the alert reports, as written"}
+          - {name: Priority,        desc: "Priority or criticality assigned to the alert"}
+          - {name: Status,          desc: "Whether the alert is open, closed or under action"}
+          - {name: Date Raised,     desc: "When the alert was opened"}
+          - {name: Date Closed,     desc: "When the alert was closed, empty while it is open"}
+          - {name: Current Action,  desc: "Action in progress at the time of writing"}
+          - {name: Action Taken,    desc: "Action already completed against this alert"}
+          - {name: Fault Category,  desc: "Fault or failure category assigned to the alert"}
+          - {name: Equipment Class, desc: "Class of the tagged equipment"}
+          - {name: Unit,            desc: "Process unit, subunit or area the tag sits in"}
+          - {name: Source System,   desc: "Monitoring or alarm system that produced the alert"}
+      - key: events
+        label: Events
+        fields:
+          - {name: Event ID,            desc: "Reference of this one event; one entry per event, never a rolled-up count"}
+          - {name: Event Type,          desc: "Kind of event, such as a trip, a planned or an unplanned shutdown"}
+          - {name: Equipment Tag,       desc: "The one tag the event occurred on; a line naming several tags gets one entry per tag"}
+          - {name: Functional Location, desc: "Functional location the event is booked against"}
+          - {name: Event Start,         desc: "When the event began, date and time as written"}
+          - {name: Event End,           desc: "When the event ended, date and time as written"}
+          - {name: Problem Statement,   desc: "What happened, as the document states it"}
+          - {name: Primary Cause,       desc: "Cause the document identifies as primary"}
+          - {name: Secondary Cause,     desc: "Further contributing cause, empty when only one is given"}
+          - {name: Failure Mode,        desc: "How the equipment failed"}
+          - {name: Failure Mechanism,   desc: "Mechanism behind the failure"}
+          - {name: Downtime Hours,      desc: "Duration of lost availability, number only"}
+          - {name: Discipline,          desc: "Engineering discipline the event is assigned to"}
+          - {name: Equipment Class,     desc: "Class of the affected equipment"}
+          - {name: System,              desc: "Plant system the affected equipment belongs to"}
+          - {name: Status,              desc: "Where the event stands, such as open, closed or under review"}

@@ -1,0 +1,22 @@
+industry: oil_gas
+document_processing:
+  document_types:
+    solcopnel_1776315323637:
+      document_type: SOLCOPNEL
+      source_columns:
+      - Process  System
+      - Equipment  Name
+      - Equipment/  Pipeline/  Piping Tag  No.
+      - Design, current &  future operating  conditions
+      - Threat and consequence
+    baronia_sol_1776315330624:
+      document_type: Baronia SOL
+      source_columns:
+      - Main Equipment
+      - Tag No.
+      - Tag Type
+      - Description
+timeseries:
+  retention:
+    value: '120'
+    unit: days

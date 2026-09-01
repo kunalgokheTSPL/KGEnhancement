@@ -1,0 +1,590 @@
+# ============================================================================
+# CDM Ontology Template
+# ============================================================================
+# This file defines ALL ontology structure — node types, relationships,
+# document sub-types, and use-case profiles.
+#
+# Python code is a generic runner that reads this template.
+# Nothing ontology-specific lives in code.
+#
+# Sequence:  Load raw data → CDM tables → run ontology extractor → KG JSON
+# ============================================================================
+
+
+# ────────────────────────────────────────────────────────────────────────────
+# 1. GLOBAL SETTINGS
+# ────────────────────────────────────────────────────────────────────────────
+settings:
+  # Columns excluded from every node's properties (audit/internal fields)
+  global_exclude_columns:
+    - created_at
+    - updated_at
+    - is_active
+    - source_record_id
+    - confidence
+
+  # Document sub-type labels: when table = document_metadata,
+  # the document_type column value maps to a more specific KG label
+  document_type_labels:
+    operating_manual:     OperatingManual
+    sop:                  SOP
+    maintenance_manual:   MaintenanceManual
+    design_sheet:         DesignSheet
+    datasheet:            Datasheet
+    technical_data:       TechnicalData
+    rca:                  RCA
+    p_and_id:             PAndID
+    inspection_report:    InspectionReport
+    energy_audit:         EnergyAudit
+    environmental_report: EnvironmentalReport
+
+
+# ────────────────────────────────────────────────────────────────────────────
+# 2. NODE TYPES — every CDM table that can become a KG node
+# ────────────────────────────────────────────────────────────────────────────
+# Each entry:
+#   table:       PostgreSQL table name
+#   label:       KG node label
+#   id_column:   primary key column (excluded from properties, used for indexing)
+#   key_columns: columns used to build join indexes for relationship resolution
+#   layer:       logical ontology layer this node belongs to
+# ────────────────────────────────────────────────────────────────────────────
+node_types:
+
+  # ── Asset / Physical Layer ──────────────────────────────────────────
+  - table: equipment
+    label: Equipment
+    id_column: equipment_uid
+    layer: asset
+    key_columns:
+      - plant_code_id
+      - normalized_asset
+      - sap_equipment_id
+      - equipment_tag
+      - functional_location
+      - process_unit
+
+  - table: equipment_pid
+    label: EquipmentPID
+    id_column: pid_uid
+    layer: asset
+    key_columns:
+      - plant_code_id
+      - pid_tag
+      - normalized_asset
+
+  - table: equipment_sap
+    label: EquipmentSAP
+    id_column: equipment_sap_uid
+    layer: asset
+    key_columns:
+      - plant_code_id
+      - sap_equipment_id
+      - normalized_asset
+
+  - table: equipment_connectivity
+    label: EquipmentConnection
+    id_column: connectivity_uid
+    layer: asset
+    key_columns:
+      - plant_code_id
+      - from_equipment_ref
+      - to_equipment_ref
+      - connection_type
+      - medium
+
+  # ── Hierarchy / Location Layer ──────────────────────────────────────
+  - table: functional_location
+    label: FunctionalLocation
+    id_column: floc_uid
+    layer: hierarchy
+    key_columns:
+      - plant_code_id
+      - floc
+
+  - table: process_unit
+    label: ProcessUnit
+    id_column: pu_uid
+    layer: hierarchy
+    key_columns:
+      - plant_code_id
+      - process_unit_code
+
+  # ── Maintenance / Work Layer ────────────────────────────────────────
+  - table: work_order
+    label: WorkOrder
+    id_column: wo_uid
+    layer: maintenance
+    key_columns:
+      - plant_code_id
+      - wo_number
+      - equipment_ref
+      - floc
+      - notification_id
+      - work_center
+
+  - table: notification
+    label: Notification
+    id_column: notif_uid
+    layer: maintenance
+    key_columns:
+      - plant_code_id
+      - notification_id
+      - equipment_ref
+      - floc
+      - failure_mode_code
+      - failure_cause_code
+      - failure_effect_code
+
+  - table: task_list
+    label: TaskList
+    id_column: task_list_uid
+    layer: maintenance
+    key_columns:
+      - plant_code_id
+      - task_list_id
+      - equipment_ref
+      - floc
+
+  - table: maintenance_plan
+    label: MaintenancePlan
+    id_column: plan_uid
+    layer: maintenance
+    key_columns:
+      - plant_code_id
+      - plan_id
+      - equipment_ref
+      - floc
+
+  - table: work_center
+    label: WorkCenter
+    id_column: wc_uid
+    layer: maintenance
+    key_columns:
+      - plant_code_id
+      - work_center
+
+  # ── Reliability / FMEA Layer ────────────────────────────────────────
+  - table: failure_mode
+    label: FailureMode
+    id_column: fm_uid
+    layer: reliability
+    key_columns:
+      - plant_code_id
+      - failure_mode_code
+      - equipment_id
+
+  - table: failure_cause
+    label: FailureCause
+    id_column: fc_uid
+    layer: reliability
+    key_columns:
+      - plant_code_id
+      - failure_cause_code
+      - equipment_id
+
+  - table: failure_effect
+    label: FailureEffect
+    id_column: fe_uid
+    layer: reliability
+    key_columns:
+      - plant_code_id
+      - failure_effect_code
+      - equipment_id
+
+  # ── Material / Procurement Layer ────────────────────────────────────
+  - table: material
+    label: Material
+    id_column: material_uid
+    layer: material
+    key_columns:
+      - material_code
+
+  - table: bom_item
+    label: BOM
+    id_column: bom_item_uid
+    layer: material
+    key_columns:
+      - plant_code_id
+      - bom_id
+      - sap_equipment_id
+      - material_code
+
+  - table: vendor
+    label: Vendor
+    id_column: vendor_uid
+    layer: material
+    key_columns:
+      - vendor_code
+
+  - table: purchase_order
+    label: PurchaseOrder
+    id_column: po_uid
+    layer: material
+    key_columns:
+      - po_number
+      - vendor_code
+      - material_code
+      - plant_code_id
+
+  - table: goods_receipt
+    label: GoodsReceipt
+    id_column: gr_uid
+    layer: material
+    key_columns:
+      - gr_number
+      - po_number
+      - material_code
+
+  - table: invoice
+    label: Invoice
+    id_column: invoice_uid
+    layer: material
+    key_columns:
+      - invoice_number
+      - vendor_code
+      - po_number
+
+  # ── Document / Timeseries Layer ─────────────────────────────────────
+  - table: timeseries_metadata
+    label: Sensor
+    id_column: ts_uid
+    layer: document
+    key_columns:
+      - plant_code_id
+      - tag_name
+      - normalized_asset
+
+  - table: document_metadata
+    label: Document
+    id_column: document_uid
+    layer: document
+    key_columns:
+      - plant_code_id
+      - document_id
+      - equipment_id
+      - document_type
+
+
+# ────────────────────────────────────────────────────────────────────────────
+# 3. RELATIONSHIP TYPES — how edges are derived from column joins
+# ────────────────────────────────────────────────────────────────────────────
+# Each entry:
+#   type:          KG edge label
+#   from_table:    source node's CDM table
+#   from_column:   column in source table to match
+#   to_table:      target node's CDM table
+#   to_column:     column in target table to match
+#   directed:      true = directed edge (default), false = undirected
+# ────────────────────────────────────────────────────────────────────────────
+relationship_types:
+
+  # Maintenance → Equipment
+  - type: EXECUTED_ON
+    from_table: work_order
+    from_column: equipment_ref
+    to_table: equipment
+    to_column: normalized_asset
+    directed: true
+
+  - type: REPORTED_ON
+    from_table: notification
+    from_column: equipment_ref
+    to_table: equipment
+    to_column: normalized_asset
+    directed: true
+
+  - type: APPLIES_TO
+    from_table: task_list
+    from_column: equipment_ref
+    to_table: equipment
+    to_column: normalized_asset
+    directed: true
+
+  - type: SCHEDULES
+    from_table: maintenance_plan
+    from_column: equipment_ref
+    to_table: equipment
+    to_column: normalized_asset
+    directed: true
+
+  # Equipment → Hierarchy
+  - type: LOCATED_AT
+    from_table: equipment
+    from_column: functional_location
+    to_table: functional_location
+    to_column: floc
+    directed: true
+
+  - type: PART_OF_PROCESS_UNIT
+    from_table: equipment
+    from_column: process_unit
+    to_table: process_unit
+    to_column: process_unit_code
+    directed: true
+
+  # BOM / Material
+  - type: HAS_BOM_ITEM
+    from_table: equipment
+    from_column: sap_equipment_id
+    to_table: bom_item
+    to_column: sap_equipment_id
+    directed: true
+
+  - type: IS_MATERIAL
+    from_table: bom_item
+    from_column: material_code
+    to_table: material
+    to_column: material_code
+    directed: true
+
+  # Procurement
+  - type: PURCHASED_FROM
+    from_table: purchase_order
+    from_column: vendor_code
+    to_table: vendor
+    to_column: vendor_code
+    directed: true
+
+  - type: ORDERS_MATERIAL
+    from_table: purchase_order
+    from_column: material_code
+    to_table: material
+    to_column: material_code
+    directed: true
+
+  - type: RECEIPT_AGAINST
+    from_table: goods_receipt
+    from_column: po_number
+    to_table: purchase_order
+    to_column: po_number
+    directed: true
+
+  - type: INVOICED_AGAINST
+    from_table: invoice
+    from_column: po_number
+    to_table: purchase_order
+    to_column: po_number
+    directed: true
+
+  # Equipment ↔ Timeseries / Documents
+  - type: HAS_TAG
+    from_table: equipment
+    from_column: normalized_asset
+    to_table: timeseries_metadata
+    to_column: normalized_asset
+    directed: true
+
+  - type: HAS_DOCUMENT
+    from_table: equipment
+    from_column: equipment_tag
+    to_table: document_metadata
+    to_column: equipment_id
+    directed: true
+
+  # Process connectivity
+  - type: CONNECTED_TO
+    from_table: equipment_connectivity
+    from_column: from_equipment_ref
+    to_table: equipment
+    to_column: normalized_asset
+    directed: true
+
+  # Work Order → Notification
+  - type: RAISED_FROM
+    from_table: work_order
+    from_column: notification_id
+    to_table: notification
+    to_column: notification_id
+    directed: true
+
+  # Failure linkage
+  - type: HAS_FAILURE_MODE
+    from_table: notification
+    from_column: failure_mode_code
+    to_table: failure_mode
+    to_column: failure_mode_code
+    directed: true
+
+  - type: HAS_FAILURE_CAUSE
+    from_table: notification
+    from_column: failure_cause_code
+    to_table: failure_cause
+    to_column: failure_cause_code
+    directed: true
+
+  - type: HAS_FAILURE_EFFECT
+    from_table: notification
+    from_column: failure_effect_code
+    to_table: failure_effect
+    to_column: failure_effect_code
+    directed: true
+
+
+# ────────────────────────────────────────────────────────────────────────────
+# 4. USE-CASE PROFILES
+# ────────────────────────────────────────────────────────────────────────────
+# Each profile defines which layers to include and which relationship types
+# are relevant. The runner selects a profile by name and only loads the
+# tables/relationships listed here.
+#
+# layers:         which node layers to include
+# relationships:  which relationship types to include
+#                 (use "all" to include every relationship whose
+#                  from_table and to_table are both in the loaded layers)
+# description:    human-readable explanation (shown in UI)
+# ────────────────────────────────────────────────────────────────────────────
+use_cases:
+
+  # ── 1. Maintenance ─────────────────────────────────────────────────
+  maintenance:
+    description: >
+      Work order execution, task list compliance, notification triage,
+      and preventive maintenance scheduling.
+    layers:
+      - asset
+      - hierarchy
+      - maintenance
+      - document
+    relationships:
+      - EXECUTED_ON
+      - REPORTED_ON
+      - APPLIES_TO
+      - SCHEDULES
+      - RAISED_FROM
+      - LOCATED_AT
+      - HAS_TAG
+      - HAS_DOCUMENT
+
+  # ── 2. Reliability ─────────────────────────────────────────────────
+  reliability:
+    description: >
+      FMEA analysis, failure pattern detection, RPN scoring,
+      and root-cause linkage across equipment.
+    layers:
+      - asset
+      - hierarchy
+      - maintenance
+      - reliability
+      - document
+    relationships:
+      - EXECUTED_ON
+      - REPORTED_ON
+      - RAISED_FROM
+      - HAS_FAILURE_MODE
+      - HAS_FAILURE_CAUSE
+      - HAS_FAILURE_EFFECT
+      - LOCATED_AT
+      - PART_OF_PROCESS_UNIT
+      - HAS_TAG
+      - HAS_DOCUMENT
+
+  # ── 3. Asset Integrity ─────────────────────────────────────────────
+  asset_integrity:
+    description: >
+      Corrosion loops, inspection schedules, design-vs-operating
+      condition analysis, and integrity-critical equipment tracking.
+    layers:
+      - asset
+      - hierarchy
+      - maintenance
+      - reliability
+      - document
+    relationships:
+      - LOCATED_AT
+      - PART_OF_PROCESS_UNIT
+      - CONNECTED_TO
+      - EXECUTED_ON
+      - REPORTED_ON
+      - HAS_FAILURE_MODE
+      - HAS_FAILURE_CAUSE
+      - HAS_TAG
+      - HAS_DOCUMENT
+      - SCHEDULES
+
+  # ── 4. Energy Optimization ─────────────────────────────────────────
+  energy_optimization:
+    description: >
+      Heat exchanger performance, compressor efficiency, utility
+      consumption tracking, and energy-loss root cause analysis.
+    layers:
+      - asset
+      - hierarchy
+      - document
+    relationships:
+      - LOCATED_AT
+      - PART_OF_PROCESS_UNIT
+      - CONNECTED_TO
+      - HAS_TAG
+      - HAS_DOCUMENT
+
+  # ── 5. Process Optimization ────────────────────────────────────────
+  process_optimization:
+    description: >
+      Process flow analysis, bottleneck identification, sensor-limit
+      monitoring, and control-loop performance.
+    layers:
+      - asset
+      - hierarchy
+      - document
+    relationships:
+      - CONNECTED_TO
+      - LOCATED_AT
+      - PART_OF_PROCESS_UNIT
+      - HAS_TAG
+      - HAS_DOCUMENT
+
+  # ── 6. Sustainability / ESG ────────────────────────────────────────
+  sustainability_esg:
+    description: >
+      Emissions tracking, flare & vent monitoring, energy intensity,
+      waste stream analysis, and environmental compliance.
+    layers:
+      - asset
+      - hierarchy
+      - material
+      - document
+    relationships:
+      - LOCATED_AT
+      - PART_OF_PROCESS_UNIT
+      - HAS_TAG
+      - HAS_DOCUMENT
+      - CONNECTED_TO
+      - IS_MATERIAL
+      - HAS_BOM_ITEM
+
+  # ── 7. Planning & Scheduling ───────────────────────────────────────
+  planning_scheduling:
+    description: >
+      Turnaround planning, work-order scheduling, resource allocation,
+      material availability, and spare-parts lead-time analysis.
+    layers:
+      - asset
+      - hierarchy
+      - maintenance
+      - material
+    relationships:
+      - EXECUTED_ON
+      - APPLIES_TO
+      - SCHEDULES
+      - RAISED_FROM
+      - HAS_BOM_ITEM
+      - IS_MATERIAL
+      - PURCHASED_FROM
+      - ORDERS_MATERIAL
+      - RECEIPT_AGAINST
+      - LOCATED_AT
+
+  # ── 8. Asset Lifecycle Management ──────────────────────────────────
+  asset_lifecycle:
+    description: >
+      Full cradle-to-grave view: design → commission → operate →
+      maintain → decommission. Includes every layer and relationship.
+    layers:
+      - asset
+      - hierarchy
+      - maintenance
+      - reliability
+      - material
+      - document
+    relationships: all    # include every relationship type

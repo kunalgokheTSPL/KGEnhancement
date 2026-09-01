@@ -1,0 +1,321 @@
+version: '1.0'
+notes:
+- Timeseries metadata exports vary. This mapping covers common headers from PI/DCS/SiteWise
+  tag masters.
+- Ensure tag_name, unit, data_type, equipment_id are produced. Limits can come from
+  TS export and/or safety_limits source.
+sources:
+  timeseries:
+    # When several source columns map to the SAME target, target_priority picks
+    # the winner by source-header preference (most-preferred first), instead of
+    # relying on column order in the file. The renamer applies this BEFORE the
+    # rename so only the winning source maps to the target; the rest are dropped.
+    # Header matching is case/spacing/underscore-insensitive (same normalization
+    # as mappings).
+    target_priority:
+      # Real Description beats the Parameter Name label.
+      description: ["Description", "Parameter Name", "Parameter"]
+      # An explicit equipment/asset ID beats the generic Equipment Type.
+      equipment_id: ["Asset ID", "Equipment Id", "Equipment Tag", "Equipment", "Equipment Type"]
+      # Operating L/H: an explicit alarm "L Limit"/"H Limit" (or the OP/Operating
+      # forms) is the real operating limit and must beat the generic
+      # "Minimum"/"Maximum" envelope endpoints. Without this the winner was
+      # decided by column ORDER, and files where Minimum/Maximum come first
+      # (e.g. the HMU exports) wrongly mapped op_limit_l=Minimum (often 0) and
+      # dropped the real L Limit. Most-preferred first.
+      op_limit_l: ["Op Limit L", "Operating Limit L", "OP L", "Operating L",
+                   "L Limit", "Lower Limit", "lower limit",
+                   "min_operating_range", "min_operating", "Minimum"]
+      op_limit_h: ["Op Limit H", "Operating Limit H", "OP H", "Operating H",
+                   "H Limit", "Upper Limit", "upper limit",
+                   "max_operating_range", "max_operating", "Maximum"]
+    mappings:
+      # --- tag name variants (covers built CSV 'tagname' header) ---
+      Tag Name: tag_name
+      tag_name: tag_name
+      tagname: tag_name
+      Tag: tag_name
+      tag_id: tag_name
+      # OSIsoft PI exports use 'PI Tag' as the canonical, UNIQUE tag identifier.
+      # When a file has BOTH 'PI Tag' and 'Parameter Name', PI Tag is the tag_name
+      # (one row per physical tag); 'Parameter Name' is a human label that REPEATS
+      # across tags (e.g. many tags all labelled "Net_Hydrogen_Export"). Mapping
+      # both to tag_name collapses every same-named row onto one
+      # (plant_code_id, tag_name) upsert key, so only one row survives in the DB.
+      # → PI Tag stays tag_name; Parameter Name maps to description (below).
+      PI Tag: tag_name
+      PI_Tag: tag_name
+      pi_tag: tag_name
+      # --- description / parameter label ---
+      # 'Description' is the tag's description. 'Parameter Name' is a human label
+      # that also feeds description, BUT 'Description' must win when both are
+      # present (Parameter Name only fills description when Description is absent).
+      # This is enforced by target_priority below, not by YAML order — the renamer
+      # drops duplicate target columns by source position, which is fragile.
+      Parameter Name: description
+      parameter_name: description
+      Parameter: description
+      Description: description
+      description: description
+      # --- unit / UOM ---
+      Unit: unit
+      UOM: unit
+      uom: unit
+      # --- data type ---
+      Data Type: data_type
+      datatype: data_type
+      Type: data_type
+      # --- equipment / asset linkage ---
+      # Several headers can carry the equipment reference. When more than one is
+      # present, an explicit ID column (Asset ID / Equipment Id / Equipment Tag)
+      # wins over the generic 'Equipment Type' — enforced by target_priority.
+      # If ONLY 'Equipment Type' is present, it becomes equipment_id.
+      Equipment: equipment_id
+      equipment_id: equipment_id
+      Equipment Id: equipment_id
+      Equipment Tag: equipment_id
+      equipment_tag: equipment_id
+      Equipment Type: equipment_id
+      equipment_type: equipment_id
+      asset_id: equipment_id
+      Asset ID: equipment_id
+      # --- operating range (min/max from some exports) ---
+      min_operating_range: op_limit_l
+      max_operating_range: op_limit_h
+      min_operating: op_limit_l
+      max_operating: op_limit_h
+      low_alarm: op_limit_ll
+      high_alarm: op_limit_hh
+      # NOTE: normalized_asset is resolved in pipeline via identity/similarity step.
+      # --- plant ---
+      Plant: plant_code_id
+      plant_code_id: plant_code_id
+      Plant Code: plant_code_id
+      Plant_Code: plant_code_id
+      # --- active flag (optional; defaults to TRUE on commit when absent) ---
+      Is Active: is_active
+      is_active: is_active
+      Active: is_active
+      # --- operating limits (CSV headers from build script) ---
+      lower limit: op_limit_l
+      upper limit: op_limit_h
+      Lower Limit: op_limit_l
+      Upper Limit: op_limit_h
+      # OSIsoft / vendor PI tag master export style — bare "LL Limit / L Limit /
+      # H Limit / HH Limit" without an "OP" prefix.
+      LL Limit: op_limit_ll
+      L Limit:  op_limit_l
+      H Limit:  op_limit_h
+      HH Limit: op_limit_hh
+      # Generic Minimum/Maximum (often used as the operating envelope endpoints)
+      Minimum:  op_limit_l
+      Maximum:  op_limit_h
+      # --- extended operating limits ---
+      OP LL: op_limit_ll
+      OP L: op_limit_l
+      OP H: op_limit_h
+      OP HH: op_limit_hh
+      Operating LL: op_limit_ll
+      Operating L: op_limit_l
+      Operating H: op_limit_h
+      Operating HH: op_limit_hh
+      # SME template wording — "Op Limit LL/L/H/HH" reads more clearly for the
+      # people filling these in. Same targets as "OP LL" above (header matching
+      # is space/underscore-insensitive, so "Op Limit LL" == "oplimitll").
+      Op Limit LL: op_limit_ll
+      Op Limit L: op_limit_l
+      Op Limit H: op_limit_h
+      Op Limit HH: op_limit_hh
+      Operating Limit LL: op_limit_ll
+      Operating Limit L: op_limit_l
+      Operating Limit H: op_limit_h
+      Operating Limit HH: op_limit_hh
+      # --- safety limits ---
+      Safety LL: safety_limit_ll
+      Safety L: safety_limit_l
+      Safety H: safety_limit_h
+      Safety HH: safety_limit_hh
+      Safety Limit LL: safety_limit_ll
+      Safety Limit L: safety_limit_l
+      Safety Limit H: safety_limit_h
+      Safety Limit HH: safety_limit_hh
+      # --- trip limits ---
+      Trip LL: trip_limit_ll
+      Trip L: trip_limit_l
+      Trip H: trip_limit_h
+      Trip HH: trip_limit_hh
+      Trip Limit LL: trip_limit_ll
+      Trip Limit L: trip_limit_l
+      Trip Limit H: trip_limit_h
+      Trip Limit HH: trip_limit_hh
+      # --- limits provenance (also accepted on the safety_limits source) ---
+      Limits Basis: limits_basis
+      limits_basis: limits_basis
+  safety_limits:
+    mappings:
+      Tag Name: tag_name
+      tag_name: tag_name
+      Safety LL: safety_limit_ll
+      Safety L: safety_limit_l
+      Safety H: safety_limit_h
+      Safety HH: safety_limit_hh
+      Trip LL: trip_limit_ll
+      Trip L: trip_limit_l
+      Trip H: trip_limit_h
+      Trip HH: trip_limit_hh
+      Limits Basis: limits_basis
+      Limits Source: limits_source
+      Effective From: limits_effective_from
+  # ---------------------------------------------------------------------
+  # Additional metadata sources. Each is selected by source_detect, never
+  # by filename. Rows finer than one-per-tag are folded by `transpose`,
+  # which runs BEFORE the rename and therefore names raw source headers.
+  # An undeclared code raises rather than being dropped silently.
+  # ---------------------------------------------------------------------
+  osi_pi:
+    # Parent is an AF path. Its LAST segment is an equipment id only on the
+    # deepest paths; shallower ones stop at an area or system name, so a blind
+    # "last segment" would label ~1800 rows with an area.
+    # AttributeConfigString keeps the point reference; its last two dot-parts
+    # are the tag id and the point attribute. Rows with a single part are a
+    # bare tag and keep the whole string as the tag id.
+    # Every segment of the AF path is a real asset level, so the whole path is
+    # named rather than one segment kept. seg[5] is an equipment CATEGORY on
+    # FACILITIES paths and a WELL on WELLS paths; seg[4] tells them apart.
+    # A tag links at the deepest level it actually has, which is why 1,813
+    # well-level rows stop being unlinkable. 55 PI points carry no
+    # AttributeConfigString and take their identity from Name, kept whole: even
+    # the full Name is only 20 distinct across those 55 rows, so any split of it
+    # collides and the stable-key hash does the rest.
+    parse:
+      hierarchy_column: Parent
+      hierarchy_separator: "\\"
+      equipment_at_depth: 7
+      config_column: AttributeConfigString
+      config_separator: "."
+      name_fallback_column: Name
+      levels:
+        - {index: 0, field: region}
+        - {index: 1, field: operator}
+        - {index: 2, field: site}
+        - {index: 3, field: area}
+        - {index: 4, field: asset_class}
+        - {index: 5, field: process_unit}
+        - {index: 6, field: equipment}
+      link_preference: [equipment, process_unit, area, site]
+      level_confidence:
+        equipment: 1.00
+        process_unit: 0.70
+        area: 0.50
+        site: 0.30
+    mappings:
+      Parent: pi_parent
+      Name: pi_name
+      ObjectType: pi_object_type
+      Categories: pi_categories
+      AttributeDataReference: pi_attribute_data_reference
+      AttributeConfigString: pi_attribute_config_string
+      hier_site: site
+      hier_area: area
+      hier_process_unit: process_unit
+
+  alerts_prime_alarms:
+    mappings:
+      Tag: tag_name
+      Point Description: alerts_prime_point_description
+      Unit: alerts_prime_unit
+      Priority: alerts_prime_priority
+      Plant_Hierarchy: alerts_prime_plant_hierarchy
+      Upper_Equipment: alerts_prime_upper_equipment_id
+    copies:
+      tag_name: alerts_prime_tag
+    transpose:
+      group_by: [Tag]
+      key_column: Alarm
+      key_transform: as_is
+      key_map:
+        'ALM': alm
+        'ANS+': ans_plus
+        'ANS-': ans_minus
+        'DV+': dv_plus
+        'DV-': dv_minus
+        'HH': hh
+        'HI': hi
+        'INT': int
+        'IOP': iop
+        'IOP-': iop_minus
+        'LL': ll
+        'LO': lo
+        'LTRP': ltrp
+        'TRIP': trip
+      value_columns:
+        Count: alerts_prime_alarm_{key}_count
+        Percent: alerts_prime_alarm_{key}_percent
+        Accum %: alerts_prime_alarm_{key}_accum_pct
+        Limit: alerts_prime_alarm_{key}_limit
+
+  alerts_prime_excursions:
+    mappings:
+      Tag: tag_name
+      Point Description: alerts_prime_point_description
+      Priority: alerts_prime_priority
+      Group: alerts_prime_group
+      Critical Operating Parameter: alerts_prime_critical_operating_parameter
+      Equipments: alerts_prime_equipments
+      Description: alerts_prime_description
+    copies:
+      tag_name: alerts_prime_tag
+    transpose:
+      group_by: [Tag]
+      key_column: Boundary
+      key_transform: after_first_dot
+      key_map:
+        'SOL-L': sol_l
+        'SOL-H': sol_h
+        'IPF-LL': ipf_ll
+        'IPF-HH': ipf_hh
+        'MDL-HHH': mdl_hhh
+        'MDL-HHH DC(out)': mdl_hhh
+      value_columns:
+        Boundary Value: alerts_prime_bnd_{key}_value
+        Count: alerts_prime_bnd_{key}_count
+        Percent: alerts_prime_bnd_{key}_percent
+        Accum %: alerts_prime_bnd_{key}_accum_pct
+
+  alerts_protean:
+    # Analysis rows are calculations, not monitored parameters, so they are not
+    # metadata rows. The equipment sits at a FIXED depth in the AF path rather
+    # than at its end, because the path continues down into sub-components.
+    # (Parent, Name) is not unique in the delivered export, so identity falls
+    # back to a content digest rather than dropping the collisions.
+    parse:
+      hierarchy_column: Parent
+      hierarchy_separator: "\\"
+      equipment_segment_index: 4
+      exclude_object_types: [Analysis]
+      name_column: Name
+      levels:
+        - {index: 0, field: operator}
+        - {index: 1, field: site}
+        - {index: 2, field: area}
+        - {index: 3, field: asset_class}
+        - {index: 4, field: equipment}
+        - {index: 5, field: component}
+      link_preference: [equipment, area, site]
+      level_confidence:
+        equipment: 1.00
+        area: 0.50
+        site: 0.30
+    mappings:
+      Parent: protean_parent
+      Name: protean_name
+      ObjectType: protean_object_type
+      Description: protean_description
+      ProteanLowerLimit: protean_lower_limit
+      OEMLowerLimit: oem_lower_limit
+      OEMUpperLimit: oem_upper_limit
+      ProteanUpperLimit: protean_upper_limit
+      '|OperatingValue': protean_operating_value
+      hier_site: site
+      hier_area: area
+      Error: protean_error

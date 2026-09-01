@@ -1,0 +1,496 @@
+[
+    {
+        "id": "6385b6f7-b3e1-4069-8412-9146f5f5ce95",
+        "name": "My Industrial Workflow",
+        "nodes": [
+            {
+                "id": "node-b98982d6-7558-41ef-bf51-e5d8df858a6b",
+                "type": "industrial",
+                "position": {
+                    "x": 660,
+                    "y": 140
+                },
+                "data": {
+                    "label": "Rotary Packer8 Spout",
+                    "componentType": "rotary_packer8_spout",
+                    "status": "normal",
+                    "isConnecting": false
+                },
+                "measured": {
+                    "width": 250,
+                    "height": 200
+                },
+                "selected": false
+            },
+            {
+                "id": "node-97e8894c-c505-49d8-bb14-55ae24700294",
+                "type": "industrial",
+                "position": {
+                    "x": 1340,
+                    "y": 200
+                },
+                "data": {
+                    "label": "Rotary Kiln48m X72m",
+                    "componentType": "rotary_kiln48m_x72m",
+                    "status": "normal",
+                    "isConnecting": false
+                },
+                "measured": {
+                    "width": 250,
+                    "height": 200
+                },
+                "selected": false,
+                "dragging": false
+            },
+            {
+                "id": "node-8f72d3b2-772c-4670-9865-241d5e07db85",
+                "type": "industrial",
+                "position": {
+                    "x": 1060,
+                    "y": 480
+                },
+                "data": {
+                    "label": "Crusher Main Motor1500kw",
+                    "componentType": "crusher_main_motor1500kw",
+                    "status": "normal",
+                    "isConnecting": false
+                },
+                "measured": {
+                    "width": 250,
+                    "height": 200
+                },
+                "selected": false,
+                "dragging": false
+            },
+            {
+                "id": "node-58883bff-cae8-46b7-8a8a-3a98dd3b66e7",
+                "type": "industrial",
+                "position": {
+                    "x": 120,
+                    "y": 360
+                },
+                "data": {
+                    "label": "v-101",
+                    "componentType": "kiln_tyre2_mid",
+                    "status": "normal",
+                    "isConnecting": false
+                },
+                "measured": {
+                    "width": 250,
+                    "height": 200
+                },
+                "selected": false,
+                "dragging": false
+            }
+        ],
+        "edges": [
+            {
+                "id": "pipe-a926d573-00f9-4c31-8f10-acc8b82e89eb",
+                "source": "node-7bc4d8c0-f5cf-4219-9479-8760e87ad05e",
+                "target": "node-430ca0ec-13a2-444c-a8cc-06bce79791f9",
+                "type": "pipe",
+                "data": {
+                    "label": "flow",
+                    "direction": "forward",
+                    "animated": true,
+                    "flowColor": "#eab308"
+                },
+                "markerEnd": {
+                    "type": "arrowclosed",
+                    "color": "#64748b",
+                    "width": 18,
+                    "height": 18
+                },
+                "selected": false
+            },
+            {
+                "id": "pipe-557719d1-7ebc-4065-81f2-04448de5be55",
+                "source": "node-430ca0ec-13a2-444c-a8cc-06bce79791f9",
+                "target": "node-f39d8a9a-0139-45d1-b9cc-42d56b0a3989",
+                "type": "pipe",
+                "data": {
+                    "label": "flow",
+                    "direction": "forward",
+                    "animated": true,
+                    "flowColor": "#64748b"
+                },
+                "markerEnd": {
+                    "type": "arrowclosed",
+                    "color": "#64748b",
+                    "width": 18,
+                    "height": 18
+                }
+            },
+            {
+                "id": "pipe-e60e9aa9-1138-450d-8319-edd567374ba8",
+                "source": "node-b98982d6-7558-41ef-bf51-e5d8df858a6b",
+                "target": "node-97e8894c-c505-49d8-bb14-55ae24700294",
+                "type": "pipe",
+                "data": {
+                    "label": "flow",
+                    "direction": "forward",
+                    "animated": true,
+                    "flowColor": "#eab308"
+                },
+                "markerEnd": {
+                    "type": "arrowclosed",
+                    "color": "#64748b",
+                    "width": 18,
+                    "height": 18
+                }
+            },
+            {
+                "id": "pipe-9ea22468-034b-4a10-90a1-cc201d2c28db",
+                "source": "node-b98982d6-7558-41ef-bf51-e5d8df858a6b",
+                "target": "node-8f72d3b2-772c-4670-9865-241d5e07db85",
+                "type": "pipe",
+                "data": {
+                    "label": "flow",
+                    "direction": "forward",
+                    "animated": true,
+                    "flowColor": "#eab308"
+                },
+                "markerEnd": {
+                    "type": "arrowclosed",
+                    "color": "#64748b",
+                    "width": 18,
+                    "height": 18
+                }
+            },
+            {
+                "id": "pipe-5136d6d9-176f-43c6-9257-a14aecbb90ce",
+                "source": "node-8f72d3b2-772c-4670-9865-241d5e07db85",
+                "target": "node-97e8894c-c505-49d8-bb14-55ae24700294",
+                "type": "pipe",
+                "data": {
+                    "label": "flow",
+                    "direction": "forward",
+                    "animated": true,
+                    "flowColor": "#3b82f6"
+                },
+                "markerEnd": {
+                    "type": "arrowclosed",
+                    "color": "#64748b",
+                    "width": 18,
+                    "height": 18
+                }
+            },
+            {
+                "id": "pipe-2fdc2a6f-0cee-4541-9d2e-e6c92a9bcc72",
+                "source": "node-58883bff-cae8-46b7-8a8a-3a98dd3b66e7",
+                "target": "node-b98982d6-7558-41ef-bf51-e5d8df858a6b",
+                "type": "pipe",
+                "data": {
+                    "label": "flow",
+                    "direction": "forward",
+                    "animated": true,
+                    "flowColor": "#3b82f6"
+                },
+                "markerEnd": {
+                    "type": "arrowclosed",
+                    "color": "#64748b",
+                    "width": 18,
+                    "height": 18
+                },
+                "selected": false
+            }
+        ],
+        "updated_at": "2026-04-10T10:26:49.383704",
+        "is_dashboard": true
+    },
+    {
+        "id": "b6dd5663-cec0-450d-8ccc-31293850ec3c",
+        "name": "Updated Diagram",
+        "nodes": [
+            {
+                "id": "node-f22af951-98c7-4cd1-b217-3dbfe8797001",
+                "type": "industrial",
+                "position": {
+                    "x": 240,
+                    "y": -120
+                },
+                "data": {
+                    "label": "pickachu",
+                    "componentType": "ai_pickachu_1775740963352",
+                    "status": "normal",
+                    "isConnecting": false
+                },
+                "measured": {
+                    "width": 150,
+                    "height": 150
+                },
+                "selected": false,
+                "dragging": false
+            },
+            {
+                "id": "node-2da5e836-144c-4168-af47-8de4b8968f6f",
+                "type": "industrial",
+                "position": {
+                    "x": 700,
+                    "y": 320
+                },
+                "data": {
+                    "label": "pickachu",
+                    "componentType": "ai_pickachu_1775741145043",
+                    "status": "normal",
+                    "isConnecting": false
+                },
+                "measured": {
+                    "width": 150,
+                    "height": 150
+                },
+                "selected": false,
+                "dragging": false
+            },
+            {
+                "id": "node-a0a3e141-52b5-4ba5-bbaf-9720dc3b30c8",
+                "type": "industrial",
+                "position": {
+                    "x": 320,
+                    "y": 240
+                },
+                "data": {
+                    "label": "PICKACHU",
+                    "componentType": "ai_pickachu_1775740356488",
+                    "status": "normal",
+                    "isConnecting": false
+                },
+                "measured": {
+                    "width": 150,
+                    "height": 150
+                },
+                "selected": false,
+                "dragging": false
+            },
+            {
+                "id": "node-8e7c4307-7f60-4c78-b2ed-507ccbfe4fd5",
+                "type": "industrial",
+                "position": {
+                    "x": 420,
+                    "y": 560
+                },
+                "data": {
+                    "label": "kia SONNET",
+                    "componentType": "ai_kia_sonnet_1775740492223",
+                    "status": "normal",
+                    "isConnecting": false
+                },
+                "measured": {
+                    "width": 150,
+                    "height": 150
+                },
+                "selected": false,
+                "dragging": false
+            },
+            {
+                "id": "node-98124055-baf0-4801-84e2-c4b2e7cc0ab9",
+                "type": "industrial",
+                "position": {
+                    "x": 20,
+                    "y": 680
+                },
+                "data": {
+                    "label": "Toothless",
+                    "componentType": "ai_toothless_1775741558681",
+                    "status": "normal",
+                    "isConnecting": false
+                },
+                "measured": {
+                    "width": 150,
+                    "height": 150
+                },
+                "selected": false,
+                "dragging": false
+            },
+            {
+                "id": "node-fd4cd09d-491b-43cb-b480-caf1424b6316",
+                "type": "industrial",
+                "position": {
+                    "x": -420,
+                    "y": 580
+                },
+                "data": {
+                    "label": "Weigh Feeders Belt Feeders",
+                    "componentType": "weigh_feeders_belt_feeders",
+                    "status": "normal",
+                    "isConnecting": false
+                },
+                "measured": {
+                    "width": 250,
+                    "height": 200
+                },
+                "selected": false
+            },
+            {
+                "id": "node-6aeffc03-f2a9-418c-9779-bb0dab062743",
+                "type": "industrial",
+                "position": {
+                    "x": -160,
+                    "y": 20
+                },
+                "data": {
+                    "label": "Rotary Feeders Airlocks",
+                    "componentType": "rotary_feeders_airlocks",
+                    "status": "normal",
+                    "isConnecting": false
+                },
+                "measured": {
+                    "width": 250,
+                    "height": 200
+                },
+                "selected": false,
+                "dragging": false
+            },
+            {
+                "id": "node-0519b00a-b61b-4e89-a4a3-e70c5c2cc75b",
+                "type": "industrial",
+                "position": {
+                    "x": -460,
+                    "y": 200
+                },
+                "data": {
+                    "label": "Shaktiman",
+                    "componentType": "ai_shaktiman_1775741740782",
+                    "status": "normal",
+                    "isConnecting": false
+                },
+                "measured": {
+                    "width": 150,
+                    "height": 150
+                },
+                "selected": false,
+                "dragging": false
+            }
+        ],
+        "edges": [
+            {
+                "id": "pipe-a8119220-e26c-471f-b870-594ceec2140f",
+                "source": "node-f22af951-98c7-4cd1-b217-3dbfe8797001",
+                "target": "node-a0a3e141-52b5-4ba5-bbaf-9720dc3b30c8",
+                "type": "pipe",
+                "data": {
+                    "label": "flow",
+                    "direction": "forward",
+                    "animated": true,
+                    "flowColor": "#64748b"
+                },
+                "markerEnd": {
+                    "type": "arrowclosed",
+                    "color": "#64748b",
+                    "width": 18,
+                    "height": 18
+                }
+            },
+            {
+                "id": "pipe-50ca4cee-18a6-4cd9-ac76-1d109e5c6516",
+                "source": "node-a0a3e141-52b5-4ba5-bbaf-9720dc3b30c8",
+                "target": "node-8e7c4307-7f60-4c78-b2ed-507ccbfe4fd5",
+                "type": "pipe",
+                "data": {
+                    "label": "flow",
+                    "direction": "forward",
+                    "animated": true,
+                    "flowColor": "#64748b"
+                },
+                "markerEnd": {
+                    "type": "arrowclosed",
+                    "color": "#64748b",
+                    "width": 18,
+                    "height": 18
+                }
+            },
+            {
+                "id": "pipe-5d0676ac-2c93-437c-b55d-37f91e1a9847",
+                "source": "node-8e7c4307-7f60-4c78-b2ed-507ccbfe4fd5",
+                "target": "node-2da5e836-144c-4168-af47-8de4b8968f6f",
+                "type": "pipe",
+                "data": {
+                    "label": "flow",
+                    "direction": "forward",
+                    "animated": true,
+                    "flowColor": "#64748b"
+                },
+                "markerEnd": {
+                    "type": "arrowclosed",
+                    "color": "#64748b",
+                    "width": 18,
+                    "height": 18
+                }
+            },
+            {
+                "id": "pipe-f7722a4d-5930-422e-9812-88248f1ebf07",
+                "source": "node-0519b00a-b61b-4e89-a4a3-e70c5c2cc75b",
+                "target": "node-6aeffc03-f2a9-418c-9779-bb0dab062743",
+                "type": "pipe",
+                "data": {
+                    "label": "flow",
+                    "direction": "forward",
+                    "animated": true,
+                    "flowColor": "#64748b"
+                },
+                "markerEnd": {
+                    "type": "arrowclosed",
+                    "color": "#64748b",
+                    "width": 18,
+                    "height": 18
+                }
+            },
+            {
+                "id": "pipe-71eb45d6-cde8-4576-b12b-b83ce51fff40",
+                "source": "node-2da5e836-144c-4168-af47-8de4b8968f6f",
+                "target": "node-fd4cd09d-491b-43cb-b480-caf1424b6316",
+                "type": "pipe",
+                "data": {
+                    "label": "flow",
+                    "direction": "forward",
+                    "animated": true,
+                    "flowColor": "#64748b"
+                },
+                "markerEnd": {
+                    "type": "arrowclosed",
+                    "color": "#64748b",
+                    "width": 18,
+                    "height": 18
+                }
+            },
+            {
+                "id": "pipe-2480d407-a47f-4424-ad03-3fbf01693210",
+                "source": "node-fd4cd09d-491b-43cb-b480-caf1424b6316",
+                "target": "node-98124055-baf0-4801-84e2-c4b2e7cc0ab9",
+                "type": "pipe",
+                "data": {
+                    "label": "flow",
+                    "direction": "forward",
+                    "animated": true,
+                    "flowColor": "#64748b"
+                },
+                "markerEnd": {
+                    "type": "arrowclosed",
+                    "color": "#64748b",
+                    "width": 18,
+                    "height": 18
+                }
+            },
+            {
+                "id": "pipe-af8b5031-aa58-4b6a-a8fc-515de5c93b0d",
+                "source": "node-6aeffc03-f2a9-418c-9779-bb0dab062743",
+                "target": "node-f22af951-98c7-4cd1-b217-3dbfe8797001",
+                "type": "pipe",
+                "data": {
+                    "label": "flow",
+                    "direction": "forward",
+                    "animated": true,
+                    "flowColor": "#64748b"
+                },
+                "markerEnd": {
+                    "type": "arrowclosed",
+                    "color": "#64748b",
+                    "width": 18,
+                    "height": 18
+                }
+            }
+        ],
+        "updated_at": "2026-04-09T19:06:46.697368",
+        "is_dashboard": false
+    }
+]

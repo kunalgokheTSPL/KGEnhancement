@@ -1,0 +1,184 @@
+# ================================================================
+# CDM Post-Pipeline Validation — Pre-Database Quality Gate
+# ================================================================
+# Runs AFTER build_final_cdm and BEFORE save_to_postgres.
+# All hardcoded constants in cdm_post_validation.py are driven
+# from this file so behaviour can be tuned without code changes.
+# ================================================================
+
+version: "1.0"
+
+# ─────────────────────────────────────────────────────────────
+# GLOBAL SETTINGS
+# ─────────────────────────────────────────────────────────────
+settings:
+  # Pipeline DB load will be blocked if gate_status == BLOCKED
+  fail_action: block              # block | warn_only
+
+  # Where to write the JSON validation report
+  report_dir: data/out/dq_reports
+
+  # Equipment-connectivity: warn if orphaned references exceed this fraction
+  equipment_orphan_threshold: 0.30   # 30 %
+
+  # Referential-integrity: warn if unresolved FK references exceed this fraction
+  fk_unresolved_threshold: 0.50      # 50 %
+
+  # Schema conformance: warn if coverage of schema columns drops below this
+  schema_coverage_warn_pct: 50       # 50 %
+
+  # PK / unique: block if null fraction in unique-key columns exceeds this
+  pk_null_block_pct: 10              # 10 %
+
+  # Data-quality basics: warn if overall null fraction exceeds this
+  table_null_warn_pct: 70            # 70 %
+
+# ─────────────────────────────────────────────────────────────
+# REQUIRED TABLES
+# ─────────────────────────────────────────────────────────────
+# core_tables  — must exist and be non-empty; absence BLOCKs the gate
+# expected_tables — should exist; absence produces a WARN only
+
+core_tables:
+  - equipment
+  - functional_location
+
+expected_tables:
+  - equipment_connectivity
+  - work_order
+  - notification
+  - material
+  - bom_item
+  - timeseries_metadata
+  - document_metadata
+  - task_list
+  - maintenance_plan
+  - vendor
+  - purchase_order
+  - goods_receipt
+  - invoice
+  - process_unit
+  - work_center
+  - failure_mode
+  - failure_cause
+  - failure_effect
+
+# ─────────────────────────────────────────────────────────────
+# EQUIPMENT MASTER ID COLUMNS
+# ─────────────────────────────────────────────────────────────
+# Columns in the equipment table that hold canonical identifiers.
+# Used to build the lookup set for connectivity checks.
+
+equipment_id_columns:
+  - normalized_asset
+  - equipment_id
+  - sap_equipment_id
+  - equipment_tag
+  - canonical_code
+
+# ─────────────────────────────────────────────────────────────
+# EQUIPMENT CONNECTIVITY
+# ─────────────────────────────────────────────────────────────
+# For each dependent table, list the column(s) that reference equipment.
+# orphan_warn_threshold (per-table) overrides the global setting when set.
+
+equipment_linked_tables:
+  work_order:
+    ref_columns: [equipment_ref, equipment_id]
+  notification:
+    ref_columns: [equipment_ref]
+  task_list:
+    ref_columns: [equipment_ref, equipment_id]
+  maintenance_plan:
+    ref_columns: [equipment_ref]
+  timeseries_metadata:
+    ref_columns: [normalized_asset, equipment_id]
+  document_metadata:
+    ref_columns: [equipment_id]
+  equipment_connectivity:
+    ref_columns: [from_equipment_ref, to_equipment_ref]
+  bom_item:
+    ref_columns: [sap_equipment_id]
+  failure_mode:
+    ref_columns: [equipment_id]
+
+# ─────────────────────────────────────────────────────────────
+# REFERENTIAL INTEGRITY (FK CHECKS)
+# ─────────────────────────────────────────────────────────────
+# Each entry defines a child → parent foreign-key relationship.
+#
+# Fields:
+#   check_name    — unique label used in the report
+#   child_table   — table whose column is the foreign key
+#   child_col     — FK column in child table
+#   parent_table  — table that owns the referenced key
+#   parent_col    — PK / unique column in parent table
+#   unresolved_warn_threshold  — override global fk_unresolved_threshold (optional)
+
+fk_checks:
+  - check_name: wo_notification
+    child_table: work_order
+    child_col: wo_number
+    parent_table: notification
+    parent_col: notification_id
+
+  - check_name: bom_material
+    child_table: bom_item
+    child_col: material_code
+    parent_table: material
+    parent_col: material_code
+
+  - check_name: po_vendor
+    child_table: purchase_order
+    child_col: vendor_code
+    parent_table: vendor
+    parent_col: vendor_code
+
+  - check_name: po_material
+    child_table: purchase_order
+    child_col: material_code
+    parent_table: material
+    parent_col: material_code
+
+  - check_name: gr_po
+    child_table: goods_receipt
+    child_col: po_number
+    parent_table: purchase_order
+    parent_col: po_number
+
+  - check_name: gr_material
+    child_table: goods_receipt
+    child_col: material_code
+    parent_table: material
+    parent_col: material_code
+
+  - check_name: invoice_vendor
+    child_table: invoice
+    child_col: vendor_code
+    parent_table: vendor
+    parent_col: vendor_code
+
+  - check_name: invoice_po
+    child_table: invoice
+    child_col: po_number
+    parent_table: purchase_order
+    parent_col: po_number
+
+# ─────────────────────────────────────────────────────────────
+# DATA QUALITY BASICS — per-table overrides
+# ─────────────────────────────────────────────────────────────
+# Global threshold is settings.table_null_warn_pct.
+# Add a table entry here only when you need a different threshold.
+
+dq_overrides:
+  equipment:
+    null_warn_pct: 40       # equipment data should be cleaner
+  functional_location:
+    null_warn_pct: 40
+
+# ─────────────────────────────────────────────────────────────
+# CDM MANIFEST
+# ─────────────────────────────────────────────────────────────
+cdm_manifest:
+  filename: cdm_manifest.json
+  severity_if_missing: WARN   # WARN | BLOCK

@@ -1,0 +1,77 @@
+# ================================================================
+# OIL & GAS INDUSTRY — Industry Configuration
+# ================================================================
+# Self-contained industry config for oil & gas operations.
+# All templates are in this folder — no external profile imports.
+# ================================================================
+
+industry:
+  id: oil_gas
+  name: "Oil & Gas"
+  description: "Oil & gas upstream/downstream — refineries, petrochemical plants, pipelines, offshore platforms"
+
+# Oil & gas-specific equipment taxonomy
+equipment_taxonomy:
+  categories:
+    - compressor
+    - pump
+    - heat_exchanger
+    - distillation_column
+    - reactor
+    - turbine
+    - pipeline
+    - valve
+    - pressure_vessel
+    - fired_heater
+    - cooling_tower
+    - boiler
+    - tank
+    - separator
+    - flare
+
+# Oil & gas-specific KPIs
+kpis:
+  production:
+    - throughput_bpd
+    - refinery_utilization
+    - energy_intensity_index
+    - solomon_eii
+    - overall_equipment_effectiveness
+  safety:
+    - process_safety_events
+    - tier1_pse_rate
+    - tier2_pse_rate
+    - flaring_volume
+  integrity:
+    - corrosion_rate_mpy
+    - remaining_wall_thickness
+    - inspection_coverage
+    - overdue_inspections
+    - rbi_risk_score
+
+# Oil & gas-specific failure modes (API 610, API 670, ISO 14224)
+failure_modes:
+  compressor:
+    - surge
+    - bearing_failure
+    - seal_leak
+    - vibration_excessive
+    - fouling
+  pump:
+    - cavitation
+    - seal_failure
+    - impeller_wear
+    - bearing_failure
+    - deadhead
+  heat_exchanger:
+    - fouling
+    - tube_leak
+    - corrosion_under_insulation
+    - erosion
+    - thermal_fatigue
+  pressure_vessel:
+    - corrosion
+    - stress_corrosion_cracking
+    - hydrogen_induced_cracking
+    - creep_rupture
+    - fatigue_crack

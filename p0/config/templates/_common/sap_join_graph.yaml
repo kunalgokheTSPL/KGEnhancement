@@ -1,0 +1,320 @@
+# ================================================================
+# SAP JOIN GRAPH — Directed table-to-table join edges per entity
+# ================================================================
+# For each CDM output entity, lists:
+#   sources         — every SAP table that feeds into the entity
+#   joins           — directed FROM_TABLE.COL → TO_TABLE.COL edges
+#                     in traversal order (mirrors sap_entity_joins logic)
+#
+# Complements sap_join_columns.yaml (which records join-key column
+# names per merge step for the runtime pipeline) with the full
+# directed graph for documentation and table-presence validation.
+#
+# Used by: GET /connectors/sap/missing-tables
+# ================================================================
+
+version: "1.0"
+
+entities:
+
+  # ==============================================================
+  # WORK ORDER
+  # Root table : AUFK
+  # ==============================================================
+  work_order:
+    root_table: AUFK
+    identity_keys: [AUFNR, OBJNR, AUFPL]
+    sources:
+      - AUFK
+      - AFIH
+      - AFKO
+      - AFVC
+      - AFVV
+      - RESB
+      - QMEL
+      - QMIH
+      - QMSM
+      - QMFE
+      - EQUI
+      - IFLOT
+      - ILOA
+      - JEST
+      - JSTO
+      - TJ02T
+      - TJ30T
+      - COEP
+      - COSP
+      - STXH
+      - STXL
+      - PLKO
+      - PLPO
+      - MAPL
+
+    joins:
+      - from: AUFK.AUFNR
+        to:   AFIH.AUFNR
+      - from: AUFK.AUFNR
+        to:   AFKO.AUFNR
+      - from: AFKO.AUFPL
+        to:   AFVC.AUFPL
+      - from: AFVC.AUFPL
+        to:   AFVV.AUFPL
+      - from: AFVC.APLZL
+        to:   AFVV.APLZL
+      - from: AUFK.AUFNR
+        to:   RESB.AUFNR
+      - from: AFIH.QMNUM
+        to:   QMEL.QMNUM
+      - from: QMEL.QMNUM
+        to:   QMIH.QMNUM
+      - from: QMEL.QMNUM
+        to:   QMSM.QMNUM
+      - from: QMEL.QMNUM
+        to:   QMFE.QMNUM
+      - from: AFIH.EQUNR
+        to:   EQUI.EQUNR
+      - from: AFIH.TPLNR
+        to:   IFLOT.TPLNR
+      - from: EQUI.ILOAN
+        to:   ILOA.ILOAN
+      - from: IFLOT.ILOAN
+        to:   ILOA.ILOAN
+      - from: AUFK.OBJNR
+        to:   JEST.OBJNR
+      - from: JEST.OBJNR
+        to:   JSTO.OBJNR
+      - from: JEST.STAT
+        to:   TJ02T.ISTAT
+      - from: JSTO.STSMA
+        to:   TJ30T.STSMA
+      - from: JEST.STAT
+        to:   TJ30T.ESTAT
+      - from: AUFK.OBJNR
+        to:   COEP.OBJNR
+      - from: AUFK.OBJNR
+        to:   COSP.OBJNR
+      - from: AUFK.AUFNR
+        to:   STXH.TDNAME
+        conditional: true
+      - from: STXH.TDOBJECT
+        to:   STXL.TDOBJECT
+      - from: STXH.TDNAME
+        to:   STXL.TDNAME
+      - from: STXH.TDID
+        to:   STXL.TDID
+      - from: STXH.TDSPRAS
+        to:   STXL.TDSPRAS
+      - from: AFIH.PLNNR
+        to:   PLKO.PLNNR
+      - from: AFIH.PLNAL
+        to:   PLKO.PLNAL
+      - from: PLKO.PLNNR
+        to:   PLPO.PLNNR
+      - from: PLKO.PLNAL
+        to:   PLPO.PLNAL
+      - from: PLKO.PLNNR
+        to:   MAPL.PLNNR
+      - from: PLKO.PLNAL
+        to:   MAPL.PLNAL
+
+
+  # ==============================================================
+  # FUNCTIONAL LOCATION
+  # Root table : IFLOT
+  # ==============================================================
+  functional_location:
+    root_table: IFLOT
+    identity_keys: [TPLNR]
+    sources:
+      - IFLOT
+      - IFLO
+      - IFLOTX
+      - ILOA
+      - EQUI
+      - AFIH
+      - AUFK
+      - QMEL
+      - JEST
+      - JSTO
+      - TJ02T
+      - TJ30T
+      - COEP
+      - COSP
+      - STXH
+      - STXL
+
+    joins:
+      - from: IFLOT.TPLNR
+        to:   IFLO.TPLNR
+      - from: IFLOT.TPLNR
+        to:   IFLOTX.TPLNR
+      - from: IFLOT.ILOAN
+        to:   ILOA.ILOAN
+      - from: IFLOT.TPLNR
+        to:   EQUI.TPLNR
+      - from: IFLOT.TPLNR
+        to:   AFIH.TPLNR
+      - from: AFIH.AUFNR
+        to:   AUFK.AUFNR
+      - from: AFIH.QMNUM
+        to:   QMEL.QMNUM
+      - from: IFLOT.OBJNR
+        to:   JEST.OBJNR
+      - from: JEST.OBJNR
+        to:   JSTO.OBJNR
+      - from: JEST.STAT
+        to:   TJ02T.ISTAT
+      - from: JSTO.STSMA
+        to:   TJ30T.STSMA
+      - from: JEST.STAT
+        to:   TJ30T.ESTAT
+      - from: IFLOT.OBJNR
+        to:   COEP.OBJNR
+      - from: IFLOT.OBJNR
+        to:   COSP.OBJNR
+      - from: IFLOT.TPLNR
+        to:   STXH.TDNAME
+        conditional: true
+      - from: STXH.TDOBJECT
+        to:   STXL.TDOBJECT
+      - from: STXH.TDNAME
+        to:   STXL.TDNAME
+      - from: STXH.TDID
+        to:   STXL.TDID
+      - from: STXH.TDSPRAS
+        to:   STXL.TDSPRAS
+
+
+  # ==============================================================
+  # TASK LIST
+  # Root table : PLKO
+  # ==============================================================
+  task_list:
+    root_table: PLKO
+    identity_keys: [PLNTY, PLNNR, PLNAL]
+    sources:
+      - PLKO
+      - PLPO
+      - PLAS
+      - PLMZ
+      - CRHD
+      - CRTX
+      - CRCO
+      - MAPL
+      - EQUI
+      - IFLOT
+      - AFIH
+      - AUFK
+      - AFVC
+
+    joins:
+      - from: PLKO.PLNTY
+        to:   PLPO.PLNTY
+      - from: PLKO.PLNNR
+        to:   PLPO.PLNNR
+      - from: PLKO.PLNAL
+        to:   PLPO.PLNAL
+      - from: PLKO.PLNTY
+        to:   PLAS.PLNTY
+      - from: PLKO.PLNNR
+        to:   PLAS.PLNNR
+      - from: PLKO.PLNAL
+        to:   PLAS.PLNAL
+      - from: PLPO.PLNKN
+        to:   PLAS.PLNKN
+      - from: PLPO.PLNTY
+        to:   PLMZ.PLNTY
+      - from: PLPO.PLNNR
+        to:   PLMZ.PLNNR
+      - from: PLPO.PLNKN
+        to:   PLMZ.PLNKN
+      - from: PLPO.ZAEHL
+        to:   PLMZ.ZAEHL
+      - from: PLPO.ARBID
+        to:   CRHD.OBJID
+      - from: CRHD.OBJID
+        to:   CRTX.OBJID
+      - from: CRHD.OBJID
+        to:   CRCO.OBJID
+      - from: PLKO.PLNTY
+        to:   MAPL.PLNTY
+      - from: PLKO.PLNNR
+        to:   MAPL.PLNNR
+      - from: PLKO.PLNAL
+        to:   MAPL.PLNAL
+      - from: MAPL.EQUNR
+        to:   EQUI.EQUNR
+      - from: MAPL.TPLNR
+        to:   IFLOT.TPLNR
+      - from: PLKO.PLNNR
+        to:   AFIH.PLNNR
+      - from: AFIH.AUFNR
+        to:   AUFK.AUFNR
+      - from: AUFK.AUFNR
+        to:   AFVC.AUFNR
+
+
+  # ==============================================================
+  # MATERIAL
+  # Root table : MARA
+  # ==============================================================
+  material:
+    root_table: MARA
+    identity_keys: [MATNR]
+    sources:
+      - MARA
+      - MAKT
+      - MARC
+      - MARD
+      - MARM
+      - MBEW
+      - MLGN
+      - EINA
+      - EINE
+      - RESB
+      - PLMZ
+      - STPO
+      - MAST
+      - AUFM
+      - MSEG
+      - EKPO
+      - COEP
+
+    joins:
+      - from: MARA.MATNR
+        to:   MAKT.MATNR
+      - from: MARA.MATNR
+        to:   MARC.MATNR
+      - from: MARC.MATNR
+        to:   MARD.MATNR
+      - from: MARC.WERKS
+        to:   MARD.WERKS
+      - from: MARA.MATNR
+        to:   MARM.MATNR
+      - from: MARA.MATNR
+        to:   MBEW.MATNR
+      - from: MARC.MATNR
+        to:   MLGN.MATNR
+      - from: MARC.WERKS
+        to:   MLGN.WERKS
+      - from: MARA.MATNR
+        to:   EINA.MATNR
+      - from: EINA.INFNR
+        to:   EINE.INFNR
+      - from: MARA.MATNR
+        to:   RESB.MATNR
+      - from: MARA.MATNR
+        to:   PLMZ.MATNR
+      - from: MARA.MATNR
+        to:   STPO.IDNRK
+      - from: MARA.MATNR
+        to:   MAST.MATNR
+      - from: MARA.MATNR
+        to:   AUFM.MATNR
+      - from: MARA.MATNR
+        to:   MSEG.MATNR
+      - from: MARA.MATNR
+        to:   EKPO.MATNR
+      - from: MARA.MATNR
+        to:   COEP.MATNR
+        conditional: true

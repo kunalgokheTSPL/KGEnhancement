@@ -1,0 +1,84 @@
+# ================================================================
+# CEMENT INDUSTRY — Industry Configuration
+# ================================================================
+# Self-contained industry config for cement plants.
+# All templates are in this folder — no external profile imports.
+# ================================================================
+
+industry:
+  id: cement
+  name: "Cement"
+  description: "Cement manufacturing — kilns, mills, crushers, coolers, preheaters"
+
+# Cement-specific equipment taxonomy
+equipment_taxonomy:
+  categories:
+    - kiln
+    - raw_mill
+    - cement_mill
+    - crusher
+    - clinker_cooler
+    - preheater
+    - calciner
+    - separator
+    - conveyor
+    - bucket_elevator
+    - fan
+    - dust_collector
+    - packing_machine
+    - silo
+
+# Cement-specific KPIs
+kpis:
+  production:
+    - clinker_production_rate
+    - cement_production_rate
+    - specific_heat_consumption
+    - kiln_feed_rate
+    - clinker_factor
+  quality:
+    - free_lime
+    - blaine_fineness
+    - residue_45_micron
+    - lsf
+    - silica_modulus
+    - alumina_modulus
+  equipment:
+    - kiln_availability
+    - mill_availability
+    - crusher_utilization
+    - cooler_efficiency
+  energy:
+    - specific_power_consumption_kwh_t
+    - specific_heat_consumption_kcal_kg
+    - waste_fuel_substitution_rate
+
+# Cement-specific failure modes
+failure_modes:
+  kiln:
+    - refractory_failure
+    - shell_deformation
+    - tire_slip
+    - girth_gear_wear
+    - bearing_failure
+    - alignment_issue
+  raw_mill:
+    - liner_wear
+    - gearbox_failure
+    - separator_malfunction
+    - roller_crack
+  cement_mill:
+    - liner_wear
+    - diaphragm_blockage
+    - gearbox_failure
+    - bearing_failure
+  crusher:
+    - hammer_wear
+    - rotor_imbalance
+    - bearing_failure
+    - feed_chute_blockage
+  clinker_cooler:
+    - grate_plate_wear
+    - fan_failure
+    - clinker_overflow
+    - drive_chain_failure

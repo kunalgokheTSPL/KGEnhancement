@@ -1,0 +1,116 @@
+# ================================================================
+# SAP TABLE COLUMNS — Mandatory join-key columns per entity
+# ================================================================
+# For each CDM output entity, lists the columns that must be
+# present in each SAP source table to make every join work.
+#
+# Rules:
+#   - Only join-key columns are listed (no guessing / extras)
+#   - Columns are exactly as they appear in sap_join_graph.yaml
+#   - If a column is not a join key for this entity it is absent
+#
+# Used by: GET /connectors/sap/missing-tables (column-level check)
+# Complements: sap_join_graph.yaml (table-level join edges)
+#              sap_mandatory_tables.yaml (table-level presence check)
+# ================================================================
+
+version: "1.0"
+
+entities:
+
+  # ==============================================================
+  # WORK ORDER
+  # ==============================================================
+  work_order:
+    table_columns:
+      AUFK:  [AUFNR, OBJNR]
+      AFIH:  [AUFNR, QMNUM, EQUNR, TPLNR, PLNNR, PLNAL]
+      AFKO:  [AUFNR, AUFPL]
+      AFVC:  [AUFPL, APLZL]
+      AFVV:  [AUFPL, APLZL]
+      RESB:  [AUFNR]
+      QMEL:  [QMNUM]
+      QMIH:  [QMNUM]
+      QMSM:  [QMNUM]
+      QMFE:  [QMNUM]
+      EQUI:  [EQUNR, ILOAN]
+      IFLOT: [TPLNR, ILOAN]
+      ILOA:  [ILOAN]
+      JEST:  [OBJNR, STAT]
+      JSTO:  [OBJNR, STSMA]
+      TJ02T: [ISTAT]
+      TJ30T: [STSMA, ESTAT]
+      COEP:  [OBJNR]
+      COSP:  [OBJNR]
+      STXH:  [TDNAME, TDOBJECT, TDID, TDSPRAS]
+      STXL:  [TDOBJECT, TDNAME, TDID, TDSPRAS]
+      PLKO:  [PLNNR, PLNAL]
+      PLPO:  [PLNNR, PLNAL]
+      MAPL:  [PLNNR, PLNAL]
+
+
+  # ==============================================================
+  # FUNCTIONAL LOCATION
+  # ==============================================================
+  functional_location:
+    table_columns:
+      IFLOT:  [TPLNR, ILOAN, OBJNR]
+      IFLO:   [TPLNR]
+      IFLOTX: [TPLNR]
+      ILOA:   [ILOAN]
+      EQUI:   [TPLNR]
+      AFIH:   [TPLNR, AUFNR, QMNUM]
+      AUFK:   [AUFNR]
+      QMEL:   [QMNUM]
+      JEST:   [OBJNR, STAT]
+      JSTO:   [OBJNR, STSMA]
+      TJ02T:  [ISTAT]
+      TJ30T:  [STSMA, ESTAT]
+      COEP:   [OBJNR]
+      COSP:   [OBJNR]
+      STXH:   [TDNAME, TDOBJECT, TDID, TDSPRAS]
+      STXL:   [TDOBJECT, TDNAME, TDID, TDSPRAS]
+
+
+  # ==============================================================
+  # TASK LIST
+  # ==============================================================
+  task_list:
+    table_columns:
+      PLKO:  [PLNTY, PLNNR, PLNAL]
+      PLPO:  [PLNTY, PLNNR, PLNAL, PLNKN, ZAEHL, ARBID]
+      PLAS:  [PLNTY, PLNNR, PLNAL, PLNKN]
+      PLMZ:  [PLNTY, PLNNR, PLNKN, ZAEHL]
+      CRHD:  [OBJID]
+      CRTX:  [OBJID]
+      CRCO:  [OBJID]
+      MAPL:  [PLNTY, PLNNR, PLNAL, EQUNR, TPLNR]
+      EQUI:  [EQUNR]
+      IFLOT: [TPLNR]
+      AFIH:  [PLNNR, AUFNR]
+      AUFK:  [AUFNR]
+      AFVC:  [AUFNR]
+
+
+  # ==============================================================
+  # MATERIAL
+  # ==============================================================
+  material:
+    table_columns:
+      MARA:  [MATNR]
+      MAKT:  [MATNR]
+      MARC:  [MATNR, WERKS]
+      MARD:  [MATNR, WERKS]
+      MARM:  [MATNR]
+      MBEW:  [MATNR]
+      MLGN:  [MATNR, WERKS]
+      EINA:  [MATNR, INFNR]
+      EINE:  [INFNR]
+      RESB:  [MATNR]
+      PLMZ:  [MATNR]
+      STPO:  [IDNRK]
+      MAST:  [MATNR]
+      AUFM:  [MATNR]
+      MSEG:  [MATNR]
+      EKPO:  [MATNR]
+      COEP:  [MATNR]

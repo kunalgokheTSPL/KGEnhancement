@@ -1,0 +1,140 @@
+# ================================================================
+# Staging Quality Gate — Pre-Pipeline Data Quality Checks
+# ================================================================
+# Runs AFTER RustFS download and BEFORE pipeline stages.
+# Produces a DQ report; blocks pipeline if any BLOCK-level check fails.
+# ================================================================
+
+version: "1.0"
+
+# ─────────────────────────────────────────────────────────────
+# GLOBAL SETTINGS
+# ─────────────────────────────────────────────────────────────
+settings:
+  # Pipeline will not start if any BLOCK-severity check fails
+  fail_action: block            # block | warn_only
+  # Where to write the DQ report JSON
+  report_dir: data/out/dq_reports
+  # Maximum acceptable null fraction for natural keys
+  natural_key_null_threshold: 0.02    # block if > 2% nulls in key columns
+  # Row-count drift alert threshold (fractional change vs previous run)
+  drift_threshold: 0.50               # warn if row count changes > ±50%
+  # Expected encoding
+  encoding: utf-8
+
+# ─────────────────────────────────────────────────────────────
+# SOURCE DEFINITIONS — expected files per staging subdirectory
+# ─────────────────────────────────────────────────────────────
+sources:
+
+  sap:
+    staging_subdir: sap
+    file_format: tabular              # csv | xlsx | xls — auto-detected per file
+    accepted_extensions: [".csv", ".xlsx", ".xls"]
+    delimiter: ","
+    required_files:
+      - EQUI.csv
+      - EQKT.csv
+      - IFLOT.csv
+    optional_files:
+      - QMEL.csv
+      - AUFK.csv
+      - AFKO.csv
+      - AFVC.csv
+      - CRHD.csv
+      - MARA.csv
+      - MAKT.csv
+      - LFA1.csv
+      - EKKO.csv
+      - EKPO.csv
+      - MKPF.csv
+      - MSEG.csv
+      - RBKP.csv
+      - RSEG.csv
+      - PLKO.csv
+      - PLPO.csv
+      - T003O.csv
+    datasets:
+      EQUI:
+        file_stem: EQUI                    # matches EQUI.csv, EQUI.xlsx, EQUI.xls
+        natural_keys: [EQUNR]
+        required_columns: [EQUNR, EQTYP, TPLNR]
+        type_checks:
+          EQUNR: string
+          ERDAT: date
+      EQKT:
+        file_stem: EQKT
+        natural_keys: [EQUNR]
+        required_columns: [EQUNR, EQKTX]
+      IFLOT:
+        file_stem: IFLOT
+        natural_keys: [TPLNR]
+        required_columns: [TPLNR, PLTXT]
+      QMEL:
+        file_stem: QMEL
+        natural_keys: [QMNUM]
+        required_columns: [QMNUM, EQUNR]
+      AUFK:
+        file_stem: AUFK
+        natural_keys: [AUFNR]
+        required_columns: [AUFNR, EQUNR]
+      AFKO:
+        file_stem: AFKO
+        natural_keys: [AUFNR]
+        required_columns: [AUFNR]
+      MARA:
+        file_stem: MARA
+        natural_keys: [MATNR]
+        required_columns: [MATNR, MTART]
+
+  pnid:
+    staging_subdir: pnid
+    file_format: pdf
+    accepted_extensions: [".pdf"]
+    required_files: []                 # P&ID PDFs have variable names
+    min_file_count: 1                  # at least one PDF expected
+    file_pattern: "*.pdf"
+    datasets: {}                       # PDFs validated by existence/readability only
+
+  ts:
+    staging_subdir: ts
+    file_format: tabular
+    accepted_extensions: [".csv", ".xlsx"]
+    delimiter: ","
+    required_files:
+      - timeseries_tag_metadata.csv
+    optional_files: []
+    datasets:
+      timeseries_tag_metadata:
+        file_stem: timeseries_tag_metadata
+        natural_keys: [tag_name]
+        required_columns: [tag_name]
+        type_checks:
+          tag_name: string
+
+  docs:
+    staging_subdir: docs
+    file_format: document               # xlsx, docx, pdf, doc — mixed formats
+    accepted_extensions: [".xlsx", ".xls", ".docx", ".doc", ".pdf"]
+    required_files: []
+    optional_files: []
+    min_file_count: 0                  # docs are optional
+    file_pattern: "*.*"               # any supported doc format
+    datasets: {}
+
+  fmea:
+    staging_subdir: fmea
+    file_format: tabular
+    accepted_extensions: [".csv", ".xlsx", ".xls"]
+    required_files: []
+    optional_files: []
+    min_file_count: 0
+    file_pattern: "*.*"
+    datasets: {}
+
+# ─────────────────────────────────────────────────────────────
+# PREVIOUS RUN MANIFEST  (for drift detection)
+# ─────────────────────────────────────────────────────────────
+drift:
+  manifest_path: data/out/dq_reports/previous_manifest.json
+  enabled: true

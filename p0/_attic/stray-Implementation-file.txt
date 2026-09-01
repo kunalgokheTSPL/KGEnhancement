@@ -1,0 +1,93 @@
+# Unified Document Extractor — Remove Legacy Files & Streamline Pipeline
+ 
+## Background
+ 
+The current document pipeline has **three overlapping extraction paths**:
+1. **`doc_processing.py`** (src/pipelines/) — Legacy orchestrator with hardcoded Titan extractor xlsx patterns, equipment tag maps, and a tiered fallback system (xlsx → LLM → local → CSV fallback)
+2. **`local_doc_extractor.py`** (src/pipelines/) — Legacy ACME Cement-specific parser (hardcoded DOCX table parsing for Maintenance/SOP/OEM/RCA documents, plus FMEA/PM Schedule parsers)
+3. **`user_doc_extract.py`** (src/source_processing/documents/) — The **correct** unified extractor that reads `doc_types_cfg` from `user_config.yaml` and handles Excel/CSV row-by-row + PDF/DOCX via Bedrock Claude LLM
+ 
+The `run_docs_end_to_end.py` pipeline **already uses `user_doc_extract.py` directly** (line 36-37, 197-201). It does NOT import `doc_processing.py` or `local_doc_extractor.py`. The only reference from `doc_processing.py` to `local_doc_extractor.py` is in the Tier 2b fallback path — which is dead code in the current frontend-triggered flow.
+ 
+## Proposed Changes
+ 
+The changes are minimal because `run_docs_end_to_end.py` is already wired correctly.
+ 
+---
+ 
+### 1. Clean Up Legacy Files
+ 
+#### [DELETE] [doc_processing.py](file:///home/ubuntu/CDM/p0/Implementation/src/pipelines/doc_processing.py)
+- Not imported by `run_docs_end_to_end.py` or any active pipeline code
+- Contains hardcoded equipment tag maps and Titan xlsx patterns irrelevant to user uploads
+ 
+#### [DELETE] [local_doc_extractor.py](file:///home/ubuntu/CDM/p0/Implementation/src/pipelines/local_doc_extractor.py)
+- Only referenced by `doc_processing.py` (Tier 2b fallback)
+- Contains ACME Cement-specific DOCX template parsers that don't apply to the user-config-driven paradigm
+ 
+---
+ 
+### 2. Update `document_metadata` Schema Template
+ 
+#### [MODIFY] [schema.yaml](file:///home/ubuntu/CDM/p0/Implementation/config/templates/_common/schema.yaml)
+ 
+The `document_metadata` table already exists with the right columns. The schema comment already states:
+> "Each document type gets its own table: `document_metadata_sol`, `document_metadata_baronia`, etc."
+ 
+No changes needed — the schema is correct. The `commit_docs_context` endpoint already creates `document_metadata_{doc_type}` tables dynamically using the same column set.
+ 
+---
+ 
+### 3. Update `user_doc_extract.py` — Minor Comment Cleanup
+ 
+#### [MODIFY] [user_doc_extract.py](file:///home/ubuntu/CDM/p0/Implementation/src/source_processing/documents/user_doc_extract.py)
+ 
+- Remove stale docstring reference to `doc_processing.py` (line 12: "Usage (called by doc_processing.py Tier 2a)")
+- Update to reference `run_docs_end_to_end.py` as the caller
+ 
+---
+ 
+### 4. Update `run_docs_end_to_end.py` — Minor Comment Cleanup
+ 
+#### [MODIFY] [run_docs_end_to_end.py](file:///home/ubuntu/CDM/p0/Implementation/src/pipelines/run_docs_end_to_end.py)
+ 
+- Remove stale docstring reference to `doc_processing` in the Flow comment (line 8)
+- The code itself is already correct — uses `process_user_documents()` from `user_doc_extract.py`
+ 
+---
+ 
+## What Already Works Correctly (No Changes Needed)
+ 
+| Component | Why it's correct |
+|-----------|-----------------|
+| **Frontend** (`AdminPanel.tsx`) | Calls `GET /api/context/docs` → maps `r.title`, `r.equipment_id`, `r.extracted_entities` for preview |
+| **Upload API** (`connectors.py`) | Saves files to `staging/documents/{doc_type}/`, runs connector to RustFS |
+| **Pipeline trigger** (`pipeline.py`) | `stage=docs` runs `run_docs_end_to_end.py` with `--doc_extraction_dir`, `--processed_out` (RustFS) |
+| **Pipeline script** (`run_docs_end_to_end.py`) | Step 1 loads `doc_types_cfg` from `user_config.yaml`, calls `process_user_documents()` |
+| **Extractor** (`user_doc_extract.py`) | Excel/CSV: row-by-row. PDF/DOCX: Bedrock Claude LLM. Title=filename. Entities=pipe-separated |
+| **Steps 2–5** | Column rename → P&ID equipment_id enrichment → derived fields → identity rules |
+| **Step 6** | Writes to RustFS `staging-pt/processed_data/documents/{doc_type}/docs_documents.parquet` |
+| **Context API** (`context.py`) | `GET /docs` reads from RustFS, `POST /docs/commit` writes to `document_metadata_{doc_type}` |
+| **DB Schema** (`schema.yaml`) | `document_metadata` template with `document_uid, title, equipment_id, extracted_entities, ...` |
+| **Env variables** | Bedrock credentials from `p0/.env`, RustFS from `env.yaml` |
+ 
+## Verification Plan
+ 
+### Automated Tests
+1. Delete the legacy files and verify no import errors:
+   ```bash
+   cd /home/ubuntu/CDM/p0/Implementation
+   python -c "from src.pipelines.run_docs_end_to_end import main; print('OK')"
+   python -c "from src.source_processing.documents.user_doc_extract import process_user_documents; print('OK')"
+   ```
+ 
+2. Verify the API starts without errors:
+   ```bash
+   cd /home/ubuntu/CDM/p0/Implementation && python -m api.main
+   ```
+ 
+### Manual Verification
+- Restart frontend and API
+- Upload a test document through the UI
+- Trigger the docs pipeline
+- Verify processed data appears at `GET /api/context/docs`

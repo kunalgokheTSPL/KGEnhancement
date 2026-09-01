@@ -1,0 +1,287 @@
+# ═══════════════════════════════════════════════════════════════
+# Timeseries Connector — All Sources Configuration
+# ═══════════════════════════════════════════════════════════════
+
+data_type: timeseries
+
+# ── Common settings (shared across file-based sources) ──────
+common:
+  extensions: [".csv", ".parquet", ".xlsx"]
+  file_format: auto                   # auto | csv | parquet | xlsx
+  encoding: "utf-8"
+
+  schema:
+    timestamp_column: "timestamp"
+    tag_column: "tag_name"
+    value_column: "value"
+    wide_format: false
+
+  filters:
+    max_file_size_mb: 1000
+    filename_pattern: null
+    exclude_pattern: "^~\\$|^\\..*"
+
+# ── Source-specific settings ────────────────────────────────
+sources:
+
+  # ═══════════════════════════════════════════
+  # FILE-BASED SOURCES
+  # ═══════════════════════════════════════════
+
+  # ── Local Filesystem ──────────────────────
+  local:
+    base_path: "./data/staging/ts"
+
+  # ── AWS S3 ────────────────────────────────
+  s3:
+    bucket: "${S3_TIMESERIES_BUCKET}"
+    prefix: "raw/timeseries"
+    connection:
+      region: "${AWS_REGION:-us-east-1}"
+      access_key: "${AWS_ACCESS_KEY_ID}"
+      secret_key: "${AWS_SECRET_ACCESS_KEY}"
+      role_arn: "${AWS_ROLE_ARN:-}"
+      use_ssl: true
+
+  # ── Azure Data Lake Storage Gen2 ──────────
+  adls:
+    container: "${ADLS_TIMESERIES_CONTAINER}"
+    prefix: "raw/timeseries"
+    connection:
+      account_name: "${ADLS_ACCOUNT_NAME}"
+      account_key: "${ADLS_ACCOUNT_KEY:-}"
+      sas_token: "${ADLS_SAS_TOKEN:-}"
+      tenant_id: "${AZURE_TENANT_ID:-}"
+      client_id: "${AZURE_CLIENT_ID:-}"
+      client_secret: "${AZURE_CLIENT_SECRET:-}"
+
+  # ── Google Cloud Storage ──────────────────
+  gcs:
+    bucket: "${GCS_TIMESERIES_BUCKET}"
+    prefix: "raw/timeseries"
+    connection:
+      project_id: "${GCP_PROJECT_ID}"
+      service_account_json: "${GOOGLE_APPLICATION_CREDENTIALS:-}"
+
+  # ── Microsoft OneDrive / SharePoint ───────
+  onedrive:
+    folder_path: "/Documents/CDM/timeseries"
+    drive_id: "${ONEDRIVE_DRIVE_ID:-}"
+    site_id: "${ONEDRIVE_SITE_ID:-}"
+    connection:
+      tenant_id: "${AZURE_TENANT_ID}"
+      client_id: "${ONEDRIVE_CLIENT_ID}"
+      client_secret: "${ONEDRIVE_CLIENT_SECRET}"
+      scopes: ["https://graph.microsoft.com/.default"]
+
+  # ═══════════════════════════════════════════
+  # HISTORIAN SYSTEMS
+  # ═══════════════════════════════════════════
+
+  # ── OSIsoft PI (PI Web API) ───────────────
+  osisoft_pi:
+    connection:
+      base_url: "${PI_WEB_API_URL}"
+      auth_type: basic                 # basic | kerberos | bearer
+      username: "${PI_USER}"
+      password: "${PI_PASSWORD}"
+      kerberos_spn: "${PI_KERBEROS_SPN:-}"
+      bearer_token: "${PI_BEARER_TOKEN:-}"
+      verify_ssl: false
+      timeout_seconds: 300
+    extraction:
+      pi_data_archive: "${PI_DATA_ARCHIVE:-}"
+      af_database: "${PI_AF_DATABASE:-}"
+      af_element_path: "${PI_AF_ELEMENT_PATH:-}"
+      tag_filter: "*"
+      tag_list: null
+      start_time: "*-30d"
+      end_time: "*"
+      interval: "1h"
+      max_count: 0
+      mode: recorded                   # recorded | interpolated | plot | summary
+      summary_type: null
+    include_metadata: true
+    metadata_fields:
+      - "EngineeringUnits"
+      - "Descriptor"
+      - "PointType"
+      - "Zero"
+      - "Span"
+      - "TypicalValue"
+    batch:
+      max_parallel: 8
+      chunk_size: 1000
+      retry_count: 3
+      retry_delay_seconds: 10
+
+  # ── Wonderware / AVEVA InTouch ────────────
+  wonderware:
+    connection:
+      host: "${WW_HOST}"
+      port: "${WW_PORT:-1433}"
+      database: "${WW_DATABASE:-Runtime}"
+      driver: "${WW_DRIVER:-ODBC Driver 18 for SQL Server}"
+      username: "${WW_USER}"
+      password: "${WW_PASSWORD}"
+      trusted_connection: false
+      encrypt: true
+      trust_server_certificate: true
+    extraction:
+      history_table: "History"
+      tag_table: "Tag"
+      tag_filter: "%"
+      tag_list: null
+      start_time: null
+      end_time: null
+      retrieval_mode: "Cyclic"
+      resolution_ms: 60000
+    include_metadata: true
+    metadata_fields:
+      - "TagName"
+      - "Description"
+      - "EngineeringUnit"
+      - "MinEU"
+      - "MaxEU"
+      - "IOServerKey"
+    batch:
+      max_parallel: 4
+      chunk_size: 500
+      retry_count: 3
+      retry_delay_seconds: 10
+
+  # ── Honeywell PHD / Uniformance ───────────
+  honeywell_phd:
+    connection:
+      host: "${PHD_HOST}"
+      port: "${PHD_PORT:-3100}"
+      api_url: "${PHD_API_URL:-}"
+      username: "${PHD_USER}"
+      password: "${PHD_PASSWORD}"
+      phd_server: "${PHD_SERVER_NAME:-}"
+      use_ssl: false
+    extraction:
+      tag_filter: "*"
+      tag_list: null
+      start_time: null
+      end_time: null
+      sample_type: "Snapshot"
+      sample_frequency_seconds: 60
+      max_rows: 0
+    include_metadata: true
+    metadata_fields:
+      - "TagName"
+      - "Description"
+      - "Units"
+      - "HighLimit"
+      - "LowLimit"
+    batch:
+      max_parallel: 4
+      chunk_size: 200
+      retry_count: 3
+      retry_delay_seconds: 15
+
+  # ── Yokogawa Exaquantum ───────────────────
+  yokogawa_exaquantum:
+    connection:
+      host: "${EXAQ_HOST}"
+      port: "${EXAQ_PORT:-1433}"
+      database: "${EXAQ_DATABASE:-Exaquantum}"
+      driver: "${EXAQ_DRIVER:-ODBC Driver 18 for SQL Server}"
+      username: "${EXAQ_USER}"
+      password: "${EXAQ_PASSWORD}"
+      trusted_connection: false
+      encrypt: true
+      trust_server_certificate: true
+    extraction:
+      history_function: "ExaqHistoryAG"
+      tag_table: "ExaqTagDef"
+      tag_filter: "%"
+      tag_list: null
+      start_time: null
+      end_time: null
+      sample_interval_seconds: 60
+    include_metadata: true
+    metadata_fields:
+      - "ItemName"
+      - "Description"
+      - "Unit"
+      - "HighHighLimit"
+      - "HighLimit"
+      - "LowLimit"
+      - "LowLowLimit"
+    batch:
+      max_parallel: 4
+      chunk_size: 300
+      retry_count: 3
+      retry_delay_seconds: 10
+
+  # ── Emerson DeltaV ────────────────────────
+  emerson_deltav:
+    connection:
+      host: "${DELTAV_HOST}"
+      port: "${DELTAV_PORT:-1433}"
+      database: "${DELTAV_DATABASE:-DeltaV_Historian}"
+      driver: "${DELTAV_DRIVER:-ODBC Driver 18 for SQL Server}"
+      username: "${DELTAV_USER}"
+      password: "${DELTAV_PASSWORD}"
+      trusted_connection: false
+      encrypt: true
+      trust_server_certificate: true
+      opcua_endpoint: "${DELTAV_OPCUA_ENDPOINT:-}"
+    extraction:
+      method: sql
+      history_table: "History"
+      tag_table: "ParamDef"
+      tag_filter: "%"
+      tag_list: null
+      start_time: null
+      end_time: null
+      sample_interval_seconds: 60
+    include_metadata: true
+    metadata_fields:
+      - "ParamName"
+      - "Description"
+      - "EngineeringUnit"
+      - "HighLimit"
+      - "LowLimit"
+      - "ModuleName"
+    batch:
+      max_parallel: 4
+      chunk_size: 300
+      retry_count: 3
+      retry_delay_seconds: 10
+
+  # ── AVEVA Historian (REST / SQL) ──────────
+  aveva_historian:
+    connection:
+      api_url: "${AVEVA_API_URL}"
+      auth_type: bearer
+      bearer_token: "${AVEVA_BEARER_TOKEN:-}"
+      username: "${AVEVA_USER:-}"
+      password: "${AVEVA_PASSWORD:-}"
+      host: "${AVEVA_HOST:-}"
+      port: "${AVEVA_PORT:-1433}"
+      database: "${AVEVA_DATABASE:-Runtime}"
+      driver: "${AVEVA_DRIVER:-ODBC Driver 18 for SQL Server}"
+      verify_ssl: true
+    extraction:
+      method: api                      # api | sql
+      retrieval_mode: "Cyclic"
+      resolution_ms: 60000
+      tag_filter: "*"
+      tag_list: null
+      start_time: null
+      end_time: null
+    include_metadata: true
+    metadata_fields:
+      - "TagName"
+      - "Description"
+      - "EngineeringUnit"
+      - "MinRaw"
+      - "MaxRaw"
+    batch:
+      max_parallel: 4
+      chunk_size: 500
+      retry_count: 3
+      retry_delay_seconds: 10

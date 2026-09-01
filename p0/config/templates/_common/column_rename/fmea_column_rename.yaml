@@ -1,0 +1,24 @@
+version: '1.0'
+notes:
+- FMEA extracts vary; align to canonical failure_* fields used by CDM.
+sources:
+  fmea:
+    mappings:
+      FMEA ID: fmea_id
+      fmea_id: fmea_id
+      Asset Class: asset_class
+      asset_class: asset_class
+      Failure Mode: failure_mode
+      failure_mode: failure_mode
+      Failure Cause: failure_cause
+      failure_cause: failure_cause
+      Failure Mechanism: failure_mechanism
+      failure_mechanism: failure_mechanism
+      Effect: effect
+      effect: effect
+      Detection Method: detection_method
+      detection_method: detection_method
+      Severity: severity
+      Occurrence: occurrence
+      Detection: detection
+      RPN: rpn

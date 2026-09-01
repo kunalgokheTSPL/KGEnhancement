@@ -1,0 +1,14 @@
+document_processing:
+  document_types:
+    sop:
+      document_type: sop
+      source_columns:
+      - Procedure ID
+      - Title
+      - Step Number
+      - Steps
+      - Equipment Tag
+      - Applicable Unit
+      - System
+      - Safety Precautions
+      - Revision

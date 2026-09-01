@@ -1,0 +1,1765 @@
+# ================================================================
+# COMMON — Core Database Schema
+# ================================================================
+# Base tables shared by ALL use-case profiles.
+# Overlays ADD tables/columns; they never remove these.
+# ================================================================
+
+schema:
+
+  # =========================================================
+  # ASSET HIERARCHY
+  # =========================================================
+
+  equipment:
+    primary_key: equipment_uid
+    columns:
+      equipment_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      normalized_asset: VARCHAR(120)
+      canonical_code: VARCHAR(120)
+      equipment_id: VARCHAR(80)
+      sap_equipment_id: VARCHAR(80)
+      equipment_tag: VARCHAR(120)
+      functional_location: VARCHAR(120)
+      equipment_type: VARCHAR(80)
+      area: VARCHAR(80)
+      process_unit: VARCHAR(80)
+      line: VARCHAR(80)
+      criticality: VARCHAR(40)
+      description: TEXT
+      manufacturer: VARCHAR(200)
+      model: VARCHAR(200)
+      status: VARCHAR(60)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+      ontology_uid: VARCHAR(120)
+    superseded_indexes: [uq_equip_plant_asset]
+    constraints:
+      - {type: unique, name: uq_equip_plant_site_asset, columns: [plant_code_id, site, normalized_asset]}
+    indexes:
+      - {name: idx_equipment_site, columns: [plant_code_id, site]}
+      - {name: idx_equip_plant, columns: [plant_code_id]}
+      - {name: idx_equip_floc, columns: [plant_code_id, functional_location]}
+      - {name: idx_equip_type, columns: [plant_code_id, equipment_type]}
+      - {name: idx_equip_area, columns: [plant_code_id, area]}
+      - {name: idx_equip_active, columns: [plant_code_id, is_active]}
+    foreign_keys:
+      - {column: plant_code_id, ref_table: plants, ref_column: plant_code_id, on_delete: RESTRICT}
+
+  functional_location:
+    primary_key: floc_uid
+    columns:
+      floc_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      floc: VARCHAR(120)
+      description: TEXT
+      area: VARCHAR(80)
+      process_unit: VARCHAR(80)
+      line: VARCHAR(80)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+      ontology_uid: VARCHAR(120)
+    superseded_indexes: [uq_floc_plant_code]
+    constraints:
+      - {type: unique, name: uq_floc_plant_site_code, columns: [plant_code_id, site, floc]}
+    indexes:
+      - {name: idx_functional_location_site, columns: [plant_code_id, site]}
+      - {name: idx_floc_plant, columns: [plant_code_id]}
+      - {name: idx_floc_area, columns: [plant_code_id, area]}
+    foreign_keys:
+      - {column: plant_code_id, ref_table: plants, ref_column: plant_code_id, on_delete: RESTRICT}
+
+  process_unit:
+    primary_key: pu_uid
+    columns:
+      pu_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      process_unit_code: VARCHAR(120)
+      process_area: VARCHAR(80)
+      line: VARCHAR(80)
+      description: TEXT
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+      ontology_uid: VARCHAR(120)
+    superseded_indexes: [uq_pu_plant_code]
+    constraints:
+      - {type: unique, name: uq_pu_plant_site_code, columns: [plant_code_id, site, process_unit_code]}
+    indexes:
+      - {name: idx_process_unit_site, columns: [plant_code_id, site]}
+      - {name: idx_pu_plant, columns: [plant_code_id]}
+    foreign_keys:
+      - {column: plant_code_id, ref_table: plants, ref_column: plant_code_id, on_delete: RESTRICT}
+
+  # ── P&ID source view (ISA-5.1 / ISO-14617 tag registry) ───────────────────
+  equipment_pid:
+    primary_key: pid_uid
+    columns:
+      pid_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      pid_tag: VARCHAR(120)
+      equipment_id: VARCHAR(120)
+      normalized_asset: VARCHAR(120)
+      equipment_type: VARCHAR(80)
+      area: VARCHAR(80)
+      process_unit: VARCHAR(80)
+      line: VARCHAR(80)
+      description: TEXT
+      functional_location: VARCHAR(120)
+      drawing_no: VARCHAR(80)
+      pid_title: VARCHAR(200)
+      source_file: VARCHAR(300)
+      source_system: VARCHAR(80)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+      upload_batch_id: VARCHAR(64)
+      ontology_uid: VARCHAR(120)
+    superseded_indexes: [uq_pid_plant_tag]
+    constraints:
+      - {type: unique, name: uq_pid_plant_site_tag, columns: [plant_code_id, site, pid_tag]}
+    indexes:
+      - {name: idx_equipment_pid_site, columns: [plant_code_id, site]}
+      - {name: idx_pid_plant, columns: [plant_code_id]}
+      - {name: idx_pid_drawing, columns: [plant_code_id, drawing_no]}
+    foreign_keys:
+      - {column: plant_code_id, ref_table: plants, ref_column: plant_code_id, on_delete: RESTRICT}
+
+  equipment_connectivity:
+    primary_key: conn_uid
+    columns:
+      conn_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      from_equipment_ref: VARCHAR(120)
+      to_equipment_ref: VARCHAR(120)
+      connection_type: VARCHAR(80)
+      medium: VARCHAR(80)
+      line_number: VARCHAR(80)
+      drawing_no: VARCHAR(80)
+      pid_title: VARCHAR(200)
+      source_file: VARCHAR(300)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+      connectivity_uid: VARCHAR(120)
+      upload_batch_id: VARCHAR(64)
+      ontology_uid: VARCHAR(120)
+    superseded_indexes: [uq_conn_identity]
+    constraints:
+      - {type: unique, name: uq_conn_identity_site, columns: [plant_code_id, site, from_equipment_ref, to_equipment_ref, connection_type]}
+    indexes:
+      - {name: idx_equipment_connectivity_site, columns: [plant_code_id, site]}
+      - {name: idx_conn_from, columns: [plant_code_id, from_equipment_ref]}
+      - {name: idx_conn_to, columns: [plant_code_id, to_equipment_ref]}
+    foreign_keys:
+      - {column: plant_code_id, ref_table: plants, ref_column: plant_code_id, on_delete: RESTRICT}
+
+  # =========================================================
+  # MATERIALS / BOM / PROCUREMENT
+  # =========================================================
+
+  material:
+    primary_key: material_uid
+    columns:
+      material_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      material_code: VARCHAR(120)
+      description: TEXT
+      material_type: VARCHAR(60)
+      material_group: VARCHAR(60)
+      base_uom: VARCHAR(30)
+      equipment_ref: VARCHAR(120)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+      ontology_uid: VARCHAR(120)
+    constraints:
+      - {type: unique, name: uq_material_code, columns: [material_code]}
+    indexes:
+      - {name: idx_material_site, columns: [plant_code_id, site]}
+      - {name: idx_material_code, columns: [material_code]}
+      - {name: idx_material_type, columns: [material_type]}
+    foreign_keys:
+      - {column: plant_code_id, ref_table: plants, ref_column: plant_code_id, on_delete: RESTRICT}
+
+  bom_item:
+    primary_key: bom_item_uid
+    columns:
+      bom_item_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      bom_id: VARCHAR(60)
+      item_no: VARCHAR(30)
+      material_code: VARCHAR(120)
+      quantity: NUMERIC(18,6)
+      uom: VARCHAR(30)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+      ontology_uid: VARCHAR(120)
+    superseded_indexes: [uq_bom_item]
+    constraints:
+      - {type: unique, name: uq_bom_item_site, columns: [plant_code_id, site, bom_id, item_no, material_code]}
+    indexes:
+      - {name: idx_bom_item_site, columns: [plant_code_id, site]}
+      - {name: idx_bom_id, columns: [plant_code_id, bom_id]}
+      - {name: idx_bom_material, columns: [material_code]}
+    foreign_keys:
+      - {column: plant_code_id, ref_table: plants, ref_column: plant_code_id, on_delete: RESTRICT}
+      - {column: material_code, ref_table: material, ref_column: material_code, on_delete: SET NULL}
+
+  vendor:
+    primary_key: vendor_uid
+    columns:
+      vendor_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      vendor_code: VARCHAR(120)
+      vendor_name: VARCHAR(200)
+      country: VARCHAR(60)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+      ontology_uid: VARCHAR(120)
+    constraints:
+      - {type: unique, name: uq_vendor_code, columns: [vendor_code]}
+    indexes:
+      - {name: idx_vendor_site, columns: [plant_code_id, site]}
+      - {name: idx_vendor_code, columns: [vendor_code]}
+    foreign_keys:
+      - {column: plant_code_id, ref_table: plants, ref_column: plant_code_id, on_delete: RESTRICT}
+
+  purchase_order:
+    primary_key: po_uid
+    columns:
+      po_uid: BIGSERIAL
+      po_number: VARCHAR(60)
+      po_item: VARCHAR(30)
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      vendor_code: VARCHAR(120)
+      material_code: VARCHAR(120)
+      quantity: NUMERIC(18,6)
+      uom: VARCHAR(30)
+      net_value: NUMERIC(18,2)
+      currency: VARCHAR(10)
+      status: VARCHAR(60)
+      created_on: TIMESTAMP
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+      ontology_uid: VARCHAR(120)
+    constraints:
+      - {type: unique, name: uq_po_item, columns: [po_number, po_item]}
+    indexes:
+      - {name: idx_purchase_order_site, columns: [plant_code_id, site]}
+      - {name: idx_po_number, columns: [po_number]}
+      - {name: idx_po_vendor, columns: [vendor_code]}
+      - {name: idx_po_material, columns: [material_code]}
+    foreign_keys:
+      - {column: plant_code_id, ref_table: plants, ref_column: plant_code_id, on_delete: RESTRICT}
+      - {column: vendor_code, ref_table: vendor, ref_column: vendor_code, on_delete: SET NULL}
+      - {column: material_code, ref_table: material, ref_column: material_code, on_delete: SET NULL}
+
+  goods_receipt:
+    primary_key: gr_uid
+    columns:
+      gr_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      gr_number: VARCHAR(60)
+      gr_item: VARCHAR(30)
+      po_number: VARCHAR(60)
+      po_item: VARCHAR(30)
+      material_code: VARCHAR(120)
+      quantity_received: NUMERIC(18,6)
+      posting_date: TIMESTAMP
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+      ontology_uid: VARCHAR(120)
+    constraints:
+      - {type: unique, name: uq_gr_item, columns: [gr_number, gr_item]}
+    indexes:
+      - {name: idx_goods_receipt_site, columns: [plant_code_id, site]}
+      - {name: idx_gr_number, columns: [gr_number]}
+      - {name: idx_gr_po, columns: [po_number, po_item]}
+    foreign_keys:
+      - {column: plant_code_id, ref_table: plants, ref_column: plant_code_id, on_delete: RESTRICT}
+      - {column: material_code, ref_table: material, ref_column: material_code, on_delete: SET NULL}
+      - {column: po_number, ref_table: purchase_order, ref_column: po_number, on_delete: SET NULL}
+
+  invoice:
+    primary_key: invoice_uid
+    columns:
+      invoice_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      invoice_number: VARCHAR(60)
+      invoice_item: VARCHAR(30)
+      vendor_code: VARCHAR(120)
+      po_number: VARCHAR(60)
+      po_item: VARCHAR(30)
+      amount: NUMERIC(18,2)
+      currency: VARCHAR(10)
+      posting_date: TIMESTAMP
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+      ontology_uid: VARCHAR(120)
+    constraints:
+      - {type: unique, name: uq_invoice_item, columns: [invoice_number, invoice_item]}
+    indexes:
+      - {name: idx_invoice_site, columns: [plant_code_id, site]}
+      - {name: idx_invoice_number, columns: [invoice_number]}
+      - {name: idx_invoice_vendor, columns: [vendor_code]}
+    foreign_keys:
+      - {column: plant_code_id, ref_table: plants, ref_column: plant_code_id, on_delete: RESTRICT}
+      - {column: vendor_code, ref_table: vendor, ref_column: vendor_code, on_delete: SET NULL}
+
+  # =========================================================
+  # MAINTENANCE / RELIABILITY
+  # =========================================================
+
+  work_order:
+    primary_key: wo_uid
+    columns:
+      wo_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      wo_number: VARCHAR(60)
+      notification_id: VARCHAR(60)
+      wo_type: VARCHAR(30)
+      priority: VARCHAR(30)
+      status: VARCHAR(80)
+      created_on: TIMESTAMP
+      basic_start: TIMESTAMP
+      basic_finish: TIMESTAMP
+      equipment_ref: VARCHAR(120)
+      equipment_id: VARCHAR(80)
+      floc: VARCHAR(120)
+      work_center: VARCHAR(80)
+      planner_group: VARCHAR(80)
+      maint_activity_type: VARCHAR(80)
+      short_text: TEXT
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+      ontology_uid: VARCHAR(120)
+    superseded_indexes: [uq_wo_plant_number]
+    constraints:
+      - {type: unique, name: uq_wo_plant_site_number, columns: [plant_code_id, site, wo_number]}
+    indexes:
+      - {name: idx_work_order_site, columns: [plant_code_id, site]}
+      - {name: idx_wo_plant, columns: [plant_code_id]}
+      - {name: idx_wo_equipment, columns: [plant_code_id, equipment_ref]}
+      - {name: idx_wo_floc, columns: [plant_code_id, floc]}
+      - {name: idx_wo_status, columns: [status]}
+    foreign_keys:
+      - {column: plant_code_id, ref_table: plants, ref_column: plant_code_id, on_delete: RESTRICT}
+
+  notification:
+    primary_key: notif_uid
+    columns:
+      notif_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      notification_id: VARCHAR(60)
+      notification_type: VARCHAR(30)
+      created_on: TIMESTAMP
+      priority: VARCHAR(30)
+      equipment_ref: VARCHAR(120)
+      floc: VARCHAR(120)
+      symptom_text: TEXT
+      failure_mode_code: VARCHAR(60)
+      failure_cause_code: VARCHAR(60)
+      failure_effect_code: VARCHAR(60)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+      ontology_uid: VARCHAR(120)
+    superseded_indexes: [uq_notif_plant_id]
+    constraints:
+      - {type: unique, name: uq_notif_plant_site_id, columns: [plant_code_id, site, notification_id]}
+    indexes:
+      - {name: idx_notification_site, columns: [plant_code_id, site]}
+      - {name: idx_notif_plant, columns: [plant_code_id]}
+      - {name: idx_notif_equipment, columns: [plant_code_id, equipment_ref]}
+    foreign_keys:
+      - {column: plant_code_id, ref_table: plants, ref_column: plant_code_id, on_delete: RESTRICT}
+
+  task_list:
+    primary_key: task_list_uid
+    columns:
+      task_list_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      task_list_id: VARCHAR(60)
+      task_list_group: VARCHAR(60)
+      task_list_counter: VARCHAR(60)
+      task_list_type: VARCHAR(30)
+      equipment_ref: VARCHAR(120)
+      equipment_id: VARCHAR(80)
+      floc: VARCHAR(120)
+      operation_no: VARCHAR(60)
+      operation_text: TEXT
+      work_center: VARCHAR(80)
+      std_duration: NUMERIC(18,6)
+      uom: VARCHAR(30)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+      ontology_uid: VARCHAR(120)
+    superseded_indexes: [uq_task_list_identity]
+    constraints:
+      - {type: unique, name: uq_task_list_identity_site, columns: [plant_code_id, site, task_list_id, task_list_group, task_list_counter]}
+    indexes:
+      - {name: idx_task_list_site, columns: [plant_code_id, site]}
+      - {name: idx_task_list_plant, columns: [plant_code_id]}
+      - {name: idx_task_list_equipment, columns: [plant_code_id, equipment_ref]}
+    foreign_keys:
+      - {column: plant_code_id, ref_table: plants, ref_column: plant_code_id, on_delete: RESTRICT}
+
+  maintenance_plan:
+    primary_key: plan_uid
+    columns:
+      plan_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      plan_id: VARCHAR(60)
+      plan_type: VARCHAR(30)
+      cycle: NUMERIC(18,6)
+      cycle_uom: VARCHAR(30)
+      equipment_ref: VARCHAR(120)
+      floc: VARCHAR(120)
+      planner_group: VARCHAR(80)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+      ontology_uid: VARCHAR(120)
+    superseded_indexes: [uq_plan_plant_id]
+    constraints:
+      - {type: unique, name: uq_plan_plant_site_id, columns: [plant_code_id, site, plan_id]}
+    indexes:
+      - {name: idx_maintenance_plan_site, columns: [plant_code_id, site]}
+      - {name: idx_plan_plant, columns: [plant_code_id]}
+    foreign_keys:
+      - {column: plant_code_id, ref_table: plants, ref_column: plant_code_id, on_delete: RESTRICT}
+
+  work_center:
+    primary_key: wc_uid
+    columns:
+      wc_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      work_center: VARCHAR(80)
+      description: TEXT
+      plant_section: VARCHAR(120)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+      ontology_uid: VARCHAR(120)
+    superseded_indexes: [uq_wc_plant_code]
+    constraints:
+      - {type: unique, name: uq_wc_plant_site_code, columns: [plant_code_id, site, work_center]}
+    indexes:
+      - {name: idx_work_center_site, columns: [plant_code_id, site]}
+      - {name: idx_wc_plant, columns: [plant_code_id]}
+    foreign_keys:
+      - {column: plant_code_id, ref_table: plants, ref_column: plant_code_id, on_delete: RESTRICT}
+
+  failure_mode:
+    primary_key: fm_uid
+    columns:
+      fm_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      failure_mode_code: VARCHAR(60)
+      failure_mode_text: TEXT
+      equipment_id: VARCHAR(120)
+      equipment_name: VARCHAR(200)
+      subsystem_component: VARCHAR(200)
+      function: TEXT
+      severity: INTEGER
+      occurrence: INTEGER
+      detectability: INTEGER
+      rpn: INTEGER
+      risk_category: VARCHAR(60)
+      detection_parameters: TEXT
+      current_controls: TEXT
+      recommended_action: TEXT
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+      ontology_uid: VARCHAR(120)
+    superseded_indexes: [uq_fm]
+    constraints:
+      - {type: unique, name: uq_fm_site, columns: [plant_code_id, site, failure_mode_code]}
+    indexes:
+      - {name: idx_failure_mode_site, columns: [plant_code_id, site]}
+      - {name: idx_fm_code, columns: [plant_code_id, failure_mode_code]}
+      - {name: idx_fm_equip, columns: [plant_code_id, equipment_id]}
+      - {name: idx_fm_risk, columns: [plant_code_id, risk_category]}
+    foreign_keys:
+      - {column: plant_code_id, ref_table: plants, ref_column: plant_code_id, on_delete: RESTRICT}
+
+  failure_cause:
+    primary_key: fc_uid
+    columns:
+      fc_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      failure_cause_code: VARCHAR(60)
+      failure_cause_text: TEXT
+      equipment_id: VARCHAR(120)
+      equipment_name: VARCHAR(200)
+      subsystem_component: VARCHAR(200)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+      ontology_uid: VARCHAR(120)
+    superseded_indexes: [uq_fc]
+    constraints:
+      - {type: unique, name: uq_fc_site, columns: [plant_code_id, site, failure_cause_code]}
+    indexes:
+      - {name: idx_failure_cause_site, columns: [plant_code_id, site]}
+      - {name: idx_fc_code, columns: [plant_code_id, failure_cause_code]}
+    foreign_keys:
+      - {column: plant_code_id, ref_table: plants, ref_column: plant_code_id, on_delete: RESTRICT}
+
+  failure_effect:
+    primary_key: fe_uid
+    columns:
+      fe_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      failure_effect_code: VARCHAR(60)
+      failure_effect_text: TEXT
+      equipment_id: VARCHAR(120)
+      equipment_name: VARCHAR(200)
+      subsystem_component: VARCHAR(200)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+      ontology_uid: VARCHAR(120)
+    superseded_indexes: [uq_fe]
+    constraints:
+      - {type: unique, name: uq_fe_site, columns: [plant_code_id, site, failure_effect_code]}
+    indexes:
+      - {name: idx_failure_effect_site, columns: [plant_code_id, site]}
+      - {name: idx_fe_code, columns: [plant_code_id, failure_effect_code]}
+    foreign_keys:
+      - {column: plant_code_id, ref_table: plants, ref_column: plant_code_id, on_delete: RESTRICT}
+
+  # =========================================================
+  # TIMESERIES / DOCUMENTS / LIMITS
+  # =========================================================
+
+  timeseries_metadata:
+    primary_key: ts_uid
+    columns:
+      ts_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      tag_name: VARCHAR(255)
+      # IoTDB-safe form of tag_name: dots/spaces/hyphens/slashes → "_" (so IoTDB
+      # doesn't read a "." as a path-hierarchy separator). Equals the actual
+      # measurement segment under root.<root>.<plant>.<file>.<iotdb_tag_id>.
+      # Populated on commit from tag_name via the ingest normalizer.
+      iotdb_tag_id: VARCHAR(255)
+      description: TEXT
+      unit: VARCHAR(50)
+      data_type: VARCHAR(40)
+      equipment_id: VARCHAR(80)
+      normalized_asset: VARCHAR(120)
+      # Additive 2026-08-24. The asset hierarchy the source path already carries,
+      # plus which level the tag linked at and how sure that link is. Every one is
+      # nullable and none is read by anything downstream, so the existing contract
+      # is unchanged. asset_match_method / asset_match_confidence were computed by
+      # the enrichment and then dropped right here, which is why no confidence
+      # score ever reached the CDM.
+      area: VARCHAR(120)
+      process_unit: VARCHAR(120)
+      asset_link_level: VARCHAR(40)
+      asset_link_confidence: NUMERIC(6,4)
+      asset_match_method: VARCHAR(60)
+      asset_match_confidence: NUMERIC(6,4)
+      # Additive 2026-08-24. Every source-specific field this row actually has,
+      # grouped by source, as a JSON document. The source-prefixed columns stay
+      # exactly as they were, so nothing downstream changes; this exists so a new
+      # source's fields survive without a schema edit for each one.
+      source_attributes: JSON
+      op_limit_ll: NUMERIC(18,6)
+      op_limit_l: NUMERIC(18,6)
+      op_limit_h: NUMERIC(18,6)
+      op_limit_hh: NUMERIC(18,6)
+      safety_limit_ll: NUMERIC(18,6)
+      safety_limit_l: NUMERIC(18,6)
+      safety_limit_h: NUMERIC(18,6)
+      safety_limit_hh: NUMERIC(18,6)
+      trip_limit_ll: NUMERIC(18,6)
+      trip_limit_l: NUMERIC(18,6)
+      trip_limit_h: NUMERIC(18,6)
+      trip_limit_hh: NUMERIC(18,6)
+      limits_basis: VARCHAR(80)
+      limits_source_doc_id: VARCHAR(120)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      # Originating upload filename for this tag's metadata. Stamped by the TS
+      # pipeline (one metadata file per run) and re-stamped on commit, so the
+      # review UI can scope to one file. Identity stays (plant, tag_name), so a
+      # tag present in two files keeps the last-committed name (last-writer-wins).
+      source_file: VARCHAR(512)
+      confidence: NUMERIC(6,4)
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+      # ---- additional timeseries metadata sources (2026-08-18) ----------
+      # One row per tag stays the identity. Data finer than a tag is
+      # transposed into one column per code below, so a tag keeps every
+      # alarm/boundary it carries. Empty for tags that lack that code, and
+      # empty for every tag from a different source. source_system names
+      # the origin (osi_pi | alerts_prime_alarms | alerts_prime_excursions
+      # | alerts_protean).
+      # OSI PI tag export. object_type and attribute_data_reference are
+      # single-valued in the delivered export; kept because the source is
+      # ingested as-is.
+      pi_parent: VARCHAR(512)
+      pi_name: VARCHAR(255)
+      pi_object_type: VARCHAR(80)
+      pi_categories: VARCHAR(255)
+      pi_attribute_data_reference: VARCHAR(80)
+      pi_attribute_config_string: TEXT
+      pi_tag_id: VARCHAR(255)
+      pi_state: VARCHAR(120)
+      # PRIME exports, tag level. point_description and priority are shared
+      # by both PRIME files; a disagreement between them is logged, not
+      # silently overwritten.
+      alerts_prime_tag: VARCHAR(255)
+      alerts_prime_point_description: TEXT
+      alerts_prime_priority: VARCHAR(20)
+      alerts_prime_unit: VARCHAR(50)
+      alerts_prime_plant_hierarchy: VARCHAR(255)
+      # A DCS display code, NOT an equipment tag: it shares no naming space
+      # with any other source, so it is never mapped onto equipment_id.
+      alerts_prime_upper_equipment_id: VARCHAR(120)
+      alerts_prime_group: VARCHAR(120)
+      alerts_prime_critical_operating_parameter: VARCHAR(10)
+      alerts_prime_equipments: VARCHAR(255)
+      # Lifted from the per-block event rows, where it is constant. It is a
+      # control-system path and matches alerts_prime_equipments 0/330 times.
+      alerts_prime_equipment: VARCHAR(255)
+      alerts_prime_description: TEXT
+      # PRIME frequent alarms, one block per alarm type. limit is null for
+      # ALM/ANS+/ANS-/INT/IOP/IOP-/TRIP in the delivered export: those alarm
+      # types carry no setpoint at all, which is structure, not absence.
+      alerts_prime_alarm_alm_count: BIGINT
+      alerts_prime_alarm_alm_percent: NUMERIC(18,6)
+      alerts_prime_alarm_alm_accum_pct: NUMERIC(18,6)
+      alerts_prime_alarm_alm_limit: NUMERIC(18,6)
+      alerts_prime_alarm_ans_plus_count: BIGINT
+      alerts_prime_alarm_ans_plus_percent: NUMERIC(18,6)
+      alerts_prime_alarm_ans_plus_accum_pct: NUMERIC(18,6)
+      alerts_prime_alarm_ans_plus_limit: NUMERIC(18,6)
+      alerts_prime_alarm_ans_minus_count: BIGINT
+      alerts_prime_alarm_ans_minus_percent: NUMERIC(18,6)
+      alerts_prime_alarm_ans_minus_accum_pct: NUMERIC(18,6)
+      alerts_prime_alarm_ans_minus_limit: NUMERIC(18,6)
+      alerts_prime_alarm_dv_plus_count: BIGINT
+      alerts_prime_alarm_dv_plus_percent: NUMERIC(18,6)
+      alerts_prime_alarm_dv_plus_accum_pct: NUMERIC(18,6)
+      alerts_prime_alarm_dv_plus_limit: NUMERIC(18,6)
+      alerts_prime_alarm_dv_minus_count: BIGINT
+      alerts_prime_alarm_dv_minus_percent: NUMERIC(18,6)
+      alerts_prime_alarm_dv_minus_accum_pct: NUMERIC(18,6)
+      alerts_prime_alarm_dv_minus_limit: NUMERIC(18,6)
+      alerts_prime_alarm_hh_count: BIGINT
+      alerts_prime_alarm_hh_percent: NUMERIC(18,6)
+      alerts_prime_alarm_hh_accum_pct: NUMERIC(18,6)
+      alerts_prime_alarm_hh_limit: NUMERIC(18,6)
+      alerts_prime_alarm_hi_count: BIGINT
+      alerts_prime_alarm_hi_percent: NUMERIC(18,6)
+      alerts_prime_alarm_hi_accum_pct: NUMERIC(18,6)
+      alerts_prime_alarm_hi_limit: NUMERIC(18,6)
+      alerts_prime_alarm_int_count: BIGINT
+      alerts_prime_alarm_int_percent: NUMERIC(18,6)
+      alerts_prime_alarm_int_accum_pct: NUMERIC(18,6)
+      alerts_prime_alarm_int_limit: NUMERIC(18,6)
+      alerts_prime_alarm_iop_count: BIGINT
+      alerts_prime_alarm_iop_percent: NUMERIC(18,6)
+      alerts_prime_alarm_iop_accum_pct: NUMERIC(18,6)
+      alerts_prime_alarm_iop_limit: NUMERIC(18,6)
+      alerts_prime_alarm_iop_minus_count: BIGINT
+      alerts_prime_alarm_iop_minus_percent: NUMERIC(18,6)
+      alerts_prime_alarm_iop_minus_accum_pct: NUMERIC(18,6)
+      alerts_prime_alarm_iop_minus_limit: NUMERIC(18,6)
+      alerts_prime_alarm_ll_count: BIGINT
+      alerts_prime_alarm_ll_percent: NUMERIC(18,6)
+      alerts_prime_alarm_ll_accum_pct: NUMERIC(18,6)
+      alerts_prime_alarm_ll_limit: NUMERIC(18,6)
+      alerts_prime_alarm_lo_count: BIGINT
+      alerts_prime_alarm_lo_percent: NUMERIC(18,6)
+      alerts_prime_alarm_lo_accum_pct: NUMERIC(18,6)
+      alerts_prime_alarm_lo_limit: NUMERIC(18,6)
+      alerts_prime_alarm_ltrp_count: BIGINT
+      alerts_prime_alarm_ltrp_percent: NUMERIC(18,6)
+      alerts_prime_alarm_ltrp_accum_pct: NUMERIC(18,6)
+      alerts_prime_alarm_ltrp_limit: NUMERIC(18,6)
+      alerts_prime_alarm_trip_count: BIGINT
+      alerts_prime_alarm_trip_percent: NUMERIC(18,6)
+      alerts_prime_alarm_trip_accum_pct: NUMERIC(18,6)
+      alerts_prime_alarm_trip_limit: NUMERIC(18,6)
+      # PRIME frequent excursions, one block per boundary code. SOL is a
+      # Safe Operating Limit, IPF a Never Exceed Limit, MDL a Mechanical
+      # Design Limit; the code implies the boundary type, so the type is not
+      # stored separately.
+      alerts_prime_bnd_sol_l_value: NUMERIC(18,6)
+      alerts_prime_bnd_sol_l_count: BIGINT
+      alerts_prime_bnd_sol_l_percent: NUMERIC(18,6)
+      alerts_prime_bnd_sol_l_accum_pct: NUMERIC(18,6)
+      alerts_prime_bnd_sol_h_value: NUMERIC(18,6)
+      alerts_prime_bnd_sol_h_count: BIGINT
+      alerts_prime_bnd_sol_h_percent: NUMERIC(18,6)
+      alerts_prime_bnd_sol_h_accum_pct: NUMERIC(18,6)
+      alerts_prime_bnd_ipf_ll_value: NUMERIC(18,6)
+      alerts_prime_bnd_ipf_ll_count: BIGINT
+      alerts_prime_bnd_ipf_ll_percent: NUMERIC(18,6)
+      alerts_prime_bnd_ipf_ll_accum_pct: NUMERIC(18,6)
+      alerts_prime_bnd_ipf_hh_value: NUMERIC(18,6)
+      alerts_prime_bnd_ipf_hh_count: BIGINT
+      alerts_prime_bnd_ipf_hh_percent: NUMERIC(18,6)
+      alerts_prime_bnd_ipf_hh_accum_pct: NUMERIC(18,6)
+      alerts_prime_bnd_mdl_hhh_value: NUMERIC(18,6)
+      alerts_prime_bnd_mdl_hhh_count: BIGINT
+      alerts_prime_bnd_mdl_hhh_percent: NUMERIC(18,6)
+      alerts_prime_bnd_mdl_hhh_accum_pct: NUMERIC(18,6)
+      # PROTEAN equipment limits. The OEM limits hold free text such as
+      # 'LL: 400 F (204 C)', so they are TEXT and are not parsed here.
+      protean_parent: VARCHAR(512)
+      protean_name: VARCHAR(255)
+      protean_object_type: VARCHAR(80)
+      protean_description: TEXT
+      protean_lower_limit: NUMERIC(18,6)
+      protean_upper_limit: NUMERIC(18,6)
+      oem_lower_limit: TEXT
+      oem_upper_limit: TEXT
+      protean_operating_value: TEXT
+      protean_error: TEXT
+      ontology_uid: VARCHAR(120)
+    superseded_indexes: [uq_ts_plant_tag]
+    constraints:
+      - {type: unique, name: uq_ts_plant_site_tag, columns: [plant_code_id, site, tag_name]}
+    indexes:
+      - {name: idx_timeseries_metadata_site, columns: [plant_code_id, site]}
+      - {name: idx_ts_plant_tag, columns: [plant_code_id, tag_name]}
+      - {name: idx_ts_equipment, columns: [plant_code_id, normalized_asset]}
+    foreign_keys:
+      - {column: plant_code_id, ref_table: plants, ref_column: plant_code_id, on_delete: RESTRICT}
+
+  # document_metadata is the canonical template for per-type tables.
+  # Each document type gets its own table: document_metadata_sol,
+  # document_metadata_baronia, etc. All follow this schema.
+  document_metadata:
+    primary_key: document_uid
+    columns:
+      document_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      # document_id identifies the SOURCE FILE — every extracted row from the
+      # same file shares it. record_id is the per-ROW unique key.
+      document_id: VARCHAR(120)
+      record_id: VARCHAR(140)
+      document_type: VARCHAR(60)
+      title: TEXT
+      equipment_tag: VARCHAR(120)
+      equipment_id: VARCHAR(120)
+      # extracted_entities historically held a pipe-separated string
+      # ("Field: Value | Field: Value"). The live document_metadata table
+      # has since been migrated to JSON so it can also carry dict/list
+      # payloads from the docs pipeline; _coerce_for_pg wraps raw text
+      # values as a JSON string so legacy callers still land.
+      extracted_entities: JSON
+      # extracted_relationships: list of {from, to, kind?} pairs the docs
+      # pipeline derives during entity extraction. Same JSON contract as
+      # extracted_entities.
+      extracted_relationships: JSON
+      source_file: TEXT
+      # file_reference: s3:// URI back to the original document in object storage
+      file_reference: TEXT
+      # Provenance for one extracted row: where inside the source file it came
+      # from. For a paginated document that is the chunk and the pages it
+      # covered; for a workbook it is the sheet ordinal and the sheet name.
+      # source_pages is the human-readable label ("7", "3-7" or the sheet name)
+      # and is empty for a csv. Without these a claim can only be traced to a
+      # whole file.
+      chunk_index: INTEGER
+      page_start: INTEGER
+      page_end: INTEGER
+      source_pages: VARCHAR(40)
+      normalized_asset: VARCHAR(120)
+      asset_match_method: VARCHAR(60)
+      asset_match_confidence: NUMERIC(6,4)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      ingested_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      # Review bookkeeping. row_version rises by one on every accepted write, so
+      # a reviewer editing a row someone else already moved is rejected instead
+      # of silently overwriting them. edited_by is NULL while only the pipeline
+      # has ever written the row; once a human has touched it a re-ingest leaves
+      # the row alone rather than reverting the edit.
+      row_version: INTEGER
+      edited_by: VARCHAR(120)
+      edited_at: TIMESTAMP
+      is_active: BOOLEAN
+      ontology_uid: VARCHAR(120)
+    superseded_indexes: [uq_doc_plant_record]
+    constraints:
+      # Uniqueness is at the ROW level now (record_id), since one document_id
+      # (file) legitimately maps to many rows.
+      - {type: unique, name: uq_doc_plant_site_record, columns: [plant_code_id, site, record_id]}
+    indexes:
+      - {name: idx_document_metadata_site, columns: [plant_code_id, site]}
+      - {name: idx_doc_plant, columns: [plant_code_id]}
+      - {name: idx_doc_plant_docid, columns: [plant_code_id, document_id]}
+      - {name: idx_doc_type, columns: [plant_code_id, document_type]}
+      - {name: idx_doc_equipment, columns: [plant_code_id, equipment_id]}
+    foreign_keys:
+      - {column: plant_code_id, ref_table: plants, ref_column: plant_code_id, on_delete: RESTRICT}
+
+  # =========================================================
+  # MAINTENANCE CONTEXT (SAP-derived reliability tables)
+  # =========================================================
+
+  asset_strategy:
+    primary_key: strategy_uid
+    columns:
+      strategy_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      normalized_asset: VARCHAR(200)
+      strategy_type: VARCHAR(80)
+      criticality_rank: VARCHAR(30)
+      review_date: TIMESTAMP
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+      notes: TEXT
+    superseded_indexes: [uq_asset_strategy]
+    constraints:
+      - {type: unique, name: uq_asset_strategy_site, columns: [plant_code_id, site, normalized_asset]}
+    indexes:
+      - {name: idx_asset_strategy_site, columns: [plant_code_id, site]}
+      - {name: idx_astrat_plant, columns: [plant_code_id]}
+      - {name: idx_astrat_asset, columns: [plant_code_id, normalized_asset]}
+    foreign_keys: []
+
+  repair_action:
+    primary_key: action_uid
+    columns:
+      action_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      wo_number: VARCHAR(60)
+      action_seq: VARCHAR(30)
+      action_type: VARCHAR(80)
+      component_replaced: VARCHAR(200)
+      spare_material_code: VARCHAR(120)
+      labor_hours: NUMERIC(10,2)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    superseded_indexes: [uq_repair_action]
+    constraints:
+      - {type: unique, name: uq_repair_action_site, columns: [plant_code_id, site, wo_number, action_seq]}
+    indexes:
+      - {name: idx_repair_action_site, columns: [plant_code_id, site]}
+      - {name: idx_repair_plant, columns: [plant_code_id]}
+      - {name: idx_repair_wo, columns: [plant_code_id, wo_number]}
+    foreign_keys: []
+
+  operating_state_log:
+    primary_key: state_uid
+    columns:
+      state_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      normalized_asset: VARCHAR(200)
+      state_start: TIMESTAMP
+      state_end: TIMESTAMP
+      operating_state: VARCHAR(80)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+      duration_hours: NUMERIC(10,2)
+      related_wo_number: VARCHAR(60)
+    superseded_indexes: [uq_op_state]
+    constraints:
+      - {type: unique, name: uq_op_state_site, columns: [plant_code_id, site, normalized_asset, state_start]}
+    indexes:
+      - {name: idx_operating_state_log_site, columns: [plant_code_id, site]}
+      - {name: idx_opstate_plant, columns: [plant_code_id]}
+      - {name: idx_opstate_asset, columns: [plant_code_id, normalized_asset]}
+    foreign_keys: []
+
+  inspection_record:
+    primary_key: inspection_uid
+    columns:
+      inspection_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      inspection_id: VARCHAR(80)
+      normalized_asset: VARCHAR(200)
+      inspection_type: VARCHAR(60)
+      inspection_date: TIMESTAMP
+      next_inspection_date: TIMESTAMP
+      inspector: VARCHAR(120)
+      result: VARCHAR(60)
+      findings: TEXT
+      recommendations: TEXT
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    superseded_indexes: [uq_inspection]
+    constraints:
+      - {type: unique, name: uq_inspection_site, columns: [plant_code_id, site, inspection_id]}
+    indexes:
+      - {name: idx_inspection_record_site, columns: [plant_code_id, site]}
+      - {name: idx_insp_plant, columns: [plant_code_id]}
+      - {name: idx_insp_asset, columns: [plant_code_id, normalized_asset]}
+    foreign_keys: []
+
+    # ── Alerts ───────────────────────────────────────────────────────────────
+  # One row per alert from the uploaded ALERTS workbook.
+  # Both "Open Alerts" and "Closed Alerts" sheets land in this same table.
+  # alert_status identifies which source section the row came from.
+  #
+  # Source Tag Number is preserved exactly in tag_number.
+  # equipment_id is a separate canonical P&ID-resolved identity.
+  alerts:
+    primary_key: alert_uid
+    columns:
+      alert_uid: BIGSERIAL
+
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+
+      source_index: VARCHAR(40)
+      region: VARCHAR(120)
+      field_name: VARCHAR(120)
+      oem: VARCHAR(160)
+      unit_type: VARCHAR(120)
+
+      alert_status: VARCHAR(20)
+      labels: JSON
+
+      # Original source value — NEVER overwrite this with the P&ID match.
+      tag_number: VARCHAR(200)
+
+      # Canonical equipment identity resolved against P&ID.
+      # For now this may remain NULL when no P&ID equipment dump is available.
+      equipment_id: VARCHAR(120)
+
+      priority: VARCHAR(80)
+      status: VARCHAR(120)
+      title: TEXT
+      description: TEXT
+      tag: VARCHAR(200)
+
+      current_action: TEXT
+      action_taken: TEXT
+
+      date_open: TIMESTAMP
+      date_closed: TIMESTAMP
+
+      equipment_class: VARCHAR(160)
+      subunit: VARCHAR(160)
+      maintainable_item: VARCHAR(200)
+      fault_category: VARCHAR(160)
+
+      # Added by the pipeline from the workbook sheet:
+      # "Open Alerts" -> open
+      # "Closed Alerts" -> closed
+
+      # Equipment-resolution review fields.
+      normalized_asset: VARCHAR(200)
+      asset_match_method: VARCHAR(60)
+      asset_match_confidence: NUMERIC(6,4)
+
+      # Upload / processing lineage.
+      source_file: VARCHAR(512)
+      upload_batch_id: VARCHAR(64)
+
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+
+    constraints:
+      - {
+          type: unique,
+          name: uq_alerts_source_record,
+          columns: [plant_code_id, source_record_id]
+        }
+
+    indexes:
+      - {name: idx_alerts_plant, columns: [plant_code_id]}
+      - {name: idx_alerts_equipment, columns: [plant_code_id, equipment_id]}
+      - {name: idx_alerts_tag_number, columns: [plant_code_id, tag_number]}
+      - {name: idx_alerts_status, columns: [plant_code_id, alert_status]}
+      - {name: idx_alerts_source_file, columns: [plant_code_id, source_file]}
+      - {name: idx_alerts_source_record, columns: [plant_code_id, source_record_id]}
+
+    foreign_keys:
+      - {column: plant_code_id, ref_table: plants, ref_column: plant_code_id, on_delete: RESTRICT}
+
+  # ── Asset Integrity Findings ────────────────────────────────────────────
+  # One row per finding. `equipment_class` is the source's own "Equipment"
+  # column, which carries an equipment CLASS ("Piping Hydrocarbon", "Vessel"),
+  # never a tag — identity comes from functional_location. See
+  # .data/p0-dev-doc/aif-gloc-lopc-labels-decisions.md §3.
+  inspection_record_aif:
+    primary_key: aif_uid
+    columns:
+      aif_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      notification_no: VARCHAR(80)
+      work_order_no: VARCHAR(80)
+      normalized_asset: VARCHAR(200)
+      functional_location: VARCHAR(200)
+      platform: VARCHAR(80)
+      field_name: VARCHAR(120)
+      description: TEXT
+      finding_source_group: VARCHAR(60)
+      finding_source: VARCHAR(60)
+      initial_priority: INTEGER
+      priority: INTEGER
+      status: VARCHAR(60)
+      system_status: VARCHAR(60)
+      user_status: VARCHAR(60)
+      finding_count: INTEGER
+      creation_date: TIMESTAMP
+      plan_date: TIMESTAMP
+      due_date: TIMESTAMP
+      closure_date: TIMESTAMP
+      extension_method: VARCHAR(40)
+      extension_date: TIMESTAMP
+      action_party: VARCHAR(120)
+      work_centre: VARCHAR(60)
+      recommendation: TEXT
+      equipment_class: VARCHAR(120)
+      corrosion_mechanism: VARCHAR(80)
+      category_group: VARCHAR(80)
+      category: VARCHAR(120)
+      reported_by: VARCHAR(120)
+      content: TEXT
+      asset_match_method: VARCHAR(40)
+      asset_match_confidence: NUMERIC(6,4)
+      labels: JSON
+      source_file: VARCHAR(512)
+      upload_batch_id: VARCHAR(64)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    superseded_indexes: [uq_aif_finding]
+    constraints:
+      - {type: unique, name: uq_aif_finding_site, columns: [plant_code_id, site, notification_no]}
+    indexes:
+      - {name: idx_inspection_record_aif_site, columns: [plant_code_id, site]}
+      - {name: idx_aif_plant, columns: [plant_code_id]}
+      - {name: idx_aif_asset, columns: [plant_code_id, normalized_asset]}
+      - {name: idx_aif_batch, columns: [upload_batch_id]}
+    foreign_keys: []
+
+  # ── Gas Loss of Containment ─────────────────────────────────────────────
+  containment_event_gloc:
+    primary_key: gloc_uid
+    columns:
+      gloc_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      notification_no: VARCHAR(80)
+      work_order_no: VARCHAR(80)
+      normalized_asset: VARCHAR(200)
+      equipment_ref: VARCHAR(200)
+      sap_equipment_id: VARCHAR(80)
+      report_date: TIMESTAMP
+      severity: VARCHAR(40)
+      final_status: VARCHAR(40)
+      field_name: VARCHAR(120)
+      fault_code: VARCHAR(120)
+      findings: TEXT
+      recommendation: TEXT
+      action_party: VARCHAR(120)
+      asset_match_method: VARCHAR(40)
+      asset_match_confidence: NUMERIC(6,4)
+      labels: JSON
+      source_file: VARCHAR(512)
+      upload_batch_id: VARCHAR(64)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    superseded_indexes: [uq_gloc_event]
+    constraints:
+      - {type: unique, name: uq_gloc_event_site, columns: [plant_code_id, site, source_record_id]}
+    indexes:
+      - {name: idx_containment_event_gloc_site, columns: [plant_code_id, site]}
+      - {name: idx_gloc_plant, columns: [plant_code_id]}
+      - {name: idx_gloc_asset, columns: [plant_code_id, normalized_asset]}
+      - {name: idx_gloc_batch, columns: [upload_batch_id]}
+    foreign_keys: []
+
+  # ── Loss of Primary Containment ─────────────────────────────────────────
+  # leak_amount_raw keeps the source cell verbatim: real exports put
+  # non-numeric values ("Valve", "Gas") in the kg column.
+  containment_event_lopc:
+    primary_key: lopc_uid
+    columns:
+      lopc_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      reference_no: VARCHAR(120)
+      incident_title: TEXT
+      normalized_asset: VARCHAR(200)
+      location: VARCHAR(120)
+      platform: VARCHAR(80)
+      field_name: VARCHAR(120)
+      region: VARCHAR(60)
+      event_date: TIMESTAMP
+      event_month: VARCHAR(20)
+      event_year: INTEGER
+      description: TEXT
+      incident_classification: VARCHAR(80)
+      medium_classification: VARCHAR(80)
+      release_category: VARCHAR(60)
+      leak_amount_kg: NUMERIC(16,4)
+      leak_amount_raw: VARCHAR(120)
+      leak_rate: VARCHAR(120)
+      equipment_type: VARCHAR(120)
+      valve_size: VARCHAR(60)
+      component_type: VARCHAR(120)
+      corrosion_related: BOOLEAN
+      damage_mechanism: VARCHAR(160)
+      secondary_damage_mechanism: VARCHAR(160)
+      risk_factor: VARCHAR(120)
+      program_sprint: VARCHAR(120)
+      remarks: TEXT
+      asset_match_method: VARCHAR(40)
+      asset_match_confidence: NUMERIC(6,4)
+      labels: JSON
+      source_file: VARCHAR(512)
+      upload_batch_id: VARCHAR(64)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    superseded_indexes: [uq_lopc_event]
+    constraints:
+      - {type: unique, name: uq_lopc_event_site, columns: [plant_code_id, site, source_record_id]}
+    indexes:
+      - {name: idx_containment_event_lopc_site, columns: [plant_code_id, site]}
+      - {name: idx_lopc_plant, columns: [plant_code_id]}
+      - {name: idx_lopc_asset, columns: [plant_code_id, normalized_asset]}
+      - {name: idx_lopc_batch, columns: [upload_batch_id]}
+    foreign_keys: []
+
+  # ── UPD (Unplanned Deferment) Events ────────────────────────────────────
+  upd_event:
+    primary_key: upd_uid
+    columns:
+      upd_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      event_type: VARCHAR(20)
+      region: VARCHAR(80)
+      cluster: VARCHAR(80)
+      field: VARCHAR(120)
+      hub: VARCHAR(120)
+      code: VARCHAR(40)
+      category: VARCHAR(80)
+      category_asome: VARCHAR(80)
+      primary_cause: VARCHAR(120)
+      primary_cause_asome: VARCHAR(120)
+      secondary_cause: VARCHAR(120)
+      start_datetime: TIMESTAMP
+      end_datetime: TIMESTAMP
+      problem_statement: TEXT
+      status: VARCHAR(40)
+      way_forward_description: TEXT
+      deferment_oil_kb: NUMERIC(16,4)
+      deferment_gas_mmscf: NUMERIC(16,4)
+      deferment_pour_rm: NUMERIC(16,4)
+      eqp_tag_no: VARCHAR(200)
+      estimated_deferment_oil_kb: NUMERIC(16,4)
+      estimated_deferment_gas_mmscf: NUMERIC(16,4)
+      discipline: VARCHAR(80)
+      eqp_class: VARCHAR(80)
+      system: VARCHAR(120)
+      mant_items: VARCHAR(200)
+      failure_mode_iso: VARCHAR(120)
+      failure_mechanism_category: VARCHAR(120)
+      failure_mechanism_iso: VARCHAR(120)
+      failure_mechanism_subdivision_iso: VARCHAR(200)
+      managerial_root_cause_category: VARCHAR(120)
+      failure_cause: VARCHAR(200)
+      responsible_section: VARCHAR(120)
+      status_update: TEXT
+      month_start: INTEGER
+      year_start: INTEGER
+      downtime_hours: NUMERIC(10,2)
+      superior_func_loc: VARCHAR(120)
+      primary_concern_func_loc: VARCHAR(120)
+      new_trip: VARCHAR(10)
+      ffn_completed: VARCHAR(10)
+      topside_downtime: VARCHAR(10)
+      updated_in_udp: VARCHAR(10)
+      normalized_asset: VARCHAR(200)
+      equipment_id: VARCHAR(120)
+      asset_match_method: VARCHAR(40)
+      asset_match_confidence: NUMERIC(6,4)
+      labels: JSON
+      source_file: VARCHAR(512)
+      upload_batch_id: VARCHAR(64)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_upd_event_site, columns: [plant_code_id, site, source_record_id]}
+    indexes:
+      - {name: idx_upd_event_site, columns: [plant_code_id, site]}
+      - {name: idx_upd_plant, columns: [plant_code_id]}
+      - {name: idx_upd_asset, columns: [plant_code_id, normalized_asset]}
+      - {name: idx_upd_batch, columns: [upload_batch_id]}
+    foreign_keys: []
+
+  # ── Trip Events ──────────────────────────────────────────────────────────
+  trip_event:
+    primary_key: trip_uid
+    columns:
+      trip_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      event_type: VARCHAR(20)
+      region: VARCHAR(80)
+      cluster: VARCHAR(80)
+      field: VARCHAR(120)
+      hub: VARCHAR(120)
+      code: VARCHAR(40)
+      category: VARCHAR(80)
+      category_asome: VARCHAR(80)
+      primary_cause: VARCHAR(120)
+      primary_cause_asome: VARCHAR(120)
+      secondary_cause: VARCHAR(120)
+      start_datetime: TIMESTAMP
+      end_datetime: TIMESTAMP
+      problem_statement: TEXT
+      status: VARCHAR(40)
+      way_forward_description: TEXT
+      deferment_oil_kb: NUMERIC(16,4)
+      deferment_gas_mmscf: NUMERIC(16,4)
+      deferment_pour_rm: NUMERIC(16,4)
+      eqp_tag_no: VARCHAR(200)
+      estimated_deferment_oil_kb: NUMERIC(16,4)
+      estimated_deferment_gas_mmscf: NUMERIC(16,4)
+      discipline: VARCHAR(80)
+      eqp_class: VARCHAR(80)
+      system: VARCHAR(120)
+      mant_items: VARCHAR(200)
+      failure_mode_iso: VARCHAR(120)
+      failure_mechanism_category: VARCHAR(120)
+      failure_mechanism_iso: VARCHAR(120)
+      failure_mechanism_subdivision_iso: VARCHAR(200)
+      managerial_root_cause_category: VARCHAR(120)
+      failure_cause: VARCHAR(200)
+      responsible_section: VARCHAR(120)
+      status_update: TEXT
+      month_start: INTEGER
+      year_start: INTEGER
+      downtime_hours: NUMERIC(10,2)
+      superior_func_loc: VARCHAR(120)
+      primary_concern_func_loc: VARCHAR(120)
+      new_trip: VARCHAR(10)
+      ffn_completed: VARCHAR(10)
+      topside_downtime: VARCHAR(10)
+      updated_in_udp: VARCHAR(10)
+      normalized_asset: VARCHAR(200)
+      equipment_id: VARCHAR(120)
+      asset_match_method: VARCHAR(40)
+      asset_match_confidence: NUMERIC(6,4)
+      labels: JSON
+      source_file: VARCHAR(512)
+      upload_batch_id: VARCHAR(64)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_trip_event_site, columns: [plant_code_id, site, source_record_id]}
+    indexes:
+      - {name: idx_trip_event_site, columns: [plant_code_id, site]}
+      - {name: idx_trip_plant, columns: [plant_code_id]}
+      - {name: idx_trip_asset, columns: [plant_code_id, normalized_asset]}
+      - {name: idx_trip_batch, columns: [upload_batch_id]}
+    foreign_keys: []
+
+  # ── Integrated view ─────────────────────────────────────────────────────
+  # One row per finding per label. `layers` holds the 6-layer ontology payload
+  # built from the label templates; filtering on `label` yields the four
+  # logical views the UI renders.
+  integrated_view:
+    primary_key: integrated_uid
+    columns:
+      integrated_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      label: VARCHAR(24)
+      normalized_asset: VARCHAR(200)
+      finding_ref: VARCHAR(200)
+      source_connector: VARCHAR(24)
+      source_table: VARCHAR(80)
+      row_status: VARCHAR(16)
+      layers: JSON
+      upload_batch_id: VARCHAR(64)
+      computed_at: TIMESTAMP
+      updated_at: TIMESTAMP
+    superseded_indexes: [uq_integrated_row]
+    constraints:
+      - {type: unique, name: uq_integrated_row_site, columns: [plant_code_id, site, label, source_connector, finding_ref]}
+    indexes:
+      - {name: idx_integrated_view_site, columns: [plant_code_id, site]}
+      - {name: idx_integrated_label, columns: [plant_code_id, label]}
+      - {name: idx_integrated_asset, columns: [plant_code_id, normalized_asset]}
+      - {name: idx_integrated_status, columns: [plant_code_id, label, row_status]}
+    foreign_keys: []
+
+  proof_test:
+    primary_key: proof_test_uid
+    columns:
+      proof_test_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      sif_id: VARCHAR(80)
+      test_date: TIMESTAMP
+      test_result: VARCHAR(60)
+      test_coverage_pct: NUMERIC(6,2)
+      tester: VARCHAR(120)
+      related_wo_number: VARCHAR(60)
+      findings: TEXT
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    superseded_indexes: [uq_proof_test]
+    constraints:
+      - {type: unique, name: uq_proof_test_site, columns: [plant_code_id, site, sif_id, test_date]}
+    indexes:
+      - {name: idx_proof_test_site, columns: [plant_code_id, site]}
+      - {name: idx_pt_plant, columns: [plant_code_id]}
+      - {name: idx_pt_sif, columns: [plant_code_id, sif_id]}
+    foreign_keys: []
+
+  asset_relationship:
+    primary_key: relationship_uid
+    columns:
+      relationship_uid: VARCHAR(50)
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      parent_ref: VARCHAR(200)
+      child_ref: VARCHAR(200)
+      relationship_type: VARCHAR(80)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_asset_rel, columns: [relationship_uid]}
+    indexes:
+      - {name: idx_asset_relationship_site, columns: [plant_code_id, site]}
+      - {name: idx_rel_plant, columns: [plant_code_id]}
+      - {name: idx_rel_parent, columns: [parent_ref]}
+      - {name: idx_rel_child, columns: [child_ref]}
+    foreign_keys:
+      - {column: plant_code_id, ref_table: plants, ref_column: plant_code_id, on_delete: RESTRICT}
+
+  # =========================================================
+  # GOVERNANCE / STANDARDS
+  # =========================================================
+
+  standards_field_registry:
+    primary_key: standards_uid
+    columns:
+      standards_uid: BIGSERIAL
+      standard_name: VARCHAR(120)
+      standard_version: VARCHAR(60)
+      entity_name: VARCHAR(120)
+      canonical_field: VARCHAR(120)
+      data_type: VARCHAR(40)
+      required: BOOLEAN
+      accepted_aliases: JSON
+      validation_rule: TEXT
+      description: TEXT
+      effective_from: TIMESTAMP
+      effective_to: TIMESTAMP
+
+  # =========================================================
+  # MULTI-TENANT / PLANT REGISTRY
+  # =========================================================
+  # plant_code_id is the tenant boundary across every CDM table — the
+  # ``plants`` table is the registry that admins manage via
+  # POST /api/config/plants. Every upload validates against it.
+  plants:
+    primary_key: plant_code_id
+    columns:
+      plant_code_id: VARCHAR(50)
+      label: VARCHAR(200)
+      industry: VARCHAR(80)
+      # The database holding this plant's data. Postgres caps identifiers at 63.
+      db_name: VARCHAR(63)
+      created_at: TIMESTAMP
+      created_by: VARCHAR(120)
+    indexes:
+      - {name: idx_plants_industry, columns: [industry]}
+    foreign_keys: []
+
+  # A plant may be one physical location or many. Where it is many, ``site`` is
+  # the second half of the identity on every CDM table — an asset tag is unique
+  # per (plant, site), not per plant, because two platforms reuse tag numbers.
+  # Plants with a single location carry the '-' sentinel rather than NULL, so the
+  # unique indexes keep working (NULLs compare distinct and would silently allow
+  # duplicates).
+  sites:
+    primary_key: site_uid
+    columns:
+      site_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      label: VARCHAR(200)
+      site_type: VARCHAR(80)
+      description: TEXT
+      is_active: BOOLEAN
+      created_at: TIMESTAMP
+      created_by: VARCHAR(120)
+    constraints:
+      - {type: unique, name: uq_site_plant_code, columns: [plant_code_id, site]}
+    indexes:
+      - {name: idx_sites_plant, columns: [plant_code_id]}
+    foreign_keys:
+      - {column: plant_code_id, ref_table: plants, ref_column: plant_code_id, on_delete: RESTRICT}
+
+  # User configuration — the layer that sits ON TOP of the standard templates.
+  # Templates are never modified; anything a user changes lands here.
+  # Resolution order: standard template <- global user config <- per-plant override.
+  user_config:
+    primary_key: config_uid
+    columns:
+      config_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)        # the global layer uses the literal '__global__'
+      scope: VARCHAR(16)                # global | plant
+      config: JSON                      # the merged override document for this scope
+      version: INTEGER                  # bumped on every write, for optimistic concurrency
+      is_active: BOOLEAN
+      created_by: VARCHAR(120)
+      created_at: TIMESTAMPTZ
+      updated_by: VARCHAR(120)
+      updated_at: TIMESTAMPTZ
+    indexes:
+      - {name: uq_user_config_scope, columns: [plant_code_id, scope], unique: true}
+      - {name: idx_user_config_updated, columns: [updated_at]}
+    foreign_keys: []
+
+  # Append-only history of every user-config change, so nothing is ever lost.
+  user_config_history:
+    primary_key: history_uid
+    columns:
+      history_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      scope: VARCHAR(16)
+      action: VARCHAR(16)               # patch | replace | reset | init
+      section: VARCHAR(80)              # top-level key that changed, when known
+      patch: JSON                       # exactly what the caller sent
+      config_before: JSON
+      config_after: JSON
+      version_after: INTEGER
+      actor: VARCHAR(120)
+      ts: TIMESTAMPTZ
+    indexes:
+      - {name: idx_user_config_hist_plant, columns: [plant_code_id, ts]}
+      - {name: idx_user_config_hist_scope, columns: [scope]}
+    foreign_keys: []
+
+  # =========================================================
+  # OPERATIONAL — JOB & COMMIT AUDIT
+  # =========================================================
+  # Durable record of pipeline runs and commit outcomes. Previously the
+  # pipeline job tracker was an in-memory dict (lost on restart, and a
+  # polling frontend 404'd after a restart); commit results were
+  # fire-and-forget (failures swallowed). These tables make "what ran"
+  # and "did my data land" auditable across restarts.
+
+  # One row per pipeline run. Write-through: every status transition
+  # (queued → running → completed/failed/cancelled) updates this row.
+  pipeline_jobs:
+    primary_key: pipeline_job_id
+    columns:
+      pipeline_job_id: VARCHAR(64)               # uuid4 string
+      stage: VARCHAR(20)                # pnid | docs | ts | sap | full
+      plant_code_id: VARCHAR(50)
+      industry: VARCHAR(80)
+      status: VARCHAR(20)               # queued|running|completed|failed|cancelled
+      pid: INTEGER                      # OS pid of the subprocess (nullable)
+      total_records: INTEGER
+      record_counts: JSON               # {table: count}
+      output_tables: JSON               # [table names]
+      warning: JSON                     # {category, reason, evidence} or null
+      error: TEXT
+      created_by: VARCHAR(120)          # actor who triggered the run (auth token), else 'system'
+      created_at: TIMESTAMPTZ           # zone-aware UTC so clients render "x ago" correctly
+      started_at: TIMESTAMPTZ
+      completed_at: TIMESTAMPTZ
+      upload_batch_id: VARCHAR(64)      # the upload batch this run was scoped to (nullable)
+      progress_percent: INTEGER         # server-computed, monotonic, 100 only at terminal
+      is_determinate: BOOLEAN           # false -> UI renders an indeterminate bar
+      current_phase: VARCHAR(40)
+      current_label: VARCHAR(200)
+      current_item: TEXT
+      items_done: INTEGER
+      items_total: INTEGER
+      stages_planned: JSON              # declared phase list, so the stepper renders up front
+      phases: JSON                      # {phase_key: {status, items_done, items_total, ...}}
+    indexes:
+      - {name: idx_jobs_plant_stage, columns: [plant_code_id, stage]}
+      - {name: idx_jobs_status, columns: [status]}
+      - {name: idx_jobs_created, columns: [created_at]}
+    foreign_keys: []
+
+  # One row per commit attempt (pnid/docs/ts/sap). Records the outcome so
+  # the UI / operators can answer "did my reviewed data actually commit"
+  # instead of trusting a fire-and-forget POST.
+  commit_audit:
+    primary_key: commit_uid
+    columns:
+      commit_uid: BIGSERIAL
+      source: VARCHAR(20)               # pnid | docs | ts | sap
+      plant_code_id: VARCHAR(50)
+      status: VARCHAR(20)               # committed | partial | failed
+      rows_written: INTEGER
+      tables: JSON                      # per-table breakdown
+      detail: JSON                      # source-specific extras (replaced counts, warnings)
+      committed_by: VARCHAR(120)        # jwt subject / email
+      committed_at: TIMESTAMPTZ         # zone-aware UTC
+    indexes:
+      - {name: idx_commit_plant_source, columns: [plant_code_id, source]}
+      - {name: idx_commit_at, columns: [committed_at]}
+    foreign_keys: []
+
+  # Generic platform activity log — one row per discrete user/system action
+  # (upload, delete, plant create/purge, config change, …) so the admin Log
+  # Management "Activity" feed can answer "who did what, when" beyond just
+  # commits + pipeline runs. Best-effort writes (never block the action).
+  activity_events:
+    primary_key: event_uid
+    columns:
+      event_uid: BIGSERIAL
+      ts: TIMESTAMPTZ                   # when the action happened (zone-aware UTC)
+      actor: VARCHAR(120)              # jwt subject / email, or 'system'
+      action: VARCHAR(60)              # upload | delete | plant.create | plant.purge | config.update | ...
+      target_type: VARCHAR(40)         # file | plant | source | config | ...
+      target: VARCHAR(255)             # the thing acted on (filename, plant_code_id, key, ...)
+      plant_code_id: VARCHAR(50)
+      source: VARCHAR(20)              # ts | docs | pnid | sap | (nullable)
+      status: VARCHAR(20)             # ok | failed
+      detail: JSON                    # action-specific extras
+    indexes:
+      - {name: idx_activity_ts, columns: [ts]}
+      - {name: idx_activity_plant, columns: [plant_code_id]}
+      - {name: idx_activity_action, columns: [action]}
+    foreign_keys: []
+
+  # APPEND-ONLY lineage ledger — one immutable row per lifecycle transition of a
+  # file (uploaded/processing/processed/reviewed/committed/failed/reset). Unlike
+  # flow_state (which is the mutable CURRENT state, keyed by content_hash and
+  # overwritten on re-upload / cleared on reset), run_events is the permanent
+  # HISTORY: reprocessing APPENDS, never destroys. This is what makes the
+  # file→run→commit lineage survive a reprocess. Best-effort writes (never block).
+  run_events:
+    primary_key: event_uid
+    columns:
+      event_uid: BIGSERIAL
+      ts: TIMESTAMPTZ                   # when this transition happened (zone-aware UTC)
+      plant_code_id: VARCHAR(50)
+      flow: VARCHAR(20)                # ts | ts_values | pnid | docs | sap
+      event: VARCHAR(24)               # uploaded|staged|processing|processed|reviewed|committed|failed|reset
+      file_name: VARCHAR(512)
+      content_hash: VARCHAR(64)        # ties all events for the same bytes together
+      flow_uid: BIGINT                 # → flow_state.flow_uid (current-state link)
+      upload_batch_id: VARCHAR(64)            # → pipeline_jobs.pipeline_job_id (the run)
+      commit_uid: BIGINT               # → commit_audit.commit_uid (the commit)
+      actor: VARCHAR(120)              # who triggered it (or 'system')
+      rows_in: INTEGER                 # raw rows read
+      rows_out: INTEGER                # rows produced/committed
+      rows_rejected: INTEGER           # rows dropped/invalid
+      status: VARCHAR(16)              # ok | failed
+      detail: JSON                     # event-specific extras (incl. DQ reject breakdown)
+    indexes:
+      - {name: idx_runev_file, columns: [plant_code_id, flow, content_hash]}
+      - {name: idx_runev_batch, columns: [upload_batch_id]}
+      - {name: idx_runev_ts, columns: [ts]}
+    foreign_keys: []
+
+  # One row per FILE per plant per flow — the durable record of where each
+  # uploaded file sits in the onboarding flow (upload → stage → process →
+  # review → commit). Replaces the per-source-type sticky sets the frontend
+  # used to keep in browser localStorage (which locked the UI after one file
+  # and needed manual DevTools clearing). Identity is (plant_code_id, flow,
+  # content_hash): same bytes update the same row (powers the "already
+  # processed, reprocess?" modal); different bytes = a new row, so many files
+  # coexist without locking. References pipeline_jobs / commit_audit rather
+  # than duplicating them.
+  flow_state:
+    primary_key: flow_uid
+    columns:
+      flow_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      site: VARCHAR(80) NOT NULL DEFAULT '-'
+      flow: VARCHAR(20)                 # ts | ts_values | pnid | docs | sap
+      file_name: VARCHAR(512)           # original upload name (what the user recognizes)
+      file_type: VARCHAR(32)            # metadata | values | ...
+      content_hash: VARCHAR(64)         # sha256 (metadata: full; values: sampled — see flow.py)
+      size_bytes: BIGINT
+      # ── lifecycle ──
+      stage: VARCHAR(24)                # uploaded|staged|processing|processed|reviewing|reviewed|committing|committed
+      status: VARCHAR(16)               # pending|running|done|failed|cancelled
+      error: TEXT
+      hash_method: VARCHAR(16)          # full | sampled  (provenance of content_hash)
+      schema_version: VARCHAR(16)       # flow_state row schema version (for migrations)
+      # ── per-stage breadcrumbs (nullable until reached) ──
+      upload_job_id: VARCHAR(64)        # connectors upload job
+      rustfs_path: TEXT                 # staged object path
+      upload_batch_id: VARCHAR(64)             # pipeline run id → pipeline_jobs.pipeline_job_id / upload_batch_id in parquet+DB
+      process_job_id: VARCHAR(64)       # → pipeline_jobs.pipeline_job_id
+      processed_parquet: TEXT           # processed_data/.../ts_timeseries_metadata.parquet
+      row_count: INTEGER                # rows in processed parquet / review (this file)
+      rows_in: INTEGER                  # raw rows read from the source file
+      rows_rejected: INTEGER            # rows dropped/invalid during processing
+      review_patches: INTEGER           # # edits staged in review
+      review_deletes: INTEGER
+      commit_uid: BIGINT                # → commit_audit.commit_uid
+      rows_committed: INTEGER
+      # ── values (ts_values → IoTDB) linkage ──
+      rows_ingested: BIGINT             # data points written to IoTDB (values flow)
+      iotdb_path: TEXT                  # root.<root>.<plant>.<file> device path (values flow)
+      ts_from: TIMESTAMP                # earliest timestamp ingested (values flow)
+      ts_to: TIMESTAMP                  # latest timestamp ingested (values flow)
+      # ── per-stage timestamps (lineage / SLA / debugging) ──
+      uploaded_at: TIMESTAMP
+      processing_started_at: TIMESTAMP
+      processed_at: TIMESTAMP
+      reviewed_at: TIMESTAMP
+      committed_at: TIMESTAMP
+      # ── reliability / observability ──
+      attempt_count: INTEGER            # # of process attempts (retries)
+      last_error_at: TIMESTAMP
+      # ── taxonomy (see api/services/taxonomy.py — one canonical vocabulary) ──
+      category: VARCHAR(64)             # pnid|pfd|line_list|others · metadata|values · doc subtype · SAP table
+      # ── server-extracted file metadata (replaces browser-side pdfjs/xlsx parsing) ──
+      content_type: VARCHAR(120)
+      page_count: INTEGER               # PDFs
+      has_text_layer: BOOLEAN           # PDFs — drives the OCR-vs-text-extract decision
+      sheet_names: JSON                 # spreadsheets
+      labels: JSON                      # use-case labels chosen at upload — integrity|reliability|maintenance|production
+      duplicate_of: BIGINT              # → flow_state.flow_uid of the file this duplicates
+      # ── audit ──
+      uploaded_by: VARCHAR(120)
+      created_by: VARCHAR(120)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+    # Renamed each time the key grew, because CREATE UNIQUE INDEX IF NOT EXISTS
+    # matches by NAME — a same-named index would never be rebuilt.
+    #   uq_flow_file      → + category    → uq_flow_file_cat
+    #   uq_flow_file_cat  → + file_name   → uq_flow_file_named
+    # file_name joined the key because the same bytes uploaded under two names are
+    # two files to the user. Keying on content alone made the second upload rename
+    # the first row, orphaning every committed row that referenced the old name.
+    # Each new key is strictly weaker than the last, so the migration cannot fail
+    # on existing data.
+    superseded_indexes: [uq_flow_file, uq_flow_file_cat, uq_flow_file_named]
+    unique:
+      - {name: uq_flow_file_site,
+         columns: [plant_code_id, site, flow, category, content_hash, file_name]}
+    indexes:
+      - {name: idx_flow_state_site, columns: [plant_code_id, site]}
+      - {name: idx_flow_plant_flow, columns: [plant_code_id, flow]}
+      - {name: idx_flow_stage, columns: [stage]}
+      - {name: idx_flow_batch, columns: [upload_batch_id]}
+      - {name: idx_flow_source_file, columns: [plant_code_id, flow, file_name]}
+    foreign_keys: []

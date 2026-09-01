@@ -1,0 +1,19 @@
+industry: oil_gas
+document_processing:
+  document_types:
+    sol:
+      document_type: SOL
+      source_columns:
+      - Process System
+      - Equipment Name
+      - Threat and consequence
+    baronia:
+      document_type: Baronia
+      source_columns:
+      - Tag No.
+      - Tag Name
+      - Description
+timeseries:
+  retention:
+    value: '90'
+    unit: days

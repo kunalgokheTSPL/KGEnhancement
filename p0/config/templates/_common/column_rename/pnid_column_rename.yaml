@@ -1,0 +1,143 @@
+version: '1.1'
+notes:
+- P&ID extracted tables may vary by tool; include common aliases. Prefer producing
+  canonical columns used by CDM.
+- Header keys match separator- and case-insensitively, so "Equipment Tag",
+  "equipment_tag", "EQUIPMENT-TAG" and "Equipment.Tag" are one key. Declare one
+  spelling of each, not four.
+- A target must be a name some pid entity attribute reads in entities.yaml.
+  Anything else is silently dropped downstream.
+- target_priority decides which header wins when several map to one target.
+  Without it the winner is the uploaded file's column order.
+- pid_connectivity is for the connectivity sheet only. It inherits every pid
+  mapping and overrides the few headers that mean something else there. A "Type"
+  column on an equipment sheet is the equipment type, while on a connectivity
+  sheet the same header is the connection type.
+sources:
+  pid:
+    mappings:
+      equipment_tag: equipment_tag
+      Equipment Tag: equipment_tag
+      TAG: equipment_tag
+      Tag: equipment_tag
+      From Tag: from_equipment_tag
+      To Tag: to_equipment_tag
+      From: from_equipment_tag
+      To: to_equipment_tag
+      source_equipment: from_equipment_tag
+      target_equipment: to_equipment_tag
+      material_flow: medium
+      Type: equipment_type
+      Instrument Type: equipment_type
+      Service: medium
+      Medium: medium
+      Line: line
+      Line No: line
+      Area: area
+      Unit: process_unit
+      Process Unit: process_unit
+      Description: description
+      Equipment Description: description
+      Plant: plant_code_id
+      plant_code_id: plant_code_id
+      normalized_asset: normalized_asset
+      Equipment: equipment_id
+      equipment_id: equipment_id
+      Functional Location: functional_location
+      functional_location: functional_location
+      Connection Type: connection_type
+      connection_type: connection_type
+      Tag Number: equipment_tag
+      Tag No: equipment_tag
+      Asset Tag: equipment_tag
+      Item Tag: equipment_tag
+      Equipment Number: equipment_id
+      Equipment No: equipment_id
+      Equipment Code: equipment_id
+      Item Number: equipment_id
+      Item No: equipment_id
+      Asset Number: equipment_id
+      Asset ID: equipment_id
+      From Equipment: from_equipment_tag
+      From Item: from_equipment_tag
+      Source Tag: from_equipment_tag
+      Upstream Tag: from_equipment_tag
+      To Equipment: to_equipment_tag
+      To Item: to_equipment_tag
+      Target Tag: to_equipment_tag
+      Downstream Tag: to_equipment_tag
+      Relationship: connection_type
+      Relation Type: connection_type
+      Fluid: medium
+      Process Fluid: medium
+      Fluid Service: medium
+      Commodity: medium
+      Line Number: line
+      Pipe Number: line
+      Pipeline Number: line
+      Equipment Type: equipment_type
+      Equipment Class: equipment_type
+      Asset Type: equipment_type
+      Item Type: equipment_type
+      Component Type: equipment_type
+      Category: equipment_type
+      Equipment Name: description
+      Item Description: description
+      Asset Description: description
+      Service Description: description
+      Plant Area: area
+      Zone: area
+      System: process_unit
+      FLOC: functional_location
+      Criticality: criticality
+      Criticality Class: criticality
+      Manufacturer: manufacturer
+      Make: manufacturer
+      Vendor Name: manufacturer
+      Model: model
+      Model Number: model
+      Status: status
+      Equipment Status: status
+      Operational Status: status
+    target_priority:
+      equipment_tag: [equipment_tag, Equipment Tag, Tag Number, Tag No, Asset Tag, Item Tag, TAG, Tag]
+      equipment_id: [equipment_id, Equipment Number, Equipment No, Equipment Code, Asset Number, Asset ID, Item Number, Item No, Equipment]
+      equipment_type: [Equipment Type, Equipment Class, Asset Type, Item Type, Component Type, Instrument Type, Category, Type]
+      description: [Equipment Description, Equipment Name, Item Description, Asset Description, Service Description, Description]
+      from_equipment_tag: [From Tag, From Equipment, Source Tag, Upstream Tag, source_equipment, From Item, From]
+      to_equipment_tag: [To Tag, To Equipment, Target Tag, Downstream Tag, target_equipment, To Item, To]
+      medium: [Medium, Process Fluid, Fluid Service, Fluid, Commodity, material_flow, Service]
+      line: [Line Number, Line No, Pipeline Number, Pipe Number, Line]
+      process_unit: [Process Unit, Unit, System]
+      area: [Area, Plant Area, Zone]
+      functional_location: [Functional Location, functional_location, FLOC]
+      connection_type: [Connection Type, connection_type, Relation Type, Relationship]
+      criticality: [Criticality, Criticality Class]
+      manufacturer: [Manufacturer, Make, Vendor Name]
+      model: [Model Number, Model]
+      status: [Equipment Status, Operational Status, Status]
+      plant_code_id: [plant_code_id, Plant]
+  pid_connectivity:
+    mappings:
+      Type: connection_type
+      Category: connection_type
+      Relationship: connection_type
+      Relation Type: connection_type
+      Connection Type: connection_type
+      connection_type: connection_type
+      Line: line_number
+      Line No: line_number
+      Line Number: line_number
+      Pipe Number: line_number
+      Pipeline Number: line_number
+      Service: medium
+      Medium: medium
+      Fluid: medium
+      Process Fluid: medium
+      Fluid Service: medium
+      Commodity: medium
+      material_flow: medium
+    target_priority:
+      connection_type: [Connection Type, connection_type, Relation Type, Relationship, Type, Category]
+      line_number: [Line Number, Line No, Pipeline Number, Pipe Number, Line]
+      medium: [Medium, Process Fluid, Fluid Service, Fluid, Commodity, material_flow, Service]

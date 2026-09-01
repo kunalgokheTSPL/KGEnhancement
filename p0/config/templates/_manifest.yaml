@@ -1,0 +1,85 @@
+# ================================================================
+# CDM Template Library — Master Manifest
+# ================================================================
+# This manifest defines the base layer and industry-specific
+# template overlays. The pipeline loader reads this file to
+# determine which overlays to merge on top of the _common/ base.
+#
+# Usage:
+#   industry: cement
+#   → engine loads _common/* then merges cement/*
+# ================================================================
+
+version: "2.0"
+
+# ─────────────────────────────────────────────────────────────
+# DEPLOYMENT PARAMETERS  (override per-customer)
+# ─────────────────────────────────────────────────────────────
+parameters:
+  plant_code_id: "{{PLANT_CODE}}"          # short uppercase site code, e.g. M014
+  plant_name: "{{PLANT_NAME}}"
+  industry: "{{INDUSTRY}}"              # oil_gas | petrochemical | power | mining | pharma | discrete_mfg
+  erp_system: "{{ERP_SYSTEM}}"          # sap | oracle | maximo | infor
+  historian: "{{HISTORIAN}}"            # pi | ip21 | honeywell | yokogawa | aveva
+  document_sources: "{{DOC_SOURCES}}"   # sharepoint | documentum | opentext | filesystem
+
+# ─────────────────────────────────────────────────────────────
+# BASE LAYER  (always loaded)
+# ─────────────────────────────────────────────────────────────
+base:
+  path: _common
+  files:
+    - cdm_config.yaml
+    - entities.yaml
+    - schema.yaml
+    - relationships.yaml
+    - identity_resolution.yaml
+    - priority.yaml
+    - derived_fields.yaml
+    - validation_contracts.yaml
+    - column_rename/sap_column_rename.yaml
+    - column_rename/docs_column_rename.yaml
+    - column_rename/fmea_column_rename.yaml
+    - column_rename/pnid_column_rename.yaml
+    - column_rename/timeseries_column_rename.yaml
+    - sap_extraction.yaml
+    - sap_join_columns.yaml
+    - sap_mandatory_tables.yaml
+    - cdm_post_validation.yaml
+    - staging_quality_gate.yaml
+    - ontology_template.yaml
+    - tag_naming_convention.json
+
+# ─────────────────────────────────────────────────────────────
+# INDUSTRIES  (admin selects one; all overlays are self-contained)
+# ─────────────────────────────────────────────────────────────
+industries:
+
+  cement:
+    name: "Cement"
+    path: cement
+    overlay_files:
+      - industry_config.yaml
+      - entities_overlay.yaml
+      - schema_overlay.yaml
+      - relationships_overlay.yaml
+      - validation_overlay.yaml
+
+  oil_gas:
+    name: "Oil & Gas"
+    path: oil_gas
+    overlay_files:
+      - industry_config.yaml
+      - entities_overlay.yaml
+      - schema_overlay.yaml
+      - relationships_overlay.yaml
+      - validation_overlay.yaml
+
+# ─────────────────────────────────────────────────────────────
+# MERGE STRATEGY
+# ─────────────────────────────────────────────────────────────
+merge:
+  strategy: deep_merge          # deep_merge | overlay_replace
+  conflict_resolution: overlay_wins
+  list_merge: append            # append | replace
+  schema_merge: additive        # additive (new tables/columns added, never dropped)

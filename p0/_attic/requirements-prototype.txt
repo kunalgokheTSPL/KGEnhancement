@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+google-generativeai
+pydantic
+openpyxl
+python-jose
+passlib[argon2]
+email-validator
+psycopg2-binary
+python-dotenv
+cryptography
+httpx

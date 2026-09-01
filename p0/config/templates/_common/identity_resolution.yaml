@@ -1,0 +1,229 @@
+# ================================================================
+# COMMON — Core Identity Resolution
+# ================================================================
+
+identity_resolution:
+
+  equipment:
+    match_type: deterministic
+    keys: [plant_code_id, normalized_asset]
+    confidence: 1.0
+    null_handling: reject_if_any_key_null
+    case_insensitive: true
+    pre_normalize: true
+    dedupe_strategy: keep_highest_confidence
+
+  functional_location:
+    match_type: deterministic
+    keys: [plant_code_id, floc]
+    confidence: 1.0
+    null_handling: reject_if_any_key_null
+    case_insensitive: true
+    pre_normalize: true
+    dedupe_strategy: keep_highest_confidence
+
+  process_unit:
+    match_type: deterministic
+    keys: [plant_code_id, process_unit_code]
+    confidence: 1.0
+    null_handling: reject_if_any_key_null
+    case_insensitive: true
+    pre_normalize: true
+    dedupe_strategy: keep_highest_confidence
+
+  equipment_connection:
+    match_type: deterministic
+    keys: [plant_code_id, from_equipment_ref, to_equipment_ref, connection_type]
+    confidence: 1.0
+    null_handling: reject_if_any_key_null
+    case_insensitive: true
+    pre_normalize: true
+    dedupe_strategy: keep_highest_confidence
+
+  material:
+    match_type: deterministic
+    keys: [material_code]
+    confidence: 1.0
+    null_handling: reject_if_any_key_null
+    case_insensitive: true
+    pre_normalize: true
+    dedupe_strategy: keep_highest_confidence
+
+  bom_item:
+    match_type: deterministic
+    keys: [plant_code_id, bom_id, item_no, material_code]
+    confidence: 1.0
+    null_handling: reject_if_any_key_null
+    case_insensitive: true
+    pre_normalize: true
+    dedupe_strategy: keep_highest_confidence
+
+  vendor:
+    match_type: deterministic
+    keys: [vendor_code]
+    confidence: 1.0
+    null_handling: reject_if_any_key_null
+    case_insensitive: true
+    pre_normalize: true
+    dedupe_strategy: keep_highest_confidence
+
+  purchase_order:
+    match_type: deterministic
+    keys: [po_number, po_item]
+    confidence: 1.0
+    null_handling: reject_if_any_key_null
+    case_insensitive: false
+    pre_normalize: true
+    dedupe_strategy: keep_highest_confidence
+
+  goods_receipt:
+    match_type: deterministic
+    keys: [gr_number, gr_item]
+    confidence: 1.0
+    null_handling: reject_if_any_key_null
+    case_insensitive: false
+    pre_normalize: true
+    dedupe_strategy: keep_highest_confidence
+
+  invoice:
+    match_type: deterministic
+    keys: [invoice_number, invoice_item]
+    confidence: 1.0
+    null_handling: reject_if_any_key_null
+    case_insensitive: false
+    pre_normalize: true
+    dedupe_strategy: keep_highest_confidence
+
+  work_order:
+    match_type: deterministic
+    keys: [plant_code_id, wo_number]
+    confidence: 1.0
+    null_handling: reject_if_any_key_null
+    case_insensitive: false
+    pre_normalize: true
+    dedupe_strategy: keep_latest_by_timestamp
+    latest_timestamp_field: updated_at
+
+  notification:
+    match_type: deterministic
+    keys: [plant_code_id, notification_id]
+    confidence: 1.0
+    null_handling: reject_if_any_key_null
+    case_insensitive: false
+    pre_normalize: true
+    dedupe_strategy: keep_latest_by_timestamp
+    latest_timestamp_field: updated_at
+
+  task_list:
+    match_type: deterministic
+    keys: [plant_code_id, task_list_id, task_list_counter, operation_no]
+    confidence: 1.0
+    null_handling: reject_if_any_key_null
+    case_insensitive: false
+    pre_normalize: true
+    dedupe_strategy: keep_highest_confidence
+
+  maintenance_plan:
+    match_type: deterministic
+    keys: [plant_code_id, plan_id]
+    confidence: 1.0
+    null_handling: reject_if_any_key_null
+    case_insensitive: false
+    pre_normalize: true
+    dedupe_strategy: keep_highest_confidence
+
+  work_center:
+    match_type: deterministic
+    keys: [plant_code_id, work_center]
+    confidence: 1.0
+    null_handling: reject_if_any_key_null
+    case_insensitive: true
+    pre_normalize: true
+    dedupe_strategy: keep_highest_confidence
+
+  failure_mode:
+    match_type: deterministic
+    keys: [plant_code_id, failure_mode_code]
+    confidence: 1.0
+    null_handling: reject_if_any_key_null
+    case_insensitive: true
+    pre_normalize: true
+    dedupe_strategy: keep_highest_confidence
+
+  failure_cause:
+    match_type: deterministic
+    keys: [plant_code_id, failure_cause_code]
+    confidence: 1.0
+    null_handling: reject_if_any_key_null
+    case_insensitive: true
+    pre_normalize: true
+    dedupe_strategy: keep_highest_confidence
+
+  failure_effect:
+    match_type: deterministic
+    keys: [plant_code_id, failure_effect_code]
+    confidence: 1.0
+    null_handling: reject_if_any_key_null
+    case_insensitive: true
+    pre_normalize: true
+    dedupe_strategy: keep_highest_confidence
+
+  timeseries:
+    match_type: deterministic
+    keys: [plant_code_id, tag_name]
+    confidence: 1.0
+    null_handling: reject_if_any_key_null
+    case_insensitive: true
+    pre_normalize: true
+    dedupe_strategy: keep_latest_by_timestamp
+    latest_timestamp_field: updated_at
+
+  document:
+    match_type: deterministic
+    keys: [plant_code_id, document_id]
+    confidence: 1.0
+    null_handling: reject_if_any_key_null
+    case_insensitive: false
+    pre_normalize: true
+    dedupe_strategy: keep_latest_by_timestamp
+    latest_timestamp_field: updated_at
+
+  standards_field_registry:
+    match_type: deterministic
+    keys: [standard_name, standard_version, entity_name, canonical_field]
+    confidence: 1.0
+    null_handling: reject_if_any_key_null
+    case_insensitive: true
+    pre_normalize: true
+    dedupe_strategy: keep_latest_by_timestamp
+    latest_timestamp_field: updated_at
+
+normalization:
+  uppercase: true
+  trim_whitespace: true
+  separator_insensitive: true
+
+# ================================================================
+# COMMON — Cross-source identity cross reference
+# ================================================================
+# Consumed by p0.utils.ts_asset_identity.matching_policy. Editing these
+# values changes matching behaviour; there is no second copy in code.
+
+cross_reference:
+
+  timeseries:
+    reference_entity: equipment
+    identity_column: normalized_asset
+    candidate_columns:
+      - normalized_asset
+      - equipment_tag
+      - equipment_id
+      - functional_location
+      - floc
+      - canonical_code
+    equipment_id_columns:
+      - equipment_id
+      - equipment_tag
+      - normalized_asset
+      - sap_equipment_id
+    fuzzy_threshold: 0.85

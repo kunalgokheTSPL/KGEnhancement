@@ -1,0 +1,498 @@
+version: '1.0'
+notes:
+- Raw→canonical rename mappings for SAP PM/MM extracts.
+- Includes both SAP technical field names (e.g., EQUNR, TPLNR, AUFNR) and common ALV/report
+  headers (e.g., Equipment, Functional Location).
+- Downstream CDM expects canonical names produced by these mappings plus derived_fields.yaml.
+sources:
+  sap_assets:
+    mappings:
+      EQUNR: equipment_id
+      Equipment: equipment_name
+      equipment_id: equipment_id
+      Equipment Id: equipment_id
+      Equipment_Id: equipment_id
+      Equipment Number: equipment_id
+      TPLNR: functional_location
+      AUFNR: wo_number
+      AUART: wo_type
+      Functional Location: functional_location
+      Func. Loc.: functional_location
+      Functional Loc.: functional_location
+      Functional loc.: functional_location
+      "Equipment#": equipment_id
+      EQTYP: equipment_type
+      EQTYP (Equipment Category): equipment_type
+      Object Type: equipment_type
+      Equipment Type: equipment_type
+      FLTYP: functional_location_type
+      SWERK: area
+      Planning Plant: area
+      Plant Section: area
+      HERST: manufacturer
+      Manufacturer: manufacturer
+      TYPBZ: model
+      Model: model
+      EQKTX: description
+      PLTXT: functional_location_description
+      Description: description
+      Equipment Description: description
+      OBJNR: object_number
+      System Status: system_status
+      User Status: user_status
+      MANDT: client
+      AEDAT: changed_on
+      AENAM: changed_by
+      INVNR: inventory_number
+      GROES: size_dimension
+      BRGEW: gross_weight
+      GEWEI: weight_unit
+      ANSDT: acquisition_date
+      ANSWT: acquisition_value
+      ELIEF: vendor_code
+      SERGE: serial_number
+      BAUJJ: construction_year
+      BAUMM: construction_month
+      INBDT: startup_date
+      WERK: maintenance_plant_code
+      IWERK: planning_plant_code
+      HEQUI: superior_equipment_id
+      MLANG: language_key
+      TPLKZ: functional_location_structure_indicator
+      TPLMA: superior_functional_location
+      DATAB: valid_from_date
+      BEGRU: authorization_group
+      ABCKZ: abc_indicator
+      STORT: location_code
+      BEBER: plant_section
+      GSBER: business_area
+      KOKRS: controlling_area
+      ANLNR: asset_number
+      DAUFN: superior_order_number
+      OWNER: asset_owner
+  sap_wo:
+    mappings:
+      AUFNR: wo_number
+      Order: wo_number
+      Work Order: wo_number
+      Order Number: wo_number
+      AUART: wo_type
+      Order Type: wo_type
+      KTEXT: short_text
+      Short Text: short_text
+      Short text: short_text
+      PRIOK: priority
+      Priority: priority
+      ERDAT: created_on
+      Created On: created_on
+      GSTRP: basic_start
+      Basic start: basic_start
+      GLTRP: basic_finish
+      Basic finish: basic_finish
+      OBJNR: object_number
+      EQUNR: equipment_id
+      Equipment: equipment_id
+      TPLNR: functional_location
+      Functional Location: functional_location
+      Functional Loc.: functional_location
+      Functional loc.: functional_location
+      Notification: notification_id
+      Main WorkCtr: work_center
+      Work Center: work_center
+      Last System Status: status
+      System status: status_code
+      User status: user_status
+      Release Date: release_date
+      Basic fin. date: basic_finish
+      Bas. start date: basic_start
+      Sched. finish: scheduled_finish
+      Sched. start: scheduled_start
+      Actual start: actual_start
+      Actual Finish: actual_finish
+      Planned Hours: planned_hours
+      Actual Hours: actual_hours
+      Turn Around Time: turnaround_time
+      Total Assigned Cost: total_cost
+      Plant: plant_code_id
+      Object number: object_number
+      Object Type: equipment_type
+      MaintActivType: maintenance_activity_type
+      Entered By: created_by
+      Changed On: changed_on
+      Changed By: changed_by
+      Planner Group: planner_group
+      INGPR: planner_group
+      ILART: maintenance_activity_type
+      Activity Type: maintenance_activity_type
+      KOSTL: cost_center
+      Cost Center: cost_center
+      ERNAM: created_by
+      VORNR: operation_no
+      LTXA1: operation_text
+      ARBPL: work_center
+      STAT: status_code
+      INACT: status_inactive_flag
+      STSMA: status_profile
+      # suffix fields coming from merges
+      TPLNR_EQUI: functional_location
+      TPLNR_QMEL: functional_location
+      TPLNR_AUFK: functional_location
+      ERDAT_EQUI: equipment_created_on
+      ERDAT_AUFK: wo_created_on
+      # Add to sources: sap_wo: mappings:  (or any source)
+      EQART: equipment_category
+      ILOAN: location_account_assignment
+      BUKRS: company_code
+      INGRP: planner_group
+
+      BDMNG: required_qty
+      DMBTR: cost_amount
+      WERKS: plant_code_id
+      LGORT: storage_location
+      LABST: stock_qty
+      DISMM: mrp_type
+
+      FECOD: failure_code
+      DAUNO_MIN: operation_duration_min
+
+      TDNAME: longtext_name
+      TDID: longtext_id
+      TDOBJECT: longtext_object
+      TDLINE: longtext_line
+      TDLINE_TEXT: longtext_text
+      MANDT: client
+      AUTYP: order_category
+      ASTAT: status_code_sap
+      AENAM: changed_by
+      AEDAT: changed_on
+      KOKRS: controlling_area
+      KOSTV: responsible_cost_center
+      STORT: location_code
+      ASTKZ: phase_indicator_flag
+      PDAT1: planned_date_1
+      PDAT2: planned_date_2
+      PDAT3: planned_date_3
+      IDAT1: actual_date_1
+      IDAT2: actual_date_2
+      IDAT3: actual_date_3
+      USER2: user_field_2
+      VAPLZ: maintenance_planning_plant
+      WAWRK: main_work_center_plant
+      RSORD: reference_order
+      AUFPL: routing_number
+      GLTRS: scheduled_finish_date
+      GSTRS: scheduled_start_date
+      GSTRI: actual_start_date
+      GLTRI: actual_finish_date
+      RSNUM: reservation_number
+      PLGRP: planner_group_sap
+      FHORI: scheduling_margin_key
+      TERKZ: completion_requirement
+      APRIO: priority_type
+      GLUZS: scheduled_finish_time
+      GSUZS: scheduled_start_time
+      APLZL: operation_counter
+      ARBID: work_center_object_id
+      LAR01: activity_type_01
+      ANZMA: capacity_count
+      LOANZ: operation_count
+      LOART: operation_control_indicator
+      RUECK: confirmation_number
+      ARTPR: priority_category
+      MZEIT: actual_work_duration
+      QMDAT: notification_date
+      STRMN: planned_start_time
+      LTRMN: planned_finish_time
+      QMDAB: completion_date
+      RBNR: catalog_profile
+      HERKZ: origin_indicator
+      PHASE: phase_code
+      MANUM: catalog_type
+      MNKAT: activity_catalog
+      MNGRP: code_group
+      MNCOD: code
+      MATXT: material_text
+      PSTER: earliest_start_date
+      PETER: earliest_finish_date
+      ERLNAM: completed_by
+      ERLDAT: completed_on
+      CHGNR: change_number
+      OBTYP: object_type_sap
+      CHGKZ: changed_flag
+  sap_notification:
+    mappings:
+      QMNUM: notification_id
+      Notification: notification_id
+      QMART: notification_type
+      Notification Type: notification_type
+      QMTXT: description
+      Short Text: description
+      PRIOK: priority
+      Priority: priority
+      ERDAT: created_on
+      Created On: created_on
+      ERNAM: reported_by
+      Reported By: reported_by
+      EQUNR: equipment_id
+      Equipment: equipment_id
+      TPLNR: functional_location
+      Functional Location: functional_location
+      Functional Loc.: functional_location
+      Functional loc.: functional_location
+      Damage Code: failure_mode_code
+      FEHLER: failure_mode_code
+      Cause Code: failure_cause_code
+      URCOD: failure_cause_code
+      Breakdown: breakdown_indicator
+      MABRZ: breakdown_indicator
+      Malfunction Start: malfunction_start
+      AUSVN: malfunction_start
+      Malfunction End: malfunction_end
+      AUSBS: malfunction_end
+  sap_task_list:
+    mappings:
+      PLNNR: task_list_id
+      Task List Group: task_list_group
+      Group: task_list_group
+      PLNAL: task_list_counter
+      Group Counter: task_list_counter
+      Counter: task_list_counter
+      PLNTY: task_list_type
+      Task list type: task_list_type
+      Task List Type: task_list_type
+      EQUNR: equipment_id
+      Equipment: equipment_id
+      TPLNR: functional_location
+      Functional Location: functional_location
+      Functional Loc.: functional_location
+      Functional loc.: functional_location
+      VORNR: operation_no
+      Operation: operation_no
+      LTXA1: operation_text
+      Operation short text: operation_text
+      ARBPL: work_center
+      Work Center: work_center
+      STEUS: control_key
+      Control key: control_key
+      VGW01: std_duration
+      Duration: std_duration
+      VGE01: duration_uom
+      Unit: duration_uom
+      DATUV: valid_from_date
+      VERWE: task_list_usage
+      MANDT: client
+      LOEKZ: deletion_flag
+      ANDAT: created_on_sap
+      ANNAM: created_by
+      AEDAT: changed_on
+      AENAM: changed_by
+      STATU: status_code
+      PLNME: planner_name
+      VAGRP: group_counter_internal
+      TXTSP: language_key
+      STRAT: maintenance_strategy
+      IWERK: planning_plant_code
+      KOKRS: controlling_area
+      PLNKN: operation_node_number
+      ARBID: work_center_object_id
+      LAR01: activity_type_01
+      ANZMA: capacity_count
+      ARBEI: work_quantity
+      ARBEH: work_uom
+      DAUNO: normal_duration
+      DAUNE: duration_uom
+  sap_maintenance_plan:
+    mappings:
+      WARPL: plan_id
+      Maint. plan: plan_id
+      Maintenance Plan: plan_id
+      PLAN_TYPE: plan_type
+      Plan type: plan_type
+      ZYK1: cycle
+      Cycle: cycle
+      ZEIEH: cycle_uom
+      Cycle unit: cycle_uom
+      Unit: cycle_uom
+      EQUNR: equipment_id
+      Equipment: equipment_id
+      TPLNR: functional_location
+      Functional Location: functional_location
+      INGPR: planner_group
+      Planner Group: planner_group
+  sap_work_center:
+    mappings:
+      OBJID: work_center_id
+      ARBPL: work_center
+      Work Center: work_center
+      KTEXT: work_center_description
+      Description: work_center_description
+  sap_material_master:
+    mappings:
+      MATNR: material_code
+      Material: material_code
+      MAKTX: material_description
+      Material Description: material_description
+      MTART: material_type
+      Material Type: material_type
+      MEINS: base_uom
+      Base Unit of Measure: base_uom
+      BDMNG: required_qty
+      DMBTR: cost_amount
+      LGORT: storage_location
+      LABST: stock_qty
+      Equipment: equipment_id
+      "Equipment#": equipment_id
+      Order: wo_number
+      Functional loc.: functional_location
+      Functional Loc.: functional_location
+      Reserv.no.: reservation_number
+      Plnd qty: required_qty
+      Operation Short Text: operation_text
+      Cost Ctr.: cost_center
+      Plnt: plant_code_id
+      Description: material_description
+      MANDT: client
+      ERSDA: created_on_sap
+      LAEDA: changed_on
+      AENAM: changed_by
+      MBRSH: industry_sector
+      MATKL: material_group
+      BSTME: po_uom
+      GROES: size_dimension
+      BRGEW: gross_weight
+      NTGEW: net_weight
+      GEWEI: weight_unit
+      FERTH: production_inspection_memo
+      DATAB: valid_from_date
+      SPART: division
+      MFRPN: manufacturer_part_number
+      RBNRM: reference_number
+      PSTAT: maintenance_status
+      MAABC: abc_indicator
+      EKGRP: purchasing_group
+      DISPO: mrp_controller
+      PLIFZ: planned_delivery_time_days
+      WEBAZ: goods_receipt_processing_days
+      MINBE: reorder_point
+      EISBE: safety_stock
+      BSTMI: minimum_lot_size
+      BSTMA: maximum_lot_size
+      LGPRO: issue_storage_location
+      LGFSB: default_storage_location
+      BESKZ: procurement_type
+      MTVFP: availability_check
+      PRCTR: profit_center
+      LFMON: period_month
+      LFGJA: period_year
+      UMLME: stock_in_transfer
+      INSME: quality_inspection_stock
+      EINME: restricted_use_stock
+      SPEME: blocked_stock_returns
+      RETME: returns_stock
+      LMINB: min_remaining_shelf_life_days
+      LBSTF: storage_percentage
+  sap_bom:
+    mappings:
+      STLNR: bom_id
+      BOM: bom_id
+      POSNR: item_no
+      Item: item_no
+      IDNRK: material_code
+      Component: material_code
+      MENGE: quantity
+      Quantity: quantity
+      MEINS: uom
+      Unit: uom
+      EQUNR: equipment_id
+      Equipment: equipment_id
+      "Equipment#": equipment_id
+      Equipment Description: description
+      "9BOM #": bom_id
+      BOM Description: bom_description
+      Part Number: material_code
+      "9CAT #": catalog_number
+      9CATDescription: catalog_description
+      "9MFR #": manufacturer_code
+      9MFRDescription: manufacturer_description
+      "Old Part Number(S)": old_part_number
+      Count: quantity
+      Level: bom_level
+      TPLNR: functional_location
+      Functional Location: functional_location
+  sap_vendor_master:
+    mappings:
+      LIFNR: vendor_code
+      Vendor: vendor_code
+      NAME1: vendor_name
+      Vendor Name: vendor_name
+      LAND1: country
+      Country: country
+      REGIO: region
+      Region: region
+      TELF1: phone
+      Telephone: phone
+      SMTP_ADDR: email
+      E-Mail: email
+  sap_po:
+    mappings:
+      EBELN: po_number
+      Purch. Doc.: po_number
+      Purchase Order: po_number
+      EBELP: po_item
+      Item: po_item
+      LIFNR: vendor_code
+      Vendor: vendor_code
+      MATNR: material_code
+      Material: material_code
+      MENGE: quantity
+      Order Quantity: quantity
+      MEINS: uom
+      Order Unit: uom
+      NETWR: net_value
+      Net Value: net_value
+      WAERS: currency
+      Currency: currency
+      BEDAT: created_on
+      Document Date: created_on
+  sap_gr:
+    mappings:
+      MBLNR: gr_number
+      Material Doc.: gr_number
+      ZEILE: gr_item
+      Item: gr_item
+      EBELN: po_number
+      Purch. Doc.: po_number
+      EBELP: po_item
+      PO Item: po_item
+      MATNR: material_code
+      Material: material_code
+      MENGE: quantity_received
+      Qty in UnE: quantity_received
+      BUDAT: posting_date
+      Posting Date: posting_date
+  sap_invoice:
+    mappings:
+      BUZEI: invoice_item
+      BELNR: invoice_number
+      Invoice Doc.: invoice_number
+      EBELN: po_number
+      Purch. Doc.: po_number
+      EBELP: po_item
+      Item: po_item
+      WRBTR: amount
+      Amount: amount
+      WAERS: currency
+      Currency: currency
+      BUDAT: posting_date
+      Posting Date: posting_date
+      LIFNR: vendor_code
+      Vendor: vendor_code
+  sap_failure_catalog:
+    mappings:
+      failure_mode_code: failure_mode_code
+      failure_mode_text: failure_mode_text
+      failure_cause_code: failure_cause_code
+      failure_cause_text: failure_cause_text
+      failure_effect_code: failure_effect_code
+      failure_effect_text: failure_effect_text
+      catalog_group: catalog_group

@@ -1,0 +1,14 @@
+industry: oil_gas
+document_processing:
+  document_types:
+    sol:
+      document_type: SOL
+      source_columns:
+      - Process System
+      - Equipment Name
+    baronia:
+      document_type: Baronia
+      source_columns:
+      - Tag No.
+      - Tag Name
+      - Description

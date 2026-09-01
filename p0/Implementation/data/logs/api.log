@@ -1,0 +1,65 @@
+2026-07-17T14:18:40  INFO      cdm.api.main:40  CDM API starting — log directory: C:\Users\akshay.patil\OneDrive - TRIDIAGONAL.AI PRIVATE LIMITED\Desktop\TAI_Projects\dev\DecisionOps_dev\p0\Implementation\data\logs
+2026-07-17T14:18:55  WARNING   cdm.api.main:56  Bucket ensure step skipped: Connection was closed before we received a valid response from endpoint URL: "http://localhost:9000/staging-pt".
+2026-07-17T14:18:57  INFO      cdm.api.main:67  plants registry ready (FK guard applied)
+2026-07-17T14:18:59  INFO      cdm.api.main:76  audit tables ready
+2026-07-17T14:18:59  INFO      cdm.api.main:86  flow_state table ready
+2026-07-17T14:57:49  INFO      cdm.api.main:40  CDM API starting — log directory: C:\Users\akshay.patil\OneDrive - TRIDIAGONAL.AI PRIVATE LIMITED\Desktop\TAI_Projects\dev\DecisionOps_dev\p0\Implementation\data\logs
+2026-07-17T14:58:03  WARNING   cdm.api.main:56  Bucket ensure step skipped: Connection was closed before we received a valid response from endpoint URL: "http://localhost:9000/staging-pt".
+2026-07-17T14:58:05  INFO      cdm.api.main:67  plants registry ready (FK guard applied)
+2026-07-17T14:58:06  INFO      cdm.api.main:76  audit tables ready
+2026-07-17T14:58:06  INFO      cdm.api.main:86  flow_state table ready
+2026-07-17T15:38:33  INFO      cdm.api.main:40  CDM API starting — log directory: C:\Users\akshay.patil\OneDrive - TRIDIAGONAL.AI PRIVATE LIMITED\Desktop\TAI_Projects\dev\DecisionOps_dev\p0\Implementation\data\logs
+2026-07-17T15:38:51  WARNING   cdm.api.main:56  Bucket ensure step skipped: Connection was closed before we received a valid response from endpoint URL: "http://localhost:9000/staging-pt".
+2026-07-17T15:38:54  INFO      cdm.api.main:67  plants registry ready (FK guard applied)
+2026-07-17T15:38:55  INFO      cdm.api.main:76  audit tables ready
+2026-07-17T15:38:56  INFO      cdm.api.main:86  flow_state table ready
+2026-07-17T15:58:11  INFO      cdm.api.main:40  CDM API starting — log directory: C:\Users\akshay.patil\OneDrive - TRIDIAGONAL.AI PRIVATE LIMITED\Desktop\TAI_Projects\dev\DecisionOps_dev\p0\Implementation\data\logs
+2026-07-17T15:58:29  WARNING   cdm.api.main:56  Bucket ensure step skipped: Connection was closed before we received a valid response from endpoint URL: "http://localhost:9000/staging-pt".
+2026-07-17T15:58:30  INFO      cdm.api.main:67  plants registry ready (FK guard applied)
+2026-07-17T15:58:31  INFO      cdm.api.main:76  audit tables ready
+2026-07-17T15:58:31  INFO      cdm.api.main:86  flow_state table ready
+2026-07-17T16:02:21  INFO      cdm.api.main:40  CDM API starting — log directory: C:\Users\akshay.patil\OneDrive - TRIDIAGONAL.AI PRIVATE LIMITED\Desktop\TAI_Projects\dev\DecisionOps_dev\p0\Implementation\data\logs
+2026-07-17T16:02:40  WARNING   cdm.api.main:56  Bucket ensure step skipped: Connection was closed before we received a valid response from endpoint URL: "http://localhost:9000/staging-pt".
+2026-07-17T16:02:41  INFO      cdm.api.main:67  plants registry ready (FK guard applied)
+2026-07-17T16:02:42  INFO      cdm.api.main:76  audit tables ready
+2026-07-17T16:02:43  INFO      cdm.api.main:86  flow_state table ready
+2026-07-17T16:14:56  INFO      cdm.api.main:40  CDM API starting — log directory: C:\Users\akshay.patil\OneDrive - TRIDIAGONAL.AI PRIVATE LIMITED\Desktop\TAI_Projects\dev\DecisionOps_dev\p0\Implementation\data\logs
+2026-07-17T16:15:12  WARNING   cdm.api.main:56  Bucket ensure step skipped: Connection was closed before we received a valid response from endpoint URL: "http://localhost:9000/staging-pt".
+2026-07-17T16:15:14  INFO      cdm.api.main:67  plants registry ready (FK guard applied)
+2026-07-17T16:15:16  INFO      cdm.api.main:76  audit tables ready
+2026-07-17T16:15:17  INFO      cdm.api.main:86  flow_state table ready
+2026-07-17T16:29:25  INFO      cdm.api.main:40  CDM API starting — log directory: C:\Users\akshay.patil\OneDrive - TRIDIAGONAL.AI PRIVATE LIMITED\Desktop\TAI_Projects\dev\DecisionOps_dev\p0\Implementation\data\logs
+2026-07-17T16:29:43  WARNING   cdm.api.main:56  Bucket ensure step skipped: Connection was closed before we received a valid response from endpoint URL: "http://localhost:9000/staging-pt".
+2026-07-17T16:29:45  INFO      cdm.api.main:67  plants registry ready (FK guard applied)
+2026-07-17T16:29:46  INFO      cdm.api.main:76  audit tables ready
+2026-07-17T16:29:46  INFO      cdm.api.main:86  flow_state table ready
+2026-07-20T10:42:43  INFO      cdm.api.main:40  CDM API starting — log directory: C:\Users\akshay.patil\OneDrive - TRIDIAGONAL.AI PRIVATE LIMITED\Desktop\TAI_Projects\dev\DecisionOps_dev\p0\Implementation\data\logs
+2026-07-20T10:43:09  WARNING   cdm.api.main:56  Bucket ensure step skipped: Could not connect to the endpoint URL: "http://localhost:9000/staging-pt"
+2026-07-20T10:43:13  INFO      cdm.api.main:67  plants registry ready (FK guard applied)
+2026-07-20T10:43:16  INFO      cdm.api.main:76  audit tables ready
+2026-07-20T10:43:17  INFO      cdm.api.main:86  flow_state table ready
+2026-07-20T13:58:37  INFO      cdm.api.main:40  CDM API starting — log directory: C:\Users\akshay.patil\OneDrive - TRIDIAGONAL.AI PRIVATE LIMITED\Desktop\TAI_Projects\dev\DecisionOps_dev\p0\Implementation\data\logs
+2026-07-20T13:59:02  WARNING   cdm.api.main:56  Bucket ensure step skipped: Could not connect to the endpoint URL: "http://localhost:9000/staging-pt"
+2026-07-20T13:59:08  INFO      cdm.api.main:67  plants registry ready (FK guard applied)
+2026-07-20T13:59:10  INFO      cdm.api.main:76  audit tables ready
+2026-07-20T13:59:11  INFO      cdm.api.main:86  flow_state table ready
+2026-07-21T11:32:03  INFO      cdm.api.main:40  CDM API starting — log directory: C:\Users\akshay.patil\OneDrive - TRIDIAGONAL.AI PRIVATE LIMITED\Desktop\TAI_Projects\dev\DecisionOps_dev\p0\Implementation\data\logs
+2026-07-21T11:32:20  WARNING   cdm.api.main:56  Bucket ensure step skipped: Connection was closed before we received a valid response from endpoint URL: "http://localhost:9000/staging-pt".
+2026-07-21T11:32:23  INFO      cdm.api.main:67  plants registry ready (FK guard applied)
+2026-07-21T11:32:26  INFO      cdm.api.main:76  audit tables ready
+2026-07-21T11:32:26  INFO      cdm.api.main:86  flow_state table ready
+2026-07-22T11:17:09  INFO      cdm.api.main:40  CDM API starting — log directory: C:\Users\akshay.patil\OneDrive - TRIDIAGONAL.AI PRIVATE LIMITED\Desktop\TAI_Projects\dev\DecisionOps_dev\p0\Implementation\data\logs
+2026-07-22T11:17:25  WARNING   cdm.api.main:56  Bucket ensure step skipped: Connection was closed before we received a valid response from endpoint URL: "http://localhost:9000/staging-pt".
+2026-07-22T11:17:30  INFO      cdm.api.main:67  plants registry ready (FK guard applied)
+2026-07-22T11:17:32  INFO      cdm.api.main:76  audit tables ready
+2026-07-22T11:17:33  INFO      cdm.api.main:86  flow_state table ready
+2026-07-22T14:58:15  INFO      cdm.api.main:40  CDM API starting — log directory: C:\Users\akshay.patil\OneDrive - TRIDIAGONAL.AI PRIVATE LIMITED\Desktop\TAI_Projects\dev\DecisionOps_dev\p0\Implementation\data\logs
+2026-07-22T14:58:28  WARNING   cdm.api.main:56  Bucket ensure step skipped: Connection was closed before we received a valid response from endpoint URL: "http://localhost:9000/staging-pt".
+2026-07-22T14:58:33  INFO      cdm.api.main:67  plants registry ready (FK guard applied)
+2026-07-22T14:58:36  INFO      cdm.api.main:76  audit tables ready
+2026-07-22T14:58:37  INFO      cdm.api.main:86  flow_state table ready
+2026-07-23T15:01:05  INFO      cdm.api.main:40  CDM API starting — log directory: C:\Users\akshay.patil\OneDrive - TRIDIAGONAL.AI PRIVATE LIMITED\Desktop\TAI_Projects\dev\DecisionOps_dev\p0\Implementation\data\logs
+2026-07-23T15:01:07  INFO      cdm.api.main:48  RustFS bucket ready: staging-pt
+2026-07-23T15:01:13  INFO      cdm.api.main:67  plants registry ready (FK guard applied)
+2026-07-23T15:01:16  INFO      cdm.api.main:76  audit tables ready
+2026-07-23T15:01:16  INFO      cdm.api.main:86  flow_state table ready

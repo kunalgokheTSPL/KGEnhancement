@@ -1,0 +1,430 @@
+# Findings sources for AIF, GLOC and LOPC. Read by api/services/findings.py.
+version: "1.0"
+
+defaults:
+  extensions: [".xlsx", ".xls", ".csv"]
+  header_scan_rows: 8
+  min_header_fill: 0.5
+
+sources:
+
+  aif:
+    label: "AIF (Asset Integrity Findings)"
+    target_table: inspection_record_aif
+    natural_key: [notification_no]
+    sheet_hints: ["open", "aif", "findings", "raw"]
+    identity:
+      floc_columns: [functional_location]
+      text_columns: [description]
+    required: [notification_no]
+    recommended: [functional_location, description, priority]
+    columns:
+      notification_no:
+        aliases: [Notification, Notification Number, Notification No, NOTIF, Finding ID, Anomaly ID, Report No]
+      work_order_no:
+        aliases: [Work Order, WO Number, WO No, Order, Maintenance Order]
+      functional_location:
+        aliases: [Functional Location, FLOC, Func Location, Functional Loc, Location Tag, SAP FLOC]
+      platform:
+        aliases: [Platform, Facility, Installation, Site]
+      field_name:
+        aliases: [Field, Asset Field, Operating Field]
+      description:
+        aliases: [Description, Finding Description, Anomaly Description, Short Text, Title]
+      finding_source_group:
+        aliases: [AIF Source Group, Source Group, Finding Group, Finding Category Group]
+      finding_source:
+        aliases: [AIF Source, Source, Finding Source, Inspection Source, Detected By]
+      initial_priority:
+        aliases: [AIF Initial Priority, Initial Priority, Original Priority]
+        type: integer
+      priority:
+        aliases: [AIF Priority, Priority, Current Priority, Severity Ranking, Criticality]
+        type: integer
+      status:
+        aliases: [Status, Finding Status, Overall Status]
+      system_status:
+        aliases: [System status, System Status, SAP System Status]
+      user_status:
+        aliases: [User status, User Status, SAP User Status]
+      finding_count:
+        aliases: [No of Findings, Number of Findings, Finding Count]
+        type: integer
+      creation_date:
+        aliases: [Creation Date, Created On, Reported Date, Raised Date, Date Raised]
+        type: date
+      plan_date:
+        aliases: [Plan Date, Planned Date, Scheduled Date]
+        type: date
+      due_date:
+        aliases: [AIF Due Date, Due Date, Target Date, Required By]
+        type: date
+      closure_date:
+        aliases: [Closure Date, Closed On, Completion Date, Date Closed]
+        type: date
+      extension_method:
+        aliases: [AIF Extension Method, Extension Method, Deferral Method]
+      extension_date:
+        aliases: [AIF Extension Date, Extension Date, Deferred To]
+        type: date
+      action_party:
+        aliases: [Action Party, Responsible Party, Owner, Assigned To, Discipline]
+      work_centre:
+        aliases: [Main Work Centre, Work Centre, Work Center, Main Work Center]
+      recommendation:
+        aliases: [Recommendation, Recommended Action, Repair Recommendation, Action Required]
+      equipment_class:
+        # equipment CLASS, not a tag; never used for identity
+        aliases: [Equipment, Equipment Class, Equipment Category, Asset Type, Equipment Group]
+      corrosion_mechanism:
+        aliases: [Corrosion Mechanism, Damage Mechanism, Degradation Mechanism, Deterioration Mechanism]
+      category_group:
+        aliases: [Category Group, Work Category Group, Campaign Group]
+      category:
+        aliases: [Category, Work Category, Campaign]
+      reported_by:
+        aliases: [Reported by, Reported By, Inspector, Raised By, Originator]
+      content:
+        aliases: [Content, Finding Detail, Remarks, Full Text, Report Text]
+      region:
+        aliases: [Region, Area, Business Unit]
+      cluster:
+        aliases: [Cluster, Hub]
+
+  gloc:
+    label: "GLOC (Gas Loss of Containment)"
+    target_table: containment_event_gloc
+    natural_key: [notification_no, report_date, equipment_ref]
+    sheet_hints: ["export", "gloc", "data", "database"]
+    identity:
+      sap_equipment_columns: [sap_equipment_id]
+      equipment_columns: [equipment_ref]
+      text_columns: [findings]
+    required: []
+    recommended: [equipment_ref, findings, report_date]
+    columns:
+      report_date:
+        aliases: [Report Date, Date, Reported Date, Detection Date, Event Date]
+        type: date
+      notification_no:
+        aliases: [Notification Number, Notification, Notification No, NOTIF]
+      work_order_no:
+        aliases: [WO Number, Work Order, WO No, Order Number]
+      severity:
+        aliases: [Severity, Severity Level, Risk Level, Consequence]
+      final_status:
+        aliases: [Final Status, Status, Closure Status, Current Status]
+      sap_equipment_id:
+        aliases: ["Equipment (Tag ID as per SAP)", SAP Equipment, SAP Equipment ID, Equipment Number, SAP Tag]
+      equipment_ref:
+        aliases: [Equipment, Equipment Tag, Tag, Tag No, Asset Tag, Equipment ID]
+      field_name:
+        aliases: [Field, Asset Field, Operating Field, Platform, Facility]
+      fault_code:
+        aliases: [Fault Code, Fault, Failure Code, Leak Type, Defect Type]
+      findings:
+        aliases: [Findings, Finding, Observation, Description, Problem Description]
+      recommendation:
+        aliases: [Recommendation, Recommended Action, Corrective Action, Action Taken]
+      action_party:
+        aliases: [Action Party, Responsible Party, Owner, Assigned To, Discipline]
+
+  lopc:
+    label: "LOPC (Loss of Primary Containment)"
+    target_table: containment_event_lopc
+    natural_key: [reference_no, event_date, incident_title]
+    sheet_hints: ["database", "lopc", "register", "data"]
+    identity:
+      text_columns: [incident_title, description]
+    required: []
+    recommended: [event_date, description, incident_classification]
+    columns:
+      region:
+        aliases: [Region, Business Unit, Area]
+      reference_no:
+        aliases: [Reference No, Reference Number, Ref No, Incident Reference, Incident No, UAUC No]
+      incident_title:
+        aliases: [Incident Title, Title, Event Title, Incident Name, Summary]
+      field_name:
+        aliases: [Field/Platform, Field, Asset, Facility, Operating Field]
+      location:
+        aliases: [Location, Platform, Site, Installation]
+      event_month:
+        aliases: [Month, Event Month]
+      event_year:
+        aliases: [Year, Event Year]
+        type: integer
+      event_date:
+        aliases: [Date & Time, Date and Time, Incident Date, Event Date, Date, Occurrence Date]
+        type: date
+      description:
+        aliases: [Description, Incident Description, Narrative, Details, What Happened]
+      incident_classification:
+        aliases: [Incident Classification, Classification, LOPC Classification, Release Classification, Tier]
+      medium_classification:
+        aliases: [Medium Classification, Medium, Released Substance, Fluid, Product]
+      release_category:
+        aliases: [Release Category, Category, Hazard Category, Flammability]
+      leak_amount_kg:
+        # raw cell preserved in leak_amount_raw
+        aliases: [Amount of Leak (kg), Amount of Leak, Leak Amount, Quantity Released, Release Quantity, Mass Released]
+        type: numeric
+        keep_raw: leak_amount_raw
+      leak_rate:
+        aliases: [Rate of Leak, Leak Rate, Release Rate]
+      equipment_type:
+        aliases: [Equipment Type, Asset Type, Equipment Category]
+      valve_size:
+        aliases: [Valve Size, Size, Nominal Size, Line Size]
+      component_type:
+        aliases: [Component Type, Component, Failed Component, Leak Point]
+      corrosion_related:
+        aliases: [Corrosion Related, Corrosion, Is Corrosion Related]
+        type: boolean
+      damage_mechanism:
+        aliases: ["Damage Mechanism/ Suspected Caused", Damage Mechanism, Suspected Cause, Root Cause, Primary Cause, Failure Mechanism]
+      secondary_damage_mechanism:
+        aliases: [Secondary Damage Mechanism, Contributing Cause, Secondary Cause]
+      risk_factor:
+        aliases: [Risk Factor, Risk, Risk Category, Barrier]
+      program_sprint:
+        aliases: ["LOPC Program (Sprint)", LOPC Program, Program, Sprint, Improvement Program]
+      remarks:
+        aliases: [Remarks, Comments, Notes, Additional Information]
+
+  upd_event:
+    label: "UPD (Unplanned Deferment) Events"
+    target_table: upd_event
+    natural_key: [code, start_datetime, end_datetime, eqp_tag_no, field]
+    sheet_hints: ["upd", "deferment", "events", "data"]
+    identity:
+      equipment_columns: [eqp_tag_no]
+      text_columns: [problem_statement, way_forward_description]
+    required: []
+    recommended: [eqp_tag_no, problem_statement, start_datetime]
+    pnid_equipment_match: true
+    columns:
+      event_type:
+        aliases: ["Event Type (Plant: UPD/PD, Equip: Trip/PM)"]
+      region:
+        aliases: ["Region"]
+      cluster:
+        aliases: ["Cluster"]
+      field:
+        aliases: ["Field"]
+      hub:
+        aliases: ["Hub"]
+      code:
+        aliases: ["Code"]
+      category:
+        aliases: ["Category"]
+      category_asome:
+        aliases: ["Category (ASOME)"]
+      primary_cause:
+        aliases: ["Primary Cause"]
+      primary_cause_asome:
+        aliases: ["Primary Cause (ASOME)"]
+      secondary_cause:
+        aliases: ["Secondary Cause"]
+      start_datetime:
+        aliases: ["Start Date & Time (dd-mm-yyyy hh-mm)"]
+        type: date
+      end_datetime:
+        aliases: ["End Date & Time (dd-mm-yyyy hh-mm)"]
+        type: date
+      problem_statement:
+        aliases: ["Problem Statement/Remarks"]
+      status:
+        aliases: ["Status"]
+      way_forward_description:
+        aliases: ["Way Forward Description (editable)"]
+      deferment_oil_kb:
+        aliases: ["Deferment after RF in Volume (kb) (Oil)"]
+        type: numeric
+      deferment_gas_mmscf:
+        aliases: ["Deferment after RF in Volume (MMscf) (Gas)"]
+        type: numeric
+      deferment_pour_rm:
+        aliases: ["Deferment PoUR (RM)"]
+        type: numeric
+      eqp_tag_no:
+        aliases: ["Eqp.Tag No. (Platform+ EQ Tag)"]
+      estimated_deferment_oil_kb:
+        aliases: ["Estimated Deferment Volume (kb) (Oil)"]
+        type: numeric
+      estimated_deferment_gas_mmscf:
+        aliases: ["Estimated Deferment Volume (MMscf) (Gas)"]
+        type: numeric
+      discipline:
+        aliases: ["Discipline"]
+      eqp_class:
+        aliases: ["Eqp. Class"]
+      system:
+        aliases: ["System"]
+      mant_items:
+        aliases: ["Mant Items"]
+      failure_mode_iso:
+        aliases: ["Failure Mode (ISO)"]
+      failure_mechanism_category:
+        aliases: ["Failure Mechanism Category"]
+      failure_mechanism_iso:
+        aliases: ["Failure Mechanism (ISO)"]
+      failure_mechanism_subdivision_iso:
+        aliases: ["Failure Mechanism-Subdivision (ISO)"]
+      managerial_root_cause_category:
+        aliases: ["Managerial Root Cause Category"]
+      failure_cause:
+        aliases: ["Failure Cause"]
+      responsible_section:
+        aliases: ["Responsible Section"]
+      status_update:
+        aliases: ["Status Update"]
+      month_start:
+        aliases: ["Month Start"]
+        type: integer
+      year_start:
+        aliases: ["Year Start"]
+        type: integer
+      downtime_hours:
+        aliases: ["Downtime (hours)"]
+        type: numeric
+      superior_func_loc:
+        aliases: ["Superior Func Loc"]
+      primary_concern_func_loc:
+        aliases: ["Primary Concern Func Loc"]
+      new_trip:
+        aliases: ["New Trip? (Y/N)"]
+      ffn_completed:
+        aliases: ["FFN Completed? (Y/P)"]
+      topside_downtime:
+        aliases: ["Topside Downtime (ESD/PSD/TA) Y/N"]
+      updated_in_udp:
+        aliases: ["Updated in UDP? (Y/N)"]
+
+  trip_event:
+    label: "Trip Events"
+    target_table: trip_event
+    natural_key: [code, start_datetime, end_datetime, eqp_tag_no, field]
+    sheet_hints: ["trip", "events", "data"]
+    identity:
+      equipment_columns: [eqp_tag_no]
+      text_columns: [problem_statement, way_forward_description]
+    required: []
+    recommended: [eqp_tag_no, problem_statement, start_datetime]
+    pnid_equipment_match: true
+    columns:
+      event_type:
+        aliases: ["Event Type (Plant: UPD/PD, Equip: Trip/PM)"]
+      region:
+        aliases: ["Region"]
+      cluster:
+        aliases: ["Cluster"]
+      field:
+        aliases: ["Field"]
+      hub:
+        aliases: ["Hub"]
+      code:
+        aliases: ["Code"]
+      category:
+        aliases: ["Category"]
+      category_asome:
+        aliases: ["Category (ASOME)"]
+      primary_cause:
+        aliases: ["Primary Cause"]
+      primary_cause_asome:
+        aliases: ["Primary Cause (ASOME)"]
+      secondary_cause:
+        aliases: ["Secondary Cause"]
+      start_datetime:
+        aliases: ["Start Date & Time (dd-mm-yyyy hh-mm)"]
+        type: date
+      end_datetime:
+        aliases: ["End Date & Time (dd-mm-yyyy hh-mm)"]
+        type: date
+      problem_statement:
+        aliases: ["Problem Statement/Remarks"]
+      status:
+        aliases: ["Status"]
+      way_forward_description:
+        aliases: ["Way Forward Description (editable)"]
+      deferment_oil_kb:
+        aliases: ["Deferment after RF in Volume (kb) (Oil)"]
+        type: numeric
+      deferment_gas_mmscf:
+        aliases: ["Deferment after RF in Volume (MMscf) (Gas)"]
+        type: numeric
+      deferment_pour_rm:
+        aliases: ["Deferment PoUR (RM)"]
+        type: numeric
+      eqp_tag_no:
+        aliases: ["Eqp.Tag No. (Platform+ EQ Tag)"]
+      estimated_deferment_oil_kb:
+        aliases: ["Estimated Deferment Volume (kb) (Oil)"]
+        type: numeric
+      estimated_deferment_gas_mmscf:
+        aliases: ["Estimated Deferment Volume (MMscf) (Gas)"]
+        type: numeric
+      discipline:
+        aliases: ["Discipline"]
+      eqp_class:
+        aliases: ["Eqp. Class"]
+      system:
+        aliases: ["System"]
+      mant_items:
+        aliases: ["Mant Items"]
+      failure_mode_iso:
+        aliases: ["Failure Mode (ISO)"]
+      failure_mechanism_category:
+        aliases: ["Failure Mechanism Category"]
+      failure_mechanism_iso:
+        aliases: ["Failure Mechanism (ISO)"]
+      failure_mechanism_subdivision_iso:
+        aliases: ["Failure Mechanism-Subdivision (ISO)"]
+      managerial_root_cause_category:
+        aliases: ["Managerial Root Cause Category"]
+      failure_cause:
+        aliases: ["Failure Cause"]
+      responsible_section:
+        aliases: ["Responsible Section"]
+      status_update:
+        aliases: ["Status Update"]
+      month_start:
+        aliases: ["Month Start"]
+        type: integer
+      year_start:
+        aliases: ["Year Start"]
+        type: integer
+      downtime_hours:
+        aliases: ["Downtime (hours)"]
+        type: numeric
+      superior_func_loc:
+        aliases: ["Superior Func Loc"]
+      primary_concern_func_loc:
+        aliases: ["Primary Concern Func Loc"]
+      new_trip:
+        aliases: ["New Trip? (Y/N)"]
+      ffn_completed:
+        aliases: ["FFN Completed? (Y/P)"]
+      topside_downtime:
+        aliases: ["Topside Downtime (ESD/PSD/TA) Y/N"]
+      updated_in_udp:
+        aliases: ["Updated in UDP? (Y/N)"]
+
+# Controlled vocabularies, folded to canonical form on read.
+vocabularies:
+  incident_classification:
+    slight_release: [Slight Release, Slight release, Slight, Minor/Slight Release]
+    minor_release: [Minor Release, Minor release, Minor]
+    major_release: [Major Release, Major release, Major]
+    tier_1: [Tier 1, TIER 1, T1]
+    tier_2: [Tier 2, TIER 2, T2]
+  severity:
+    low: [Low, LOW, L, Minor]
+    medium: [Medium, MEDIUM, M, Moderate]
+    high: [High, HIGH, H, Major]
+    critical: [Critical, CRITICAL, C, Severe]
+  final_status:
+    open: [Open, OPEN, Active, Outstanding]
+    closed: [Closed, CLOSED, Complete, Completed]
+    overdue: [Overdue, OVERDUE, Past Due]
+    pending: [Pending, Pending Screen, In Progress, Under Review]

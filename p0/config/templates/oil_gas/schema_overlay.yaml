@@ -1,0 +1,662 @@
+# ================================================================
+# OIL & GAS INDUSTRY — Schema Overlay  (self-contained)
+# ================================================================
+# Merged from: maintenance, reliability, asset_integrity,
+#              process_optimization, sustainability_esg schemas.
+# ================================================================
+
+schema_overlay:
+
+  # ── Equipment extensions ─────────────────────────────────────────────────────
+  equipment:
+    additional_columns:
+      process_unit: VARCHAR(60)
+      pressure_rating_psig: NUMERIC(12,4)
+      temperature_rating_f: NUMERIC(12,4)
+      api_equipment_type: VARCHAR(60)
+      corrosion_loop: VARCHAR(80)
+      sil_level: INTEGER
+      equipment_class_code: VARCHAR(40)
+      installation_date: TIMESTAMP
+      design_life_years: NUMERIC(8,2)
+      design_pressure: NUMERIC(12,4)
+      design_temperature: NUMERIC(12,4)
+      material_of_construction: VARCHAR(120)
+      corrosion_allowance_mm: NUMERIC(12,4)
+      rbi_date: TIMESTAMP
+    additional_indexes:
+      - {name: idx_equip_pu, columns: [plant_code_id, process_unit]}
+      - {name: idx_equip_class, columns: [plant_code_id, equipment_class_code]}
+      - {name: idx_equip_install, columns: [installation_date]}
+      - {name: idx_equip_rbi, columns: [rbi_date]}
+
+  # ── Work order extensions ────────────────────────────────────────────────────
+  work_order:
+    additional_columns:
+      actual_start: TIMESTAMP
+      actual_finish: TIMESTAMP
+      downtime_hours: NUMERIC(18,4)
+      labor_hours: NUMERIC(18,4)
+      maintenance_classification: VARCHAR(40)
+      cost_total: NUMERIC(18,2)
+      management_of_change: BOOLEAN
+      permit_to_work: VARCHAR(80)
+      turnaround_scope: BOOLEAN
+      process_safety_relevant: BOOLEAN
+    additional_indexes:
+      - {name: idx_wo_maint_class, columns: [plant_code_id, maintenance_classification]}
+      - {name: idx_wo_actual_dates, columns: [actual_start, actual_finish]}
+      - {name: idx_wo_ptw, columns: [permit_to_work]}
+
+  # ── Notification extensions ──────────────────────────────────────────────────
+  notification:
+    additional_columns:
+      consequence_code: VARCHAR(60)
+      detection_method_code: VARCHAR(60)
+      downtime_hours: NUMERIC(18,4)
+
+  # ── Failure mode extensions ──────────────────────────────────────────────────
+  failure_mode:
+    additional_columns:
+      failure_mechanism: VARCHAR(80)
+      end_effect: TEXT
+      local_effect: TEXT
+      equipment_class_code: VARCHAR(40)
+    additional_indexes:
+      - {name: idx_fm_mechanism, columns: [failure_mechanism]}
+      - {name: idx_fm_class, columns: [equipment_class_code]}
+
+  # ── Timeseries metadata extensions ───────────────────────────────────────────
+  timeseries_metadata:
+    additional_columns:
+      is_safety_critical: BOOLEAN
+      sif_id: VARCHAR(80)
+    additional_indexes:
+      - {name: idx_ts_sif, columns: [sif_id]}
+
+  # ── Asset Strategy ───────────────────────────────────────────────────────────
+  asset_strategy:
+    primary_key: strategy_uid
+    columns:
+      strategy_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      normalized_asset: VARCHAR(120)
+      strategy_type: VARCHAR(40)
+      criticality_rank: VARCHAR(40)
+      review_date: TIMESTAMP
+      notes: TEXT
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_strategy_asset, columns: [plant_code_id, normalized_asset]}
+    indexes:
+      - {name: idx_strategy_plant, columns: [plant_code_id]}
+      - {name: idx_strategy_type, columns: [strategy_type]}
+    foreign_keys: []
+
+  # ── Repair Action ────────────────────────────────────────────────────────────
+  repair_action:
+    primary_key: action_uid
+    columns:
+      action_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      wo_number: VARCHAR(60)
+      action_seq: VARCHAR(30)
+      action_type: VARCHAR(40)
+      component_replaced: VARCHAR(200)
+      spare_material_code: VARCHAR(120)
+      labor_hours: NUMERIC(18,4)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_repair_action, columns: [plant_code_id, wo_number, action_seq]}
+    indexes:
+      - {name: idx_repair_wo, columns: [plant_code_id, wo_number]}
+      - {name: idx_repair_type, columns: [action_type]}
+    foreign_keys:
+      - {column: wo_number, ref_table: work_order, ref_column: wo_number, on_delete: CASCADE}
+      - {column: spare_material_code, ref_table: material, ref_column: material_code, on_delete: SET NULL}
+
+  # ── Equipment Class Taxonomy ─────────────────────────────────────────────────
+  equipment_class_taxonomy:
+    primary_key: class_uid
+    columns:
+      class_uid: BIGSERIAL
+      class_code: VARCHAR(40)
+      class_name: VARCHAR(200)
+      parent_class_code: VARCHAR(40)
+      level: INTEGER
+      equipment_category: VARCHAR(40)
+      typical_failure_modes: JSON
+      description: TEXT
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_class_code, columns: [class_code]}
+    indexes:
+      - {name: idx_class_parent, columns: [parent_class_code]}
+      - {name: idx_class_category, columns: [equipment_category]}
+      - {name: idx_class_level, columns: [level]}
+    foreign_keys:
+      - {column: parent_class_code, ref_table: equipment_class_taxonomy, ref_column: class_code, on_delete: SET NULL}
+
+  # ── Reliability KPI ─────────────────────────────────────────────────────────
+  reliability_kpi:
+    primary_key: kpi_uid
+    columns:
+      kpi_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      normalized_asset: VARCHAR(120)
+      equipment_class_code: VARCHAR(40)
+      period_start: TIMESTAMP
+      period_end: TIMESTAMP
+      mtbf_hours: NUMERIC(18,4)
+      mttr_hours: NUMERIC(18,4)
+      mdt_hours: NUMERIC(18,4)
+      availability: NUMERIC(8,6)
+      failure_rate: NUMERIC(18,8)
+      failure_count: INTEGER
+      total_downtime_hours: NUMERIC(18,4)
+      total_operating_hours: NUMERIC(18,4)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_kpi_asset_period, columns: [plant_code_id, normalized_asset, period_start]}
+    indexes:
+      - {name: idx_kpi_plant_asset, columns: [plant_code_id, normalized_asset]}
+      - {name: idx_kpi_period, columns: [period_start, period_end]}
+      - {name: idx_kpi_avail, columns: [plant_code_id, availability]}
+      - {name: idx_kpi_class, columns: [equipment_class_code]}
+    foreign_keys: []
+
+  # ── Operating State Log ──────────────────────────────────────────────────────
+  operating_state_log:
+    primary_key: state_uid
+    columns:
+      state_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      normalized_asset: VARCHAR(120)
+      operating_state: VARCHAR(40)
+      state_start: TIMESTAMP
+      state_end: TIMESTAMP
+      duration_hours: NUMERIC(18,4)
+      related_wo_number: VARCHAR(60)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_state_asset_start, columns: [plant_code_id, normalized_asset, state_start]}
+    indexes:
+      - {name: idx_state_asset, columns: [plant_code_id, normalized_asset]}
+      - {name: idx_state_type, columns: [plant_code_id, operating_state]}
+      - {name: idx_state_dates, columns: [state_start, state_end]}
+    foreign_keys: []
+
+  # ── Inspection Record ───────────────────────────────────────────────────────
+  inspection_record:
+    primary_key: inspection_uid
+    columns:
+      inspection_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      inspection_id: VARCHAR(80)
+      normalized_asset: VARCHAR(120)
+      inspection_type: VARCHAR(60)
+      inspection_date: TIMESTAMP
+      next_inspection_date: TIMESTAMP
+      inspector: VARCHAR(200)
+      result: VARCHAR(30)
+      findings: TEXT
+      recommendations: TEXT
+      related_wo_number: VARCHAR(60)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_inspection, columns: [plant_code_id, inspection_id]}
+    indexes:
+      - {name: idx_insp_asset, columns: [plant_code_id, normalized_asset]}
+      - {name: idx_insp_date, columns: [inspection_date]}
+      - {name: idx_insp_next, columns: [next_inspection_date]}
+      - {name: idx_insp_type, columns: [inspection_type]}
+    foreign_keys: []
+
+  # ── Corrosion Loop ──────────────────────────────────────────────────────────
+  corrosion_loop:
+    primary_key: loop_uid
+    columns:
+      loop_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      loop_id: VARCHAR(80)
+      loop_name: VARCHAR(200)
+      corrosion_mechanism: VARCHAR(80)
+      corrosion_rate_mmpy: NUMERIC(12,4)
+      design_pressure: NUMERIC(12,4)
+      design_temperature: NUMERIC(12,4)
+      material_of_construction: VARCHAR(120)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_corr_loop, columns: [plant_code_id, loop_id]}
+    indexes:
+      - {name: idx_loop_plant, columns: [plant_code_id]}
+      - {name: idx_loop_mechanism, columns: [corrosion_mechanism]}
+    foreign_keys: []
+
+  # ── Thickness Measurement ───────────────────────────────────────────────────
+  thickness_measurement:
+    primary_key: tm_uid
+    columns:
+      tm_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      normalized_asset: VARCHAR(120)
+      measurement_point: VARCHAR(80)
+      measurement_date: TIMESTAMP
+      nominal_thickness_mm: NUMERIC(12,4)
+      measured_thickness_mm: NUMERIC(12,4)
+      min_required_thickness_mm: NUMERIC(12,4)
+      remaining_life_years: NUMERIC(8,2)
+      corrosion_loop_id: VARCHAR(80)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_thickness, columns: [plant_code_id, normalized_asset, measurement_point, measurement_date]}
+    indexes:
+      - {name: idx_tm_asset, columns: [plant_code_id, normalized_asset]}
+      - {name: idx_tm_date, columns: [measurement_date]}
+      - {name: idx_tm_loop, columns: [corrosion_loop_id]}
+    foreign_keys:
+      - {column: corrosion_loop_id, ref_table: corrosion_loop, ref_column: loop_id, on_delete: SET NULL}
+
+  # ── Condition Assessment ────────────────────────────────────────────────────
+  condition_assessment:
+    primary_key: ca_uid
+    columns:
+      ca_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      normalized_asset: VARCHAR(120)
+      assessment_date: TIMESTAMP
+      health_index: NUMERIC(6,2)
+      condition_grade: VARCHAR(10)
+      remaining_useful_life_years: NUMERIC(8,2)
+      risk_score: NUMERIC(12,4)
+      consequence_category: VARCHAR(40)
+      probability_category: VARCHAR(40)
+      assessor: VARCHAR(200)
+      notes: TEXT
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_ca_asset_date, columns: [plant_code_id, normalized_asset, assessment_date]}
+    indexes:
+      - {name: idx_ca_asset, columns: [plant_code_id, normalized_asset]}
+      - {name: idx_ca_grade, columns: [condition_grade]}
+      - {name: idx_ca_risk, columns: [risk_score]}
+      - {name: idx_ca_date, columns: [assessment_date]}
+    foreign_keys: []
+
+  # ── Process Parameter ───────────────────────────────────────────────────────
+  process_parameter:
+    primary_key: pp_uid
+    columns:
+      pp_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      tag_name: VARCHAR(255)
+      parameter_type: VARCHAR(40)
+      value_low: NUMERIC(18,6)
+      value_target: NUMERIC(18,6)
+      value_high: NUMERIC(18,6)
+      unit: VARCHAR(50)
+      process_unit_code: VARCHAR(120)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_pp, columns: [plant_code_id, tag_name, parameter_type]}
+    indexes:
+      - {name: idx_pp_tag, columns: [plant_code_id, tag_name]}
+      - {name: idx_pp_pu, columns: [plant_code_id, process_unit_code]}
+    foreign_keys: []
+
+  # ── Process Alarm ───────────────────────────────────────────────────────────
+  process_alarm:
+    primary_key: alarm_uid
+    columns:
+      alarm_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      alarm_id: VARCHAR(80)
+      tag_name: VARCHAR(255)
+      alarm_type: VARCHAR(40)
+      alarm_priority: VARCHAR(20)
+      alarm_time: TIMESTAMP
+      return_to_normal_time: TIMESTAMP
+      acknowledged_time: TIMESTAMP
+      duration_seconds: NUMERIC(18,2)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_alarm, columns: [plant_code_id, alarm_id]}
+    indexes:
+      - {name: idx_alarm_tag, columns: [plant_code_id, tag_name]}
+      - {name: idx_alarm_time, columns: [alarm_time]}
+      - {name: idx_alarm_priority, columns: [alarm_priority]}
+    foreign_keys: []
+
+  # ── Safety Instrumented Function ─────────────────────────────────────────────
+  safety_instrumented_function:
+    primary_key: sif_uid
+    columns:
+      sif_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      sif_id: VARCHAR(80)
+      sif_name: VARCHAR(200)
+      sil_rating: INTEGER
+      process_unit_code: VARCHAR(120)
+      hazard_description: TEXT
+      demand_mode: VARCHAR(30)
+      pfd_avg: NUMERIC(12,8)
+      proof_test_interval_months: INTEGER
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_sif, columns: [plant_code_id, sif_id]}
+    indexes:
+      - {name: idx_sif_plant, columns: [plant_code_id]}
+      - {name: idx_sif_sil, columns: [sil_rating]}
+      - {name: idx_sif_pu, columns: [plant_code_id, process_unit_code]}
+    foreign_keys: []
+
+  # ── Safety Loop ─────────────────────────────────────────────────────────────
+  safety_loop:
+    primary_key: sl_uid
+    columns:
+      sl_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      sif_id: VARCHAR(80)
+      loop_element_seq: INTEGER
+      element_type: VARCHAR(30)
+      tag_name: VARCHAR(255)
+      normalized_asset: VARCHAR(120)
+      manufacturer: VARCHAR(200)
+      model: VARCHAR(200)
+      failure_rate: NUMERIC(18,8)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_sl, columns: [plant_code_id, sif_id, loop_element_seq]}
+    indexes:
+      - {name: idx_sl_sif, columns: [plant_code_id, sif_id]}
+      - {name: idx_sl_tag, columns: [plant_code_id, tag_name]}
+    foreign_keys:
+      - {column: sif_id, ref_table: safety_instrumented_function, ref_column: sif_id, on_delete: CASCADE}
+
+  # ── Proof Test ──────────────────────────────────────────────────────────────
+  proof_test:
+    primary_key: pt_uid
+    columns:
+      pt_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      sif_id: VARCHAR(80)
+      test_date: TIMESTAMP
+      test_result: VARCHAR(30)
+      test_coverage_pct: NUMERIC(6,2)
+      tester: VARCHAR(200)
+      related_wo_number: VARCHAR(60)
+      findings: TEXT
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_pt, columns: [plant_code_id, sif_id, test_date]}
+    indexes:
+      - {name: idx_pt_sif, columns: [plant_code_id, sif_id]}
+      - {name: idx_pt_date, columns: [test_date]}
+      - {name: idx_pt_result, columns: [test_result]}
+    foreign_keys:
+      - {column: sif_id, ref_table: safety_instrumented_function, ref_column: sif_id, on_delete: CASCADE}
+
+  # ── Process KPI ─────────────────────────────────────────────────────────────
+  process_kpi:
+    primary_key: pkpi_uid
+    columns:
+      pkpi_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      process_unit_code: VARCHAR(120)
+      kpi_name: VARCHAR(80)
+      period_start: TIMESTAMP
+      period_end: TIMESTAMP
+      kpi_value: NUMERIC(18,6)
+      kpi_unit: VARCHAR(30)
+      target_value: NUMERIC(18,6)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_pkpi, columns: [plant_code_id, process_unit_code, kpi_name, period_start]}
+    indexes:
+      - {name: idx_pkpi_pu, columns: [plant_code_id, process_unit_code]}
+      - {name: idx_pkpi_name, columns: [kpi_name]}
+      - {name: idx_pkpi_period, columns: [period_start]}
+    foreign_keys: []
+
+  # ── Emission Record ─────────────────────────────────────────────────────────
+  emission_record:
+    primary_key: emission_uid
+    columns:
+      emission_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      emission_source_id: VARCHAR(80)
+      emission_source_name: VARCHAR(200)
+      ghg_scope: VARCHAR(20)
+      gas_type: VARCHAR(20)
+      period_start: TIMESTAMP
+      period_end: TIMESTAMP
+      quantity_tonnes: NUMERIC(18,6)
+      co2_equivalent_tonnes: NUMERIC(18,6)
+      emission_factor_id: VARCHAR(80)
+      process_unit_code: VARCHAR(120)
+      normalized_asset: VARCHAR(120)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_emission, columns: [plant_code_id, emission_source_id, period_start]}
+    indexes:
+      - {name: idx_emission_scope, columns: [ghg_scope]}
+      - {name: idx_emission_gas, columns: [gas_type]}
+      - {name: idx_emission_period, columns: [period_start, period_end]}
+      - {name: idx_emission_pu, columns: [plant_code_id, process_unit_code]}
+    foreign_keys: []
+
+  # ── Emission Factor ─────────────────────────────────────────────────────────
+  emission_factor:
+    primary_key: ef_uid
+    columns:
+      ef_uid: BIGSERIAL
+      factor_id: VARCHAR(80)
+      source_name: VARCHAR(80)
+      gas_type: VARCHAR(20)
+      activity_type: VARCHAR(60)
+      factor_value: NUMERIC(18,8)
+      factor_unit: VARCHAR(40)
+      gwp: NUMERIC(12,4)
+      effective_year: INTEGER
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_ef, columns: [factor_id]}
+    indexes:
+      - {name: idx_ef_gas, columns: [gas_type]}
+      - {name: idx_ef_activity, columns: [activity_type]}
+    foreign_keys: []
+
+  # ── Water Record ────────────────────────────────────────────────────────────
+  water_record:
+    primary_key: wr_uid
+    columns:
+      wr_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      water_source_id: VARCHAR(80)
+      record_type: VARCHAR(30)
+      water_type: VARCHAR(40)
+      period_start: TIMESTAMP
+      period_end: TIMESTAMP
+      volume_m3: NUMERIC(18,4)
+      quality_parameters: JSON
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_water, columns: [plant_code_id, water_source_id, period_start]}
+    indexes:
+      - {name: idx_water_type, columns: [record_type]}
+      - {name: idx_water_period, columns: [period_start]}
+    foreign_keys: []
+
+  # ── Waste Record ────────────────────────────────────────────────────────────
+  waste_record:
+    primary_key: waste_uid
+    columns:
+      waste_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      waste_stream_id: VARCHAR(80)
+      waste_classification: VARCHAR(30)
+      waste_type: VARCHAR(40)
+      disposal_method: VARCHAR(30)
+      period_start: TIMESTAMP
+      period_end: TIMESTAMP
+      quantity_tonnes: NUMERIC(18,6)
+      process_unit_code: VARCHAR(120)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_waste, columns: [plant_code_id, waste_stream_id, period_start]}
+    indexes:
+      - {name: idx_waste_class, columns: [waste_classification]}
+      - {name: idx_waste_method, columns: [disposal_method]}
+      - {name: idx_waste_period, columns: [period_start]}
+    foreign_keys: []
+
+  # ── Environmental Permit ────────────────────────────────────────────────────
+  environmental_permit:
+    primary_key: permit_uid
+    columns:
+      permit_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      permit_id: VARCHAR(80)
+      permit_type: VARCHAR(30)
+      issuing_authority: VARCHAR(200)
+      issued_date: TIMESTAMP
+      expiry_date: TIMESTAMP
+      limit_parameter: VARCHAR(120)
+      limit_value: NUMERIC(18,6)
+      limit_unit: VARCHAR(40)
+      compliance_status: VARCHAR(30)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_permit, columns: [plant_code_id, permit_id]}
+    indexes:
+      - {name: idx_permit_type, columns: [permit_type]}
+      - {name: idx_permit_expiry, columns: [expiry_date]}
+      - {name: idx_permit_status, columns: [compliance_status]}
+    foreign_keys: []
+
+  # ── ESG KPI ─────────────────────────────────────────────────────────────────
+  esg_kpi:
+    primary_key: esg_uid
+    columns:
+      esg_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      kpi_name: VARCHAR(80)
+      reporting_framework: VARCHAR(20)
+      reporting_period_start: TIMESTAMP
+      reporting_period_end: TIMESTAMP
+      kpi_value: NUMERIC(18,6)
+      kpi_unit: VARCHAR(40)
+      target_value: NUMERIC(18,6)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_esg, columns: [plant_code_id, kpi_name, reporting_period_start]}
+    indexes:
+      - {name: idx_esg_name, columns: [kpi_name]}
+      - {name: idx_esg_framework, columns: [reporting_framework]}
+      - {name: idx_esg_period, columns: [reporting_period_start]}
+    foreign_keys: []

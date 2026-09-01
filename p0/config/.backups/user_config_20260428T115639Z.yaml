@@ -1,0 +1,50 @@
+timeseries:
+  retention:
+    value: '120'
+    unit: days
+industry: oil_gas
+document_processing:
+  crude_stabalization:
+    document_type: Crude  Stabalization
+    source_columns:
+    - Introduction
+    - Design Basis Criteria for Crude Stabilisation Facilities
+    - Major Design Parameters
+    - Crude Stabilisation
+    - Stabilisation Gas System
+    - Crude Stabilisation
+    - Crude Receiving
+    - Crude Stabilisation
+  crude_stabilisation:
+    document_type: Crude Stabilisation
+    source_columns:
+    - Introduction
+    - Design Basis Criteria for Crude Stabilisation Facilitie
+    - Major Design Parameters
+    - Crude Stabilisation
+    - Crude Receiving
+  sop:
+    document_type: SOP (Standard Operating Procedures)
+    source_columns:
+    - DESIGN CONCEPT FOR CRUDE STABILISATION FACILITIES
+    - Introduction
+    - Design Basis Criteria for Crude Stabilisation Facilities
+    - Major Design Parameters
+    - Crude Stabilisation
+    - Stabilisation Gas System
+  document_types:
+    sop:
+      document_type: SOP (Standard Operating Procedures)
+      source_columns:
+      - DESIGN CONCEPT FOR CRUDE STABILISATION FACILITIES
+      - Introduction
+      - Design Basis Criteria for Crude Stabilisation Facilities
+    tcot_engineering_data:
+      document_type: TCOT Engineering Data
+      source_columns:
+      - Equipment Tag
+      - Parameter
+      - Value
+      - Unit
+      - Source  Reference
+    

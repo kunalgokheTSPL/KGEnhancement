@@ -1,0 +1,40 @@
+version: '1.0'
+notes:
+- Decides WHICH timeseries metadata source an uploaded workbook is, before any
+  parsing happens. Keyed on header signatures only.
+- Sheet names are deliberately NOT part of any signature. Two of these exports
+  name their sheets after the site, and a third uses the Excel default
+  "Sheet1", so a sheet name is either site-specific or worthless.
+- A signature must name at least one header unique to its export, or two
+  sources match the same sheet and detection raises rather than guessing.
+- Header matching ignores case, spacing, punctuation and underscores, so
+  "Accum %", "Boundary Value" and "|OperatingValue" all match their plain forms.
+sources:
+  osi_pi:
+    label: OSI PI tag export
+    required_headers:
+    - AttributeConfigString
+    - AttributeDataReference
+    - Parent
+    - ObjectType
+  alerts_prime_alarms:
+    label: PRIME frequent alarms export
+    required_headers:
+    - Tag
+    - Alarm
+    - Plant_Hierarchy
+    - Upper_Equipment
+  alerts_prime_excursions:
+    label: PRIME frequent excursions export
+    required_headers:
+    - Tag
+    - Boundary
+    - Boundary Type
+    - Boundary Value
+  alerts_protean:
+    label: PROTEAN equipment limits export
+    required_headers:
+    - ProteanLowerLimit
+    - ProteanUpperLimit
+    - OEMLowerLimit
+    - OEMUpperLimit

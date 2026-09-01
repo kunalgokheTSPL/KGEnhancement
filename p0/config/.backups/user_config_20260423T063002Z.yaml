@@ -1,0 +1,65 @@
+industry: oil_gas
+document_processing:
+  document_types:
+    sol:
+      document_type: SOL
+      source_columns:
+      - Process System
+      - Equipment Name
+      - Threat and consequence
+    baronia:
+      document_type: Baronia
+      source_columns:
+      - Tag No.
+      - Tag Name
+      - Description
+timeseries:
+  retention:
+    value: '90'
+    unit: days
+sap_processing:
+  join_overrides:
+    workorder:
+      aufk_afko:
+      - AUFNR
+      aufk_afvc:
+      - AUFNR
+      afvc_afvv:
+      - AUFPL
+      wo_qmel:
+      - AUFNR
+      wo_qmsm:
+      - QMNUM
+      wo_jest:
+      - OBJNR
+      wo_jsto:
+      - OBJNR
+      wo_resb:
+      - AUFNR
+      wo_coep:
+      - AUFNR
+      wo_equi:
+      - EQUNR
+      wo_iflot:
+      - TPLNR
+    floc:
+      equi_iflot:
+      - TPLNR
+      equi_iloa:
+      - ILOAN
+    tasklist:
+      plko_mapl:
+      - PLNNR
+      plko_plpo:
+      - PLNNR
+      tl_equi:
+      - EQUNR
+    material:
+      mara_marc:
+      - MATNR
+      marc_mard:
+      - MATNR
+      mat_resb:
+      - MATNR
+      mat_coep:
+      - AUFNR

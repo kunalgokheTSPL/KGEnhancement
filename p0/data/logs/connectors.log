@@ -1,0 +1,42 @@
+2026-08-13T12:50:22  WARNING   cdm.connector.timeseries:77  [ts/ingest] degenerate device stem from '___.csv' — using 'file'
+2026-08-13T12:50:22  WARNING   cdm.connector.timeseries:77  [ts/ingest] degenerate device stem from '已经.csv' — using 'file_abcd1234'
+2026-08-13T12:50:24  INFO      cdm.connector.documents:101  [docs/upload] persisted doc-type config: my_custom_logs → 3 field(s) (template=0, incoming=3, merged union)
+2026-08-13T12:50:24  INFO      cdm.connector.documents:101  [docs/upload] persisted doc-type config: custom_jsa → 3 field(s) (template=0, incoming=3, merged union)
+2026-08-13T12:50:24  INFO      cdm.connector.documents:101  [docs/upload] persisted doc-type config: custom_a → 1 field(s) (template=0, incoming=1, merged union)
+2026-08-13T12:50:24  INFO      cdm.connector.documents:101  [docs/upload] persisted doc-type config: custom_b → 1 field(s) (template=0, incoming=1, merged union)
+2026-08-13T12:50:24  INFO      cdm.connector.documents:101  [docs/upload] persisted doc-type config: hazop → 8 field(s) (template=8, incoming=0, merged union)
+2026-08-13T12:50:24  INFO      cdm.connector.documents:101  [docs/upload] persisted doc-type config: hazop → 9 field(s) (template=8, incoming=2, merged union)
+2026-08-13T12:50:24  INFO      cdm.connector.documents:101  [docs/upload] persisted doc-type config: equipment_datasheets → 8 field(s) (template=8, incoming=1, merged union)
+2026-08-13T12:50:32  DEBUG     cdm.connector.pnid:256  [pnid/existing] GET — listing files under s3://staging-pt/p0/staging-pt/plant_1_testcase/pnid
+2026-08-13T12:51:22  INFO      cdm.connector.pnid:328  [pnid/upload] POST — 1 file(s) received  job_id=b879df29-3205-47c0-bf33-7256862c3de9  plant_code_id=e2e_95b004da_testcase
+2026-08-13T12:51:23  DEBUG     cdm.connector.pnid:384  [pnid/upload] uploaded e2e_pid.pdf → RustFS:staging-pt/p0/staging-pt/e2e_95b004da_testcase/pnid/e2e_pid.pdf  (794 B)
+2026-08-13T12:51:24  INFO      cdm.connector.pnid:431  [pnid/upload] accepted=1  rejected=0  RustFS=s3://staging-pt/p0/staging-pt/e2e_95b004da_testcase/pnid
+2026-08-13T12:51:24  INFO      cdm.connector.sap:1289  [sap/upload] POST — 1 file(s) received  job_id=428bdd49-f0ba-4dc1-91ed-08b60b5df181  rustfs=s3://staging-pt/p0/staging-pt/e2e_95b004da_testcase/sap
+2026-08-13T12:51:25  INFO      cdm.connector.sap:1333  [sap/upload] UPLOADED e2e_sap.xlsx (4.9 KB) → s3://staging-pt/p0/staging-pt/e2e_95b004da_testcase/sap/e2e_sap.xlsx
+2026-08-13T12:51:25  INFO      cdm.connector.sap:1380  [sap/upload] SUMMARY  job_id=428bdd49-f0ba-4dc1-91ed-08b60b5df181  accepted=1  rejected=0  rustfs=s3://staging-pt/p0/staging-pt/e2e_95b004da_testcase/sap
+2026-08-13T12:51:25  INFO      cdm.connector.timeseries:1622  [ts/upload] POST — 1 file(s) received  job_id=6b80b4cf-c3a3-49a5-99bd-d4637a7f6467  file_type=metadata  plant_code_id=e2e_95b004da_testcase  rustfs=s3://staging-pt/p0/staging-pt/e2e_95b004da_testcase/timeseries/metadata
+2026-08-13T12:51:26  INFO      cdm.connector.timeseries:1740  [ts/upload] SUMMARY  job_id=6b80b4cf-c3a3-49a5-99bd-d4637a7f6467  file_type=metadata  accepted=1  rejected=0  (RustFS+ingest backgrounded)
+2026-08-13T12:51:26  INFO      cdm.connector.timeseries:1929  [ts/upload] RustFS push + ingest scheduled  job_id=6b80b4cf-c3a3-49a5-99bd-d4637a7f6467  files=1
+2026-08-13T12:51:26  INFO      cdm.connector.docs:811  [docs/upload] START  job_id=59a8c295-5978-458d-8348-3eccfb95eb8e  doc_type=equipment_manuals  files=1  rustfs=s3://staging-pt/p0/staging-pt/e2e_95b004da_testcase/documents/equipment_manuals
+2026-08-13T12:51:27  INFO      cdm.connector.timeseries:1784  [ts/upload] UPLOADED e2e_ts.csv → s3://staging-pt/p0/staging-pt/e2e_95b004da_testcase/timeseries/metadata/e2e_ts.csv
+2026-08-13T12:51:27  INFO      cdm.connector.docs:856  [docs/upload] UPLOADED e2e_manual.pdf (0.8 KB) → s3://staging-pt/p0/staging-pt/e2e_95b004da_testcase/documents/equipment_manuals/e2e_manual.pdf
+2026-08-13T12:51:27  INFO      cdm.connector.timeseries:688  [retention] no retention configured — skipping prune
+2026-08-13T12:51:27  INFO      cdm.connector.timeseries:1921  [ts/upload] IoTDB ingest done  job_id=6b80b4cf-c3a3-49a5-99bd-d4637a7f6467  rows=0  dropped_pre_retention=0
+2026-08-13T12:51:28  INFO      cdm.connector.docs:903  [docs/upload] SUMMARY  job_id=59a8c295-5978-458d-8348-3eccfb95eb8e  accepted=1  rejected=0  rustfs=s3://staging-pt/p0/staging-pt/e2e_95b004da_testcase/documents/equipment_manuals
+2026-08-25T18:24:30  WARNING   cdm.connector.timeseries:77  [ts/ingest] degenerate device stem from '___.csv' — using 'file'
+2026-08-25T18:24:30  WARNING   cdm.connector.timeseries:77  [ts/ingest] degenerate device stem from '已经.csv' — using 'file_abcd1234'
+2026-08-25T18:24:30  INFO      cdm.connector.documents:101  [docs/upload] persisted doc-type config: sop → 9 field(s) (template=9, incoming=0, merged union)
+2026-08-25T18:24:31  INFO      cdm.connector.docs:1002  [docs/upload] START  job_id=46aaafa7-4b29-4cff-a647-2db717375fdc  doc_types=sop  files=1  rustfs=s3://abfs://bronze/p0/staging-pt/plant_1_testcase/documents
+2026-08-25T18:24:31  INFO      cdm.connector.docs:1133  [docs/upload] UPLOADED scope_guard_sop.pdf (0.1 KB) → s3://abfs://bronze/p0/staging-pt/plant_1_testcase/documents/sop/scope_guard_sop.pdf
+2026-08-25T18:24:31  INFO      cdm.connector.docs:1396  [docs/upload] SUMMARY  job_id=46aaafa7-4b29-4cff-a647-2db717375fdc  accepted=1  rejected=0  rustfs=s3://abfs://bronze/p0/staging-pt/plant_1_testcase/documents
+2026-08-25T18:24:31  INFO      cdm.connector.documents:101  [docs/upload] persisted doc-type config: my_custom_logs → 3 field(s) (template=0, incoming=3, merged union)
+2026-08-25T18:24:31  INFO      cdm.connector.documents:101  [docs/upload] persisted doc-type config: custom_jsa → 3 field(s) (template=0, incoming=3, merged union)
+2026-08-25T18:24:32  INFO      cdm.connector.documents:101  [docs/upload] persisted doc-type config: custom_a → 1 field(s) (template=0, incoming=1, merged union)
+2026-08-25T18:24:32  INFO      cdm.connector.documents:101  [docs/upload] persisted doc-type config: custom_b → 1 field(s) (template=0, incoming=1, merged union)
+2026-08-25T18:24:32  INFO      cdm.connector.documents:101  [docs/upload] persisted doc-type config: hazop → 13 field(s) (template=13, incoming=0, merged union)
+2026-08-25T18:24:32  INFO      cdm.connector.documents:101  [docs/upload] persisted doc-type config: hazop → 14 field(s) (template=13, incoming=2, merged union)
+2026-08-25T18:24:32  INFO      cdm.connector.documents:101  [docs/upload] persisted doc-type config: equipment_datasheets → 11 field(s) (template=11, incoming=1, merged union)
+2026-08-25T18:24:35  DEBUG     cdm.connector.pnid:288  [pnid/existing] GET — listing files under s3://bronze/p0/staging-pt/plant_1_testcase/pnid
+2026-08-25T18:25:12  INFO      cdm.connector.pnid:349  [pnid/upload] POST — 1 file(s) received  job_id=e4b4fa60-ffbc-44c7-82b9-985c39976006  plant_code_id=e2e_51fc708e_testcase
+2026-08-25T18:25:12  DEBUG     cdm.connector.pnid:405  [pnid/upload] uploaded e2e_pid.pdf → RustFS:bronze/p0/staging-pt/e2e_51fc708e_testcase/pnid/e2e_pid.pdf  (794 B)
+2026-08-25T18:25:13  INFO      cdm.connector.pnid:496  [pnid/upload] accepted=1  rejected=0  RustFS=s3://bronze/p0/staging-pt/e2e_51fc708e_testcase/pnid

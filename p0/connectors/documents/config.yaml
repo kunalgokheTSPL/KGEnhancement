@@ -1,0 +1,82 @@
+# ═══════════════════════════════════════════════════════════════
+# Documents Connector — All Sources Configuration
+# ═══════════════════════════════════════════════════════════════
+
+data_type: documents
+
+# ── Common settings (shared across all sources) ─────────────
+common:
+  document_types:
+    maintenance:
+      path: "maintenance"
+      extensions: [".pdf", ".docx", ".xlsx"]
+    sop:
+      path: "sop"
+      extensions: [".pdf", ".docx"]
+    oem:
+      path: "oem"
+      extensions: [".pdf", ".docx", ".xlsx"]
+    rca:
+      path: "rca"
+      extensions: [".pdf", ".docx", ".xlsx"]
+    inspection:
+      path: "inspection"
+      extensions: [".pdf", ".docx", ".xlsx"]
+
+  filters:
+    max_file_size_mb: 100
+    filename_pattern: null
+    exclude_pattern: "^~\\$|^\\..*"
+
+# ── Source-specific settings ────────────────────────────────
+sources:
+
+  # ── Local Filesystem ──────────────────────
+  local:
+    base_path: "./data/staging/documents"
+
+  # ── AWS S3 ────────────────────────────────
+  s3:
+    bucket: "${S3_DOCUMENTS_BUCKET}"
+    prefix: "raw/documents"
+    connection:
+      region: "${AWS_REGION:-us-east-1}"
+      access_key: "${AWS_ACCESS_KEY_ID}"
+      secret_key: "${AWS_SECRET_ACCESS_KEY}"
+      role_arn: "${AWS_ROLE_ARN:-}"
+      use_ssl: true
+
+  # ── Azure Data Lake Storage Gen2 ──────────
+  adls:
+    container: "${ADLS_DOCUMENTS_CONTAINER}"
+    prefix: "raw/documents"
+    connection:
+      account_name: "${ADLS_ACCOUNT_NAME}"
+      account_key: "${ADLS_ACCOUNT_KEY:-}"
+      sas_token: "${ADLS_SAS_TOKEN:-}"
+      tenant_id: "${AZURE_TENANT_ID:-}"
+      client_id: "${AZURE_CLIENT_ID:-}"
+      client_secret: "${AZURE_CLIENT_SECRET:-}"
+
+  # ── Google Cloud Storage ──────────────────
+  gcs:
+    bucket: "${GCS_DOCUMENTS_BUCKET}"
+    prefix: "raw/documents"
+    connection:
+      project_id: "${GCP_PROJECT_ID}"
+      service_account_json: "${GOOGLE_APPLICATION_CREDENTIALS:-}"
+
+  # ── Microsoft OneDrive / SharePoint ───────
+  onedrive:
+    # Folder path inside the drive
+    folder_path: "/Documents/CDM/documents"
+    # Drive ID (leave blank for default user drive)
+    drive_id: "${ONEDRIVE_DRIVE_ID:-}"
+    # SharePoint site (if using SharePoint document library)
+    site_id: "${ONEDRIVE_SITE_ID:-}"
+    connection:
+      tenant_id: "${AZURE_TENANT_ID}"
+      client_id: "${ONEDRIVE_CLIENT_ID}"
+      client_secret: "${ONEDRIVE_CLIENT_SECRET}"
+      # Scopes for app-only auth
+      scopes: ["https://graph.microsoft.com/.default"]

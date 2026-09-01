@@ -1,0 +1,219 @@
+domain: maintenance
+label: Maintenance
+description: 'Work-execution view of each asset — what fails, why, what maintenance response (work order,
+  action, procedure, spare part) it triggers, and the resulting cost/production/business impact.
+
+  '
+layers:
+  asset:
+    standard: ISO 15926, ISO 14224, ISA-95, ISO 8000
+    fields:
+    - name: Equipment
+      status: backed
+      key_column: normalized_asset
+      source_label: Asset Master
+      sources:
+      - table: equipment
+        column: equipment_tag
+        label: Asset Master
+      - table: inspection_record_aif
+        column: functional_location
+        label: AIF FLOC
+      - table: containment_event_gloc
+        column: equipment_ref
+        label: GLOC
+    - name: Area
+      status: backed
+      key_column: normalized_asset
+      source_label: Asset Master
+      sources:
+      - table: equipment
+        column: area
+        label: Asset Master
+      - table: inspection_record_aif
+        column: platform
+        label: AIF
+      - table: containment_event_lopc
+        column: location
+        label: LOPC
+    - name: Process Unit
+      status: backed
+      source_table: equipment
+      source_column: process_unit
+      key_column: normalized_asset
+      source_label: Asset Master
+    - name: Component
+      status: backed
+      key_column: equipment_id
+      source_label: SAP
+      sources:
+      - table: failure_mode
+        column: subsystem_component
+        label: SAP
+      - table: containment_event_lopc
+        column: component_type
+        label: LOPC
+    - name: Sensor / Tag
+      status: backed
+      source_table: timeseries_metadata
+      source_column: tag_name
+      key_column: normalized_asset
+      source_label: Historian
+  process:
+    standard: ISO 15926, ISA-88/95
+    fields:
+    - name: Process Stream
+      status: not_yet_backed
+      note: No stream/flow-path column exists anywhere in schema.yaml.
+    - name: Process Variable
+      status: backed
+      derivation: tag_first_letter_lookup
+      source_table: timeseries_metadata
+      source_column: tag_name
+      key_column: normalized_asset
+      source_label: Historian
+      reference_file: config/templates/_common/tag_naming_convention.json
+      note: 'Derived, not a raw column: the tag''s first ISA-5.1 letter is looked up in tag_naming_convention.json''s
+        isa_5_1.first_letter map to get the variable name (Vibration, Temperature, Position, ...). Standard:
+        ANSI/ISA-5.1-2009.
+
+        '
+    - name: Operating Condition
+      status: not_yet_backed
+      note: No operating-condition column exists anywhere in schema.yaml.
+  performance:
+    standard: ISO 14224, IEC 61511, ISO 22400
+    fields:
+    - name: KPI
+      status: not_yet_backed
+      note: 'No generic KPI-name column exists anywhere in base schema.yaml. Represents category-level
+        names (e.g. ''Availability'', ''OEE'') from industry_config.yaml''s kpis: catalog, not backed
+        by a per-equipment row today.'
+    - name: Reliability Metric
+      status: not_yet_backed
+      note: reliability_kpi.{mtbf_hours,mttr_hours,failure_rate} exist but only via the oil_gas/cement
+        industry SCHEMA OVERLAY (config/templates/{oil_gas,cement}/schema_overlay.yaml) -- not in base
+        schema.yaml. Name only (e.g. 'MTBF'); wire once a plant provisions that overlay.
+  knowledge:
+    standard: ISO 14224, IEC 61511, DAMA-DMBOK
+    fields:
+    - name: Failure Mode
+      status: backed
+      key_column: equipment_id
+      source_label: SAP
+      sources:
+      - table: failure_mode
+        column: failure_mode_text
+        label: SAP
+      - table: containment_event_lopc
+        column: component_type
+        label: LOPC
+      - table: containment_event_gloc
+        column: fault_code
+        label: GLOC
+    - name: Root Cause
+      status: backed
+      key_column: equipment_id
+      source_label: FMEA
+      sources:
+      - table: failure_cause
+        column: failure_cause_text
+        label: FMEA
+      - table: containment_event_lopc
+        column: damage_mechanism
+        label: LOPC
+    - name: Diagnostic Pattern
+      status: not_yet_backed
+      note: No diagnostic/trend-pattern column exists anywhere in schema.yaml (closest is free-text failure_mode.detection_parameters,
+        not a controlled pattern category).
+  action:
+    standard: IEC 62443, ISA-88, IEC 61511
+    fields:
+    - name: Maintenance History
+      status: not_yet_backed
+      note: reliability_kpi.failure_count (overlay-only, see Reliability Metric note) is the closest real
+        column; otherwise this needs a COUNT aggregation over work_order/notification rows, beyond the
+        single-table-lookup design this builder uses -- not claiming it as backed.
+    - name: Work Order
+      status: backed
+      key_column: equipment_ref
+      source_label: SAP Work Order
+      sources:
+      - table: work_order
+        column: wo_number
+        label: SAP Work Order
+      - table: inspection_record_aif
+        column: work_order_no
+        label: AIF
+      - table: containment_event_gloc
+        column: work_order_no
+        label: GLOC
+    - name: Maintenance Action
+      status: backed
+      key_column: equipment_ref
+      source_label: SAP Work Order
+      sources:
+      - table: work_order
+        column: maint_activity_type
+        label: SAP Work Order
+      - table: inspection_record_aif
+        column: action_party
+        label: AIF Action Party
+      - table: containment_event_gloc
+        column: action_party
+        label: GLOC Action Party
+    - name: Procedure / SOP
+      status: backed
+      source_table: task_list
+      source_column: operation_text
+      key_column: equipment_ref
+      source_label: SAP Task List
+    - name: Recommendation
+      status: backed
+      key_column: equipment_id
+      source_label: SAP
+      sources:
+      - table: failure_mode
+        column: recommended_action
+        label: SAP
+      - table: inspection_record_aif
+        column: recommendation
+        label: AIF
+      - table: containment_event_gloc
+        column: recommendation
+        label: GLOC
+    - name: Spare Part
+      status: not_yet_backed
+      note: repair_action.spare_material_code and bom_item.material_code both carry this, but neither
+        table has a direct equipment column (repair_action only has wo_number; bom_item only has bom_id)
+        -- both need a 2-hop join the current single-table-lookup builder doesn't support. Not claiming
+        it as backed.
+    - name: Safety Event
+      status: backed
+      key_column: equipment_id
+      source_label: Process Safety Event
+      standard: IEC 61511 (loss-of-containment scope); API 754 (PSE tiering)
+      sources:
+      - table: document_metadata
+        column: document_type
+        label: Process Safety Event
+      - table: containment_event_lopc
+        column: incident_classification
+        label: LOPC
+      - table: containment_event_gloc
+        column: fault_code
+        label: GLOC
+  business:
+    standard: ISA-95, ISO 50001
+    fields:
+    - name: Production Impact
+      status: not_yet_backed
+      note: No production-impact column exists anywhere in schema.yaml.
+    - name: Maintenance Cost
+      status: not_yet_backed
+      note: No cost/currency column exists anywhere in schema.yaml. Closest proxy is repair_action.labor_hours
+        (hours, not currency, and 2-hop via wo_number) -- not claiming it as backed.
+    - name: Business Objective
+      status: not_yet_backed
+      note: asset_strategy.notes is free text and not a reliable semantic match -- not claiming it as
+        backed.

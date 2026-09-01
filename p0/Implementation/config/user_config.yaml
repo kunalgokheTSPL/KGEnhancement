@@ -1,0 +1,14 @@
+document_processing:
+  document_types:
+    equipment_datasheets:
+      document_type: equipment_datasheets
+      source_columns:
+      - Equipment Tag
+      - Equipment Name
+timeseries:
+  retention:
+    value: '60'
+    unit: days
+sap_processing:
+  custom_tables: {}
+  column_rename_overrides: {}

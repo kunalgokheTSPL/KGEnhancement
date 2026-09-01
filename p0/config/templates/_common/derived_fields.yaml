@@ -1,0 +1,59 @@
+# ================================================================
+# COMMON — Core Derived Fields
+# ================================================================
+
+derived_fields:
+
+  plant_code_id:
+    rule: constant
+    value: "{{PLANT_CODE}}"
+    apply_to: all_sources
+
+  source_system:
+    rule: tag_source
+    value_map:
+      sap_assets: SAP_PM
+      sap_wo: SAP_PM
+      sap_notification: SAP_PM
+      sap_task_list: SAP_PM
+      sap_maintenance_plan: SAP_PM
+      sap_work_center: SAP_PM
+      sap_failure_catalog: SAP_PM
+      sap_material_master: SAP_MM
+      sap_vendor_master: SAP_MM
+      sap_bom: SAP_MM
+      sap_po: SAP_MM
+      sap_gr: SAP_MM
+      sap_invoice: SAP_MM
+      pid: PID
+      timeseries: HISTORIAN
+      safety_limits: SAFETY_SYSTEM
+      documents: DOC_EXTRACTION
+      fmea: FMEA_ANALYSIS
+      standards: GOVERNANCE
+
+  source_record_id:
+    rule: row_hash
+    algorithm: sha256
+    columns: _all_source_columns
+
+  normalized_asset:
+    rule: deterministic_identity
+    sources: [sap_assets, pid, timeseries, documents]
+    logic: >
+      Use equipment_tag from PID as canonical key.
+      For SAP, derive from EQUNR or EQKT description matching.
+      For TS, extract first tag prefix segment.
+      For Docs, use inline equipment name from PDF extraction.
+
+  asset_identity_map:
+    rule: cross_reference
+    output_table: asset_cross_reference
+    columns: [plant_code_id, normalized_asset, sap_equipment_id, pid_tag]
+
+  timeseries_limits_merge:
+    rule: merge_limits
+    target: timeseries_metadata
+    from_source: safety_limits
+    match_on: [plant_code_id, tag_name]
+    fields: [safety_limit_ll, safety_limit_l, safety_limit_h, safety_limit_hh, trip_limit_ll, trip_limit_l, trip_limit_h, trip_limit_hh, limits_basis, limits_source_doc_id]

@@ -1,0 +1,35 @@
+# ================================================================
+# COMMON — Core Field Priority Rules
+# ================================================================
+
+priority:
+
+  equipment:
+    normalized_asset: [sap_assets, pid, timeseries, documents]
+    canonical_code: [pid, sap_assets, timeseries, documents]
+    equipment_id: [sap_assets]
+    sap_equipment_id: [sap_assets]
+    equipment_tag: [pid, sap_assets, documents]
+    functional_location: [sap_assets, pid, documents]
+    equipment_type: [sap_assets, pid]
+    area: [sap_assets, pid, documents]
+    process_unit: [pid, sap_assets, documents]
+    line: [pid, sap_assets, documents]
+    criticality: [sap_assets, documents]
+    description: [sap_assets, pid, documents]
+    manufacturer: [sap_assets, documents]
+    model: [sap_assets, documents]
+    status: [sap_assets]
+
+  functional_location:
+    floc: [sap_assets, pid, documents]
+    description: [sap_assets, pid, documents]
+    area: [sap_assets, pid, documents]
+    process_unit: [pid, documents]
+    line: [pid, documents]
+
+  process_unit:
+    process_unit_code: [pid, documents]
+    process_area: [pid, documents]
+    line: [pid, documents]
+    description: [pid, documents]

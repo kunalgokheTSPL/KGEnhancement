@@ -1,0 +1,8 @@
+industry: oil_gas
+document_processing:
+  document_types:
+    sol:
+      document_type: SOL
+      source_columns:
+      - Process System
+      - Equipment Name

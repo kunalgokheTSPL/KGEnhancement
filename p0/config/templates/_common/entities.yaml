@@ -1,0 +1,784 @@
+# ================================================================
+# COMMON — Core Entity Definitions
+# ================================================================
+# Shared entities present in ALL use-case profiles.
+# Use-case overlays ADD entities; they never remove these.
+# ================================================================
+
+entities:
+
+  # =========================
+  # CORE ASSET / PROCESS LAYER
+  # =========================
+
+  equipment:
+    canonical_table: equipment
+    identity_keys: [plant_code_id, normalized_asset]
+    sources: [sap_assets, pid, documents, timeseries]
+    attributes:
+      plant_code_id:
+        from: [sap_assets.plant_code_id, pid.plant_code_id, documents.plant_code_id, timeseries.plant_code_id]
+        required: true
+      normalized_asset:
+        from: [sap_assets.normalized_asset, pid.normalized_asset, documents.normalized_asset, timeseries.normalized_asset]
+        required: true
+      canonical_code:
+        from: [sap_assets.normalized_asset, pid.normalized_asset, timeseries.normalized_asset, documents.normalized_asset]
+        required: false
+      equipment_id:
+        from: [sap_assets.equipment_id, pid.equipment_id, pid.equipment_tag, pid.normalized_asset]
+      sap_equipment_id:
+        from: [sap_assets.sap_equipment_id, sap_assets.equipment_id]
+      equipment_tag:
+        from: [sap_assets.equipment_tag, pid.equipment_tag, documents.equipment_tag]
+      functional_location:
+        from: [sap_assets.functional_location, pid.functional_location, documents.functional_location]
+      equipment_type:
+        from: [sap_assets.equipment_type, pid.equipment_type]
+      area:
+        from: [sap_assets.area, pid.area, documents.area]
+      process_unit:
+        from: [pid.process_unit, sap_assets.process_unit, documents.process_unit]
+      line:
+        from: [pid.line, sap_assets.line, documents.line]
+      criticality:
+        from: [sap_assets.criticality, pid.criticality, documents.criticality]
+      description:
+        from: [sap_assets.description, pid.description, documents.description]
+      manufacturer:
+        from: [sap_assets.manufacturer, pid.manufacturer, documents.manufacturer]
+      model:
+        from: [sap_assets.model, pid.model, documents.model]
+      status:
+        from: [sap_assets.status, pid.status]
+      source_system:
+        from: [sap_assets.source_system, pid.source_system, documents.source_system, timeseries.source_system]
+
+  equipment_pid:
+    canonical_table: equipment_pid
+    identity_keys: [plant_code_id, pid_tag]
+    sources: [pid]
+    attributes:
+      plant_code_id:
+        from: [pid.plant_code_id]
+        required: true
+      pid_tag:
+        from: [pid.equipment_tag, pid.normalized_asset]
+        required: true
+      equipment_id:
+        from: [pid.equipment_id, pid.equipment_tag, pid.normalized_asset]
+      normalized_asset:
+        from: [pid.normalized_asset]
+      equipment_type:
+        from: [pid.equipment_type]
+      area:
+        from: [pid.area]
+      process_unit:
+        from: [pid.process_unit]
+      line:
+        from: [pid.line]
+      description:
+        from: [pid.description]
+      functional_location:
+        from: [pid.functional_location]
+      source_system:
+        from: [pid.source_system]
+
+  timeseries_metadata:
+    canonical_table: timeseries_metadata
+    identity_keys: [plant_code_id, tag_name]
+    sources: [timeseries, osi_pi, alerts_prime_alarms, alerts_prime_excursions, alerts_protean]
+    source_attribute_prefixes: [pi_, alerts_prime_, protean_]
+    attributes:
+      plant_code_id:
+        from: [timeseries.plant_code_id, osi_pi.plant_code_id, alerts_prime_alarms.plant_code_id, alerts_prime_excursions.plant_code_id, alerts_protean.plant_code_id]
+        required: true
+      tag_name:
+        from: [timeseries.tag_name, osi_pi.tag_name, alerts_prime_alarms.tag_name, alerts_prime_excursions.tag_name, alerts_protean.tag_name]
+        required: true
+      iotdb_tag_id:
+        from: [timeseries.iotdb_tag_id, osi_pi.iotdb_tag_id, alerts_prime_alarms.iotdb_tag_id, alerts_prime_excursions.iotdb_tag_id, alerts_protean.iotdb_tag_id]
+      description:
+        from: [timeseries.description, osi_pi.description, alerts_prime_alarms.description, alerts_prime_excursions.description, alerts_protean.description]
+      unit:
+        from: [timeseries.unit, osi_pi.unit, alerts_prime_alarms.unit, alerts_prime_excursions.unit, alerts_protean.unit]
+      data_type:
+        from: [timeseries.data_type, osi_pi.data_type, alerts_prime_alarms.data_type, alerts_prime_excursions.data_type, alerts_protean.data_type]
+      equipment_id:
+        from: [timeseries.equipment_id, osi_pi.equipment_id, alerts_prime_alarms.equipment_id, alerts_prime_excursions.equipment_id, alerts_protean.equipment_id]
+      normalized_asset:
+        from: [timeseries.normalized_asset, osi_pi.normalized_asset, alerts_prime_alarms.normalized_asset, alerts_prime_excursions.normalized_asset, alerts_protean.normalized_asset]
+      site:
+        from: [timeseries.site, osi_pi.site, alerts_prime_alarms.site, alerts_prime_excursions.site, alerts_protean.site]
+      area:
+        from: [timeseries.area, osi_pi.area, alerts_prime_alarms.area, alerts_prime_excursions.area, alerts_protean.area]
+      process_unit:
+        from: [timeseries.process_unit, osi_pi.process_unit, alerts_prime_alarms.process_unit, alerts_prime_excursions.process_unit, alerts_protean.process_unit]
+      asset_link_level:
+        from: [timeseries.asset_link_level, osi_pi.asset_link_level, alerts_prime_alarms.asset_link_level, alerts_prime_excursions.asset_link_level, alerts_protean.asset_link_level]
+      asset_link_confidence:
+        from: [timeseries.asset_link_confidence, osi_pi.asset_link_confidence, alerts_prime_alarms.asset_link_confidence, alerts_prime_excursions.asset_link_confidence, alerts_protean.asset_link_confidence]
+      asset_match_method:
+        from: [timeseries.asset_match_method, osi_pi.asset_match_method, alerts_prime_alarms.asset_match_method, alerts_prime_excursions.asset_match_method, alerts_protean.asset_match_method]
+      asset_match_confidence:
+        from: [timeseries.asset_match_confidence, osi_pi.asset_match_confidence, alerts_prime_alarms.asset_match_confidence, alerts_prime_excursions.asset_match_confidence, alerts_protean.asset_match_confidence]
+      op_limit_ll:
+        from: [timeseries.op_limit_ll, osi_pi.op_limit_ll, alerts_prime_alarms.op_limit_ll, alerts_prime_excursions.op_limit_ll, alerts_protean.op_limit_ll]
+      op_limit_l:
+        from: [timeseries.op_limit_l, osi_pi.op_limit_l, alerts_prime_alarms.op_limit_l, alerts_prime_excursions.op_limit_l, alerts_protean.op_limit_l]
+      op_limit_h:
+        from: [timeseries.op_limit_h, osi_pi.op_limit_h, alerts_prime_alarms.op_limit_h, alerts_prime_excursions.op_limit_h, alerts_protean.op_limit_h]
+      op_limit_hh:
+        from: [timeseries.op_limit_hh, osi_pi.op_limit_hh, alerts_prime_alarms.op_limit_hh, alerts_prime_excursions.op_limit_hh, alerts_protean.op_limit_hh]
+      safety_limit_ll:
+        from: [timeseries.safety_limit_ll, osi_pi.safety_limit_ll, alerts_prime_alarms.safety_limit_ll, alerts_prime_excursions.safety_limit_ll, alerts_protean.safety_limit_ll]
+      safety_limit_l:
+        from: [timeseries.safety_limit_l, osi_pi.safety_limit_l, alerts_prime_alarms.safety_limit_l, alerts_prime_excursions.safety_limit_l, alerts_protean.safety_limit_l]
+      safety_limit_h:
+        from: [timeseries.safety_limit_h, osi_pi.safety_limit_h, alerts_prime_alarms.safety_limit_h, alerts_prime_excursions.safety_limit_h, alerts_protean.safety_limit_h]
+      safety_limit_hh:
+        from: [timeseries.safety_limit_hh, osi_pi.safety_limit_hh, alerts_prime_alarms.safety_limit_hh, alerts_prime_excursions.safety_limit_hh, alerts_protean.safety_limit_hh]
+      trip_limit_ll:
+        from: [timeseries.trip_limit_ll, osi_pi.trip_limit_ll, alerts_prime_alarms.trip_limit_ll, alerts_prime_excursions.trip_limit_ll, alerts_protean.trip_limit_ll]
+      trip_limit_l:
+        from: [timeseries.trip_limit_l, osi_pi.trip_limit_l, alerts_prime_alarms.trip_limit_l, alerts_prime_excursions.trip_limit_l, alerts_protean.trip_limit_l]
+      trip_limit_h:
+        from: [timeseries.trip_limit_h, osi_pi.trip_limit_h, alerts_prime_alarms.trip_limit_h, alerts_prime_excursions.trip_limit_h, alerts_protean.trip_limit_h]
+      trip_limit_hh:
+        from: [timeseries.trip_limit_hh, osi_pi.trip_limit_hh, alerts_prime_alarms.trip_limit_hh, alerts_prime_excursions.trip_limit_hh, alerts_protean.trip_limit_hh]
+      source_system:
+        from: [timeseries.source_system, osi_pi.source_system, alerts_prime_alarms.source_system, alerts_prime_excursions.source_system, alerts_protean.source_system]
+      source_record_id:
+        from: [timeseries.source_record_id, osi_pi.source_record_id, alerts_prime_alarms.source_record_id, alerts_prime_excursions.source_record_id, alerts_protean.source_record_id]
+      source_file:
+        from: [timeseries.source_file, osi_pi.source_file, alerts_prime_alarms.source_file, alerts_prime_excursions.source_file, alerts_protean.source_file]
+      updated_at:
+        from: [timeseries.updated_at, osi_pi.updated_at, alerts_prime_alarms.updated_at, alerts_prime_excursions.updated_at, alerts_protean.updated_at]
+      is_active:
+        from: [timeseries.is_active, osi_pi.is_active, alerts_prime_alarms.is_active, alerts_prime_excursions.is_active, alerts_protean.is_active]
+      pi_parent:
+        from: [osi_pi.pi_parent]
+      pi_name:
+        from: [osi_pi.pi_name]
+      pi_object_type:
+        from: [osi_pi.pi_object_type]
+      pi_categories:
+        from: [osi_pi.pi_categories]
+      pi_attribute_data_reference:
+        from: [osi_pi.pi_attribute_data_reference]
+      pi_attribute_config_string:
+        from: [osi_pi.pi_attribute_config_string]
+      pi_tag_id:
+        from: [osi_pi.pi_tag_id]
+      pi_state:
+        from: [osi_pi.pi_state]
+      alerts_prime_tag:
+        from: [alerts_prime_alarms.alerts_prime_tag, alerts_prime_excursions.alerts_prime_tag]
+      alerts_prime_point_description:
+        from: [alerts_prime_alarms.alerts_prime_point_description, alerts_prime_excursions.alerts_prime_point_description]
+      alerts_prime_priority:
+        from: [alerts_prime_alarms.alerts_prime_priority, alerts_prime_excursions.alerts_prime_priority]
+      alerts_prime_unit:
+        from: [alerts_prime_alarms.alerts_prime_unit, alerts_prime_excursions.alerts_prime_unit]
+      alerts_prime_plant_hierarchy:
+        from: [alerts_prime_alarms.alerts_prime_plant_hierarchy, alerts_prime_excursions.alerts_prime_plant_hierarchy]
+      alerts_prime_upper_equipment_id:
+        from: [alerts_prime_alarms.alerts_prime_upper_equipment_id, alerts_prime_excursions.alerts_prime_upper_equipment_id]
+      alerts_prime_group:
+        from: [alerts_prime_alarms.alerts_prime_group, alerts_prime_excursions.alerts_prime_group]
+      alerts_prime_critical_operating_parameter:
+        from: [alerts_prime_alarms.alerts_prime_critical_operating_parameter, alerts_prime_excursions.alerts_prime_critical_operating_parameter]
+      alerts_prime_equipments:
+        from: [alerts_prime_alarms.alerts_prime_equipments, alerts_prime_excursions.alerts_prime_equipments]
+      alerts_prime_equipment:
+        from: [alerts_prime_alarms.alerts_prime_equipment, alerts_prime_excursions.alerts_prime_equipment]
+      alerts_prime_description:
+        from: [alerts_prime_alarms.alerts_prime_description, alerts_prime_excursions.alerts_prime_description]
+      alerts_prime_alarm_alm_count:
+        from: [alerts_prime_alarms.alerts_prime_alarm_alm_count, alerts_prime_excursions.alerts_prime_alarm_alm_count]
+      alerts_prime_alarm_alm_percent:
+        from: [alerts_prime_alarms.alerts_prime_alarm_alm_percent, alerts_prime_excursions.alerts_prime_alarm_alm_percent]
+      alerts_prime_alarm_alm_accum_pct:
+        from: [alerts_prime_alarms.alerts_prime_alarm_alm_accum_pct, alerts_prime_excursions.alerts_prime_alarm_alm_accum_pct]
+      alerts_prime_alarm_alm_limit:
+        from: [alerts_prime_alarms.alerts_prime_alarm_alm_limit, alerts_prime_excursions.alerts_prime_alarm_alm_limit]
+      alerts_prime_alarm_ans_plus_count:
+        from: [alerts_prime_alarms.alerts_prime_alarm_ans_plus_count, alerts_prime_excursions.alerts_prime_alarm_ans_plus_count]
+      alerts_prime_alarm_ans_plus_percent:
+        from: [alerts_prime_alarms.alerts_prime_alarm_ans_plus_percent, alerts_prime_excursions.alerts_prime_alarm_ans_plus_percent]
+      alerts_prime_alarm_ans_plus_accum_pct:
+        from: [alerts_prime_alarms.alerts_prime_alarm_ans_plus_accum_pct, alerts_prime_excursions.alerts_prime_alarm_ans_plus_accum_pct]
+      alerts_prime_alarm_ans_plus_limit:
+        from: [alerts_prime_alarms.alerts_prime_alarm_ans_plus_limit, alerts_prime_excursions.alerts_prime_alarm_ans_plus_limit]
+      alerts_prime_alarm_ans_minus_count:
+        from: [alerts_prime_alarms.alerts_prime_alarm_ans_minus_count, alerts_prime_excursions.alerts_prime_alarm_ans_minus_count]
+      alerts_prime_alarm_ans_minus_percent:
+        from: [alerts_prime_alarms.alerts_prime_alarm_ans_minus_percent, alerts_prime_excursions.alerts_prime_alarm_ans_minus_percent]
+      alerts_prime_alarm_ans_minus_accum_pct:
+        from: [alerts_prime_alarms.alerts_prime_alarm_ans_minus_accum_pct, alerts_prime_excursions.alerts_prime_alarm_ans_minus_accum_pct]
+      alerts_prime_alarm_ans_minus_limit:
+        from: [alerts_prime_alarms.alerts_prime_alarm_ans_minus_limit, alerts_prime_excursions.alerts_prime_alarm_ans_minus_limit]
+      alerts_prime_alarm_dv_plus_count:
+        from: [alerts_prime_alarms.alerts_prime_alarm_dv_plus_count, alerts_prime_excursions.alerts_prime_alarm_dv_plus_count]
+      alerts_prime_alarm_dv_plus_percent:
+        from: [alerts_prime_alarms.alerts_prime_alarm_dv_plus_percent, alerts_prime_excursions.alerts_prime_alarm_dv_plus_percent]
+      alerts_prime_alarm_dv_plus_accum_pct:
+        from: [alerts_prime_alarms.alerts_prime_alarm_dv_plus_accum_pct, alerts_prime_excursions.alerts_prime_alarm_dv_plus_accum_pct]
+      alerts_prime_alarm_dv_plus_limit:
+        from: [alerts_prime_alarms.alerts_prime_alarm_dv_plus_limit, alerts_prime_excursions.alerts_prime_alarm_dv_plus_limit]
+      alerts_prime_alarm_dv_minus_count:
+        from: [alerts_prime_alarms.alerts_prime_alarm_dv_minus_count, alerts_prime_excursions.alerts_prime_alarm_dv_minus_count]
+      alerts_prime_alarm_dv_minus_percent:
+        from: [alerts_prime_alarms.alerts_prime_alarm_dv_minus_percent, alerts_prime_excursions.alerts_prime_alarm_dv_minus_percent]
+      alerts_prime_alarm_dv_minus_accum_pct:
+        from: [alerts_prime_alarms.alerts_prime_alarm_dv_minus_accum_pct, alerts_prime_excursions.alerts_prime_alarm_dv_minus_accum_pct]
+      alerts_prime_alarm_dv_minus_limit:
+        from: [alerts_prime_alarms.alerts_prime_alarm_dv_minus_limit, alerts_prime_excursions.alerts_prime_alarm_dv_minus_limit]
+      alerts_prime_alarm_hh_count:
+        from: [alerts_prime_alarms.alerts_prime_alarm_hh_count, alerts_prime_excursions.alerts_prime_alarm_hh_count]
+      alerts_prime_alarm_hh_percent:
+        from: [alerts_prime_alarms.alerts_prime_alarm_hh_percent, alerts_prime_excursions.alerts_prime_alarm_hh_percent]
+      alerts_prime_alarm_hh_accum_pct:
+        from: [alerts_prime_alarms.alerts_prime_alarm_hh_accum_pct, alerts_prime_excursions.alerts_prime_alarm_hh_accum_pct]
+      alerts_prime_alarm_hh_limit:
+        from: [alerts_prime_alarms.alerts_prime_alarm_hh_limit, alerts_prime_excursions.alerts_prime_alarm_hh_limit]
+      alerts_prime_alarm_hi_count:
+        from: [alerts_prime_alarms.alerts_prime_alarm_hi_count, alerts_prime_excursions.alerts_prime_alarm_hi_count]
+      alerts_prime_alarm_hi_percent:
+        from: [alerts_prime_alarms.alerts_prime_alarm_hi_percent, alerts_prime_excursions.alerts_prime_alarm_hi_percent]
+      alerts_prime_alarm_hi_accum_pct:
+        from: [alerts_prime_alarms.alerts_prime_alarm_hi_accum_pct, alerts_prime_excursions.alerts_prime_alarm_hi_accum_pct]
+      alerts_prime_alarm_hi_limit:
+        from: [alerts_prime_alarms.alerts_prime_alarm_hi_limit, alerts_prime_excursions.alerts_prime_alarm_hi_limit]
+      alerts_prime_alarm_int_count:
+        from: [alerts_prime_alarms.alerts_prime_alarm_int_count, alerts_prime_excursions.alerts_prime_alarm_int_count]
+      alerts_prime_alarm_int_percent:
+        from: [alerts_prime_alarms.alerts_prime_alarm_int_percent, alerts_prime_excursions.alerts_prime_alarm_int_percent]
+      alerts_prime_alarm_int_accum_pct:
+        from: [alerts_prime_alarms.alerts_prime_alarm_int_accum_pct, alerts_prime_excursions.alerts_prime_alarm_int_accum_pct]
+      alerts_prime_alarm_int_limit:
+        from: [alerts_prime_alarms.alerts_prime_alarm_int_limit, alerts_prime_excursions.alerts_prime_alarm_int_limit]
+      alerts_prime_alarm_iop_count:
+        from: [alerts_prime_alarms.alerts_prime_alarm_iop_count, alerts_prime_excursions.alerts_prime_alarm_iop_count]
+      alerts_prime_alarm_iop_percent:
+        from: [alerts_prime_alarms.alerts_prime_alarm_iop_percent, alerts_prime_excursions.alerts_prime_alarm_iop_percent]
+      alerts_prime_alarm_iop_accum_pct:
+        from: [alerts_prime_alarms.alerts_prime_alarm_iop_accum_pct, alerts_prime_excursions.alerts_prime_alarm_iop_accum_pct]
+      alerts_prime_alarm_iop_limit:
+        from: [alerts_prime_alarms.alerts_prime_alarm_iop_limit, alerts_prime_excursions.alerts_prime_alarm_iop_limit]
+      alerts_prime_alarm_iop_minus_count:
+        from: [alerts_prime_alarms.alerts_prime_alarm_iop_minus_count, alerts_prime_excursions.alerts_prime_alarm_iop_minus_count]
+      alerts_prime_alarm_iop_minus_percent:
+        from: [alerts_prime_alarms.alerts_prime_alarm_iop_minus_percent, alerts_prime_excursions.alerts_prime_alarm_iop_minus_percent]
+      alerts_prime_alarm_iop_minus_accum_pct:
+        from: [alerts_prime_alarms.alerts_prime_alarm_iop_minus_accum_pct, alerts_prime_excursions.alerts_prime_alarm_iop_minus_accum_pct]
+      alerts_prime_alarm_iop_minus_limit:
+        from: [alerts_prime_alarms.alerts_prime_alarm_iop_minus_limit, alerts_prime_excursions.alerts_prime_alarm_iop_minus_limit]
+      alerts_prime_alarm_ll_count:
+        from: [alerts_prime_alarms.alerts_prime_alarm_ll_count, alerts_prime_excursions.alerts_prime_alarm_ll_count]
+      alerts_prime_alarm_ll_percent:
+        from: [alerts_prime_alarms.alerts_prime_alarm_ll_percent, alerts_prime_excursions.alerts_prime_alarm_ll_percent]
+      alerts_prime_alarm_ll_accum_pct:
+        from: [alerts_prime_alarms.alerts_prime_alarm_ll_accum_pct, alerts_prime_excursions.alerts_prime_alarm_ll_accum_pct]
+      alerts_prime_alarm_ll_limit:
+        from: [alerts_prime_alarms.alerts_prime_alarm_ll_limit, alerts_prime_excursions.alerts_prime_alarm_ll_limit]
+      alerts_prime_alarm_lo_count:
+        from: [alerts_prime_alarms.alerts_prime_alarm_lo_count, alerts_prime_excursions.alerts_prime_alarm_lo_count]
+      alerts_prime_alarm_lo_percent:
+        from: [alerts_prime_alarms.alerts_prime_alarm_lo_percent, alerts_prime_excursions.alerts_prime_alarm_lo_percent]
+      alerts_prime_alarm_lo_accum_pct:
+        from: [alerts_prime_alarms.alerts_prime_alarm_lo_accum_pct, alerts_prime_excursions.alerts_prime_alarm_lo_accum_pct]
+      alerts_prime_alarm_lo_limit:
+        from: [alerts_prime_alarms.alerts_prime_alarm_lo_limit, alerts_prime_excursions.alerts_prime_alarm_lo_limit]
+      alerts_prime_alarm_ltrp_count:
+        from: [alerts_prime_alarms.alerts_prime_alarm_ltrp_count, alerts_prime_excursions.alerts_prime_alarm_ltrp_count]
+      alerts_prime_alarm_ltrp_percent:
+        from: [alerts_prime_alarms.alerts_prime_alarm_ltrp_percent, alerts_prime_excursions.alerts_prime_alarm_ltrp_percent]
+      alerts_prime_alarm_ltrp_accum_pct:
+        from: [alerts_prime_alarms.alerts_prime_alarm_ltrp_accum_pct, alerts_prime_excursions.alerts_prime_alarm_ltrp_accum_pct]
+      alerts_prime_alarm_ltrp_limit:
+        from: [alerts_prime_alarms.alerts_prime_alarm_ltrp_limit, alerts_prime_excursions.alerts_prime_alarm_ltrp_limit]
+      alerts_prime_alarm_trip_count:
+        from: [alerts_prime_alarms.alerts_prime_alarm_trip_count, alerts_prime_excursions.alerts_prime_alarm_trip_count]
+      alerts_prime_alarm_trip_percent:
+        from: [alerts_prime_alarms.alerts_prime_alarm_trip_percent, alerts_prime_excursions.alerts_prime_alarm_trip_percent]
+      alerts_prime_alarm_trip_accum_pct:
+        from: [alerts_prime_alarms.alerts_prime_alarm_trip_accum_pct, alerts_prime_excursions.alerts_prime_alarm_trip_accum_pct]
+      alerts_prime_alarm_trip_limit:
+        from: [alerts_prime_alarms.alerts_prime_alarm_trip_limit, alerts_prime_excursions.alerts_prime_alarm_trip_limit]
+      alerts_prime_bnd_sol_l_value:
+        from: [alerts_prime_alarms.alerts_prime_bnd_sol_l_value, alerts_prime_excursions.alerts_prime_bnd_sol_l_value]
+      alerts_prime_bnd_sol_l_count:
+        from: [alerts_prime_alarms.alerts_prime_bnd_sol_l_count, alerts_prime_excursions.alerts_prime_bnd_sol_l_count]
+      alerts_prime_bnd_sol_l_percent:
+        from: [alerts_prime_alarms.alerts_prime_bnd_sol_l_percent, alerts_prime_excursions.alerts_prime_bnd_sol_l_percent]
+      alerts_prime_bnd_sol_l_accum_pct:
+        from: [alerts_prime_alarms.alerts_prime_bnd_sol_l_accum_pct, alerts_prime_excursions.alerts_prime_bnd_sol_l_accum_pct]
+      alerts_prime_bnd_sol_h_value:
+        from: [alerts_prime_alarms.alerts_prime_bnd_sol_h_value, alerts_prime_excursions.alerts_prime_bnd_sol_h_value]
+      alerts_prime_bnd_sol_h_count:
+        from: [alerts_prime_alarms.alerts_prime_bnd_sol_h_count, alerts_prime_excursions.alerts_prime_bnd_sol_h_count]
+      alerts_prime_bnd_sol_h_percent:
+        from: [alerts_prime_alarms.alerts_prime_bnd_sol_h_percent, alerts_prime_excursions.alerts_prime_bnd_sol_h_percent]
+      alerts_prime_bnd_sol_h_accum_pct:
+        from: [alerts_prime_alarms.alerts_prime_bnd_sol_h_accum_pct, alerts_prime_excursions.alerts_prime_bnd_sol_h_accum_pct]
+      alerts_prime_bnd_ipf_ll_value:
+        from: [alerts_prime_alarms.alerts_prime_bnd_ipf_ll_value, alerts_prime_excursions.alerts_prime_bnd_ipf_ll_value]
+      alerts_prime_bnd_ipf_ll_count:
+        from: [alerts_prime_alarms.alerts_prime_bnd_ipf_ll_count, alerts_prime_excursions.alerts_prime_bnd_ipf_ll_count]
+      alerts_prime_bnd_ipf_ll_percent:
+        from: [alerts_prime_alarms.alerts_prime_bnd_ipf_ll_percent, alerts_prime_excursions.alerts_prime_bnd_ipf_ll_percent]
+      alerts_prime_bnd_ipf_ll_accum_pct:
+        from: [alerts_prime_alarms.alerts_prime_bnd_ipf_ll_accum_pct, alerts_prime_excursions.alerts_prime_bnd_ipf_ll_accum_pct]
+      alerts_prime_bnd_ipf_hh_value:
+        from: [alerts_prime_alarms.alerts_prime_bnd_ipf_hh_value, alerts_prime_excursions.alerts_prime_bnd_ipf_hh_value]
+      alerts_prime_bnd_ipf_hh_count:
+        from: [alerts_prime_alarms.alerts_prime_bnd_ipf_hh_count, alerts_prime_excursions.alerts_prime_bnd_ipf_hh_count]
+      alerts_prime_bnd_ipf_hh_percent:
+        from: [alerts_prime_alarms.alerts_prime_bnd_ipf_hh_percent, alerts_prime_excursions.alerts_prime_bnd_ipf_hh_percent]
+      alerts_prime_bnd_ipf_hh_accum_pct:
+        from: [alerts_prime_alarms.alerts_prime_bnd_ipf_hh_accum_pct, alerts_prime_excursions.alerts_prime_bnd_ipf_hh_accum_pct]
+      alerts_prime_bnd_mdl_hhh_value:
+        from: [alerts_prime_alarms.alerts_prime_bnd_mdl_hhh_value, alerts_prime_excursions.alerts_prime_bnd_mdl_hhh_value]
+      alerts_prime_bnd_mdl_hhh_count:
+        from: [alerts_prime_alarms.alerts_prime_bnd_mdl_hhh_count, alerts_prime_excursions.alerts_prime_bnd_mdl_hhh_count]
+      alerts_prime_bnd_mdl_hhh_percent:
+        from: [alerts_prime_alarms.alerts_prime_bnd_mdl_hhh_percent, alerts_prime_excursions.alerts_prime_bnd_mdl_hhh_percent]
+      alerts_prime_bnd_mdl_hhh_accum_pct:
+        from: [alerts_prime_alarms.alerts_prime_bnd_mdl_hhh_accum_pct, alerts_prime_excursions.alerts_prime_bnd_mdl_hhh_accum_pct]
+      protean_parent:
+        from: [alerts_protean.protean_parent]
+      protean_name:
+        from: [alerts_protean.protean_name]
+      protean_object_type:
+        from: [alerts_protean.protean_object_type]
+      protean_description:
+        from: [alerts_protean.protean_description]
+      protean_lower_limit:
+        from: [alerts_protean.protean_lower_limit]
+      protean_upper_limit:
+        from: [alerts_protean.protean_upper_limit]
+      oem_lower_limit:
+        from: [alerts_protean.oem_lower_limit]
+      oem_upper_limit:
+        from: [alerts_protean.oem_upper_limit]
+      protean_operating_value:
+        from: [alerts_protean.protean_operating_value]
+      protean_error:
+        from: [alerts_protean.protean_error]
+
+  equipment_sap:
+    canonical_table: equipment_sap
+    identity_keys: [plant_code_id, sap_equipment_id]
+    sources: [sap_assets]
+    attributes:
+      plant_code_id:
+        from: [sap_assets.plant_code_id]
+        required: true
+      sap_equipment_id:
+        from: [sap_assets.equipment_id, sap_assets.sap_equipment_id]
+        required: true
+      equipment_id:
+        from: []
+      normalized_asset:
+        from: [sap_assets.normalized_asset]
+      equipment_type:
+        from: [sap_assets.equipment_type]
+      functional_location:
+        from: [sap_assets.functional_location]
+      area:
+        from: [sap_assets.area]
+      description:
+        from: [sap_assets.description]
+      manufacturer:
+        from: [sap_assets.manufacturer]
+      model:
+        from: [sap_assets.model]
+      status:
+        from: [sap_assets.status]
+      criticality:
+        from: [sap_assets.criticality]
+      source_system:
+        from: [sap_assets.source_system]
+
+  functional_location:
+    canonical_table: functional_location
+    identity_keys: [plant_code_id, floc]
+    sources: [sap_assets, pid, documents]
+    attributes:
+      plant_code_id:
+        from: [sap_assets.plant_code_id, pid.plant_code_id, documents.plant_code_id]
+        required: true
+      floc:
+        from: [sap_assets.floc, sap_assets.functional_location, pid.floc, pid.functional_location, documents.floc]
+        required: true
+      description:
+        from: [sap_assets.floc_description, pid.floc_description, documents.description]
+      area:
+        from: [sap_assets.area, pid.area, documents.area]
+      process_unit:
+        from: [pid.process_unit, documents.process_unit]
+      line:
+        from: [pid.line, documents.line]
+      source_system:
+        from: [sap_assets.source_system, pid.source_system, documents.source_system]
+
+  process_unit:
+    canonical_table: process_unit
+    identity_keys: [plant_code_id, process_unit_code]
+    sources: [pid, documents]
+    attributes:
+      plant_code_id:
+        from: [pid.plant_code_id, documents.plant_code_id]
+        required: true
+      process_unit_code:
+        from: [pid.process_unit, documents.process_unit]
+        required: true
+      process_area:
+        from: [pid.area, documents.area]
+      line:
+        from: [pid.line, documents.line]
+      description:
+        from: [pid.process_unit_description, documents.description]
+      source_system:
+        from: [pid.source_system, documents.source_system]
+
+  document:
+    canonical_table: document_metadata
+    identity_keys: [plant_code_id, document_id]
+    sources: [documents]
+    attributes:
+      plant_code_id:
+        from: [documents.plant_code_id]
+        required: true
+      document_id:
+        from: [documents.document_id]
+        required: true
+      document_type:
+        from: [documents.document_type]
+      title:
+        from: [documents.title]
+      equipment_tag:
+        from: [documents.equipment_tag]
+      equipment_id:
+        from: [documents.equipment_id]
+      extracted_entities:
+        from: [documents.extracted_entities]
+      source_file:
+        from: [documents.source_file]
+      normalized_asset:
+        from: [documents.normalized_asset]
+      source_system:
+        from: [documents.source_system]
+      source_record_id:
+        from: [documents.source_record_id]
+
+  equipment_connection:
+    canonical_table: equipment_connectivity
+    identity_keys: [plant_code_id, from_equipment_ref, to_equipment_ref, connection_type]
+    sources: [pid]
+    attributes:
+      plant_code_id:
+        from: [pid.plant_code_id]
+        required: true
+      from_equipment_ref:
+        from: [pid.from_normalized_asset, pid.from_equipment_tag]
+        required: true
+      to_equipment_ref:
+        from: [pid.to_normalized_asset, pid.to_equipment_tag]
+        required: true
+      connection_type:
+        from: [pid.connection_type]
+        required: true
+      medium:
+        from: [pid.medium]
+      line_number:
+        from: [pid.line_number, pid.line]
+
+  # =========================
+  # MAINTENANCE / RELIABILITY
+  # =========================
+
+  work_order:
+    canonical_table: work_order
+    identity_keys: [plant_code_id, wo_number]
+    sources: [sap_wo]
+    attributes:
+      plant_code_id:
+        from: [sap_wo.plant_code_id]
+        required: true
+      wo_number:
+        from: [sap_wo.wo_number]
+        required: true
+      notification_id:
+        from: [sap_wo.notification_id]
+      wo_type:
+        from: [sap_wo.wo_type]
+      priority:
+        from: [sap_wo.priority]
+      status:
+        from: [sap_wo.status]
+      created_on:
+        from: [sap_wo.created_on]
+      basic_start:
+        from: [sap_wo.basic_start]
+      basic_finish:
+        from: [sap_wo.basic_finish]
+      equipment_ref:
+        from: [sap_wo.equipment_ref, sap_wo.normalized_asset]
+      equipment_id:
+        from: [sap_wo.equipment_id]
+      floc:
+        from: [sap_wo.floc, sap_wo.functional_location]
+      work_center:
+        from: [sap_wo.work_center]
+      planner_group:
+        from: [sap_wo.planner_group]
+      maint_activity_type:
+        from: [sap_wo.maint_activity_type]
+      short_text:
+        from: [sap_wo.short_text, sap_wo.description]
+      source_system:
+        from: [sap_wo.source_system]
+      source_record_id:
+        from: [sap_wo.source_record_id]
+
+  notification:
+    canonical_table: notification
+    identity_keys: [plant_code_id, notification_id]
+    sources: [sap_notification]
+    attributes:
+      plant_code_id:
+        from: [sap_notification.plant_code_id]
+        required: true
+      notification_id:
+        from: [sap_notification.notification_id]
+        required: true
+      notification_type:
+        from: [sap_notification.notification_type]
+      created_on:
+        from: [sap_notification.created_on]
+      priority:
+        from: [sap_notification.priority]
+      equipment_ref:
+        from: [sap_notification.equipment_ref, sap_notification.normalized_asset]
+      floc:
+        from: [sap_notification.floc, sap_notification.functional_location]
+      symptom_text:
+        from: [sap_notification.symptom_text, sap_notification.description]
+      failure_mode_code:
+        from: [sap_notification.failure_mode_code]
+      failure_cause_code:
+        from: [sap_notification.failure_cause_code]
+      source_system:
+        from: [sap_notification.source_system]
+      source_record_id:
+        from: [sap_notification.source_record_id]
+
+  task_list:
+    canonical_table: task_list
+    identity_keys: [plant_code_id, task_list_id, task_list_group, task_list_counter]
+    sources: [sap_task_list]
+    attributes:
+      plant_code_id:
+        from: [sap_task_list.plant_code_id]
+        required: true
+      task_list_id:
+        from: [sap_task_list.task_list_id]
+        required: true
+      task_list_group:
+        from: [sap_task_list.task_list_group]
+        required: true
+      task_list_counter:
+        from: [sap_task_list.task_list_counter]
+        required: true
+      task_list_type:
+        from: [sap_task_list.task_list_type]
+      equipment_ref:
+        from: [sap_task_list.equipment_ref, sap_task_list.normalized_asset]
+      equipment_id:
+        from: [sap_task_list.equipment_id]
+      floc:
+        from: [sap_task_list.floc, sap_task_list.functional_location]
+      operation_no:
+        from: [sap_task_list.operation_no]
+      operation_text:
+        from: [sap_task_list.operation_text, sap_task_list.description]
+      work_center:
+        from: [sap_task_list.work_center]
+      source_system:
+        from: [sap_task_list.source_system]
+      source_record_id:
+        from: [sap_task_list.source_record_id]
+
+  material_item:
+    canonical_table: material
+    identity_keys: [material_code]
+    sources: [sap_material_master]
+    attributes:
+      material_code:
+        from: [sap_material_master.material_code]
+        required: true
+      material_type:
+        from: [sap_material_master.material_type]
+      material_group:
+        from: [sap_material_master.material_group]
+      description:
+        from: [sap_material_master.description]
+      uom:
+        from: [sap_material_master.uom]
+      equipment_ref:
+        from: [sap_material_master.equipment_id]
+      source_system:
+        from: [sap_material_master.source_system]
+      source_record_id:
+        from: [sap_material_master.source_record_id]
+
+  asset_strategy:
+    canonical_table: asset_strategy
+    identity_keys: [plant_code_id, normalized_asset]
+    sources: [sap_assets, documents]
+    attributes:
+      plant_code_id:
+        from: [sap_assets.plant_code_id, documents.plant_code_id]
+        required: true
+      normalized_asset:
+        from: [sap_assets.normalized_asset, documents.normalized_asset]
+        required: true
+      strategy_type:
+        from: [sap_assets.strategy_type, documents.strategy_type]
+      criticality_rank:
+        from: [sap_assets.criticality, documents.criticality_rank]
+      review_date:
+        from: [sap_assets.review_date, documents.review_date]
+      floc:
+        from: [sap_assets.floc, sap_assets.functional_location]
+      source_system:
+        from: [sap_assets.source_system, documents.source_system]
+      source_record_id:
+        from: [sap_assets.source_record_id, documents.source_record_id]
+
+  repair_action:
+    canonical_table: repair_action
+    identity_keys: [plant_code_id, wo_number, action_seq]
+    sources: [sap_wo]
+    attributes:
+      plant_code_id:
+        from: [sap_wo.plant_code_id]
+        required: true
+      wo_number:
+        from: [sap_wo.wo_number]
+        required: true
+      action_seq:
+        from: [sap_wo.action_seq]
+        required: true
+      action_type:
+        from: [sap_wo.action_type]
+      component_replaced:
+        from: [sap_wo.component_replaced]
+      spare_material_code:
+        from: [sap_wo.spare_material_code]
+      labor_hours:
+        from: [sap_wo.labor_hours]
+      normalized_asset:
+        from: [sap_wo.normalized_asset]
+      floc:
+        from: [sap_wo.floc, sap_wo.functional_location]
+      source_system:
+        from: [sap_wo.source_system]
+      source_record_id:
+        from: [sap_wo.source_record_id]
+
+  operating_state_log:
+    canonical_table: operating_state_log
+    identity_keys: [plant_code_id, normalized_asset, state_start]
+    sources: [sap_wo, timeseries, documents]
+    attributes:
+      plant_code_id:
+        from: [sap_wo.plant_code_id, timeseries.plant_code_id, documents.plant_code_id]
+        required: true
+      normalized_asset:
+        from: [sap_wo.normalized_asset, timeseries.normalized_asset, documents.normalized_asset]
+        required: true
+      state_start:
+        from: [sap_wo.state_start, timeseries.state_start, documents.state_start]
+        required: true
+      state_end:
+        from: [sap_wo.state_end, timeseries.state_end, documents.state_end]
+      operating_state:
+        from: [sap_wo.operating_state, timeseries.operating_state, documents.operating_state]
+      related_wo_number:
+        from: [sap_wo.wo_number]
+      floc:
+        from: [sap_wo.floc, sap_wo.functional_location]
+      source_system:
+        from: [sap_wo.source_system, timeseries.source_system, documents.source_system]
+      source_record_id:
+        from: [sap_wo.source_record_id, timeseries.source_record_id, documents.source_record_id]
+
+  inspection_record:
+    canonical_table: inspection_record
+    identity_keys: [plant_code_id, inspection_id]
+    sources: [documents, sap_wo]
+    attributes:
+      plant_code_id:
+        from: [documents.plant_code_id, sap_wo.plant_code_id]
+        required: true
+      inspection_id:
+        from: [documents.inspection_id, sap_wo.inspection_id]
+        required: true
+      normalized_asset:
+        from: [documents.normalized_asset, sap_wo.normalized_asset]
+      inspection_type:
+        from: [documents.inspection_type, sap_wo.inspection_type]
+      inspection_date:
+        from: [documents.inspection_date, sap_wo.inspection_date]
+      next_inspection_date:
+        from: [documents.next_inspection_date]
+      inspector:
+        from: [documents.inspector]
+      result:
+        from: [documents.result, sap_wo.result]
+      findings:
+        from: [documents.findings, sap_wo.findings]
+      recommendations:
+        from: [documents.recommendations]
+      floc:
+        from: [sap_wo.floc, sap_wo.functional_location]
+      source_system:
+        from: [documents.source_system, sap_wo.source_system]
+      source_record_id:
+        from: [documents.source_record_id, sap_wo.source_record_id]
+
+  proof_test:
+    canonical_table: proof_test
+    identity_keys: [plant_code_id, sif_id, test_date]
+    sources: [documents, sap_wo]
+    attributes:
+      plant_code_id:
+        from: [documents.plant_code_id, sap_wo.plant_code_id]
+        required: true
+      sif_id:
+        from: [documents.sif_id, sap_wo.sif_id]
+        required: true
+      test_date:
+        from: [documents.test_date, sap_wo.test_date]
+        required: true
+      test_result:
+        from: [documents.test_result, sap_wo.test_result]
+      test_coverage_pct:
+        from: [documents.test_coverage_pct]
+      tester:
+        from: [documents.tester]
+      related_wo_number:
+        from: [sap_wo.wo_number, documents.related_wo_number]
+      findings:
+        from: [documents.findings, sap_wo.findings]
+      normalized_asset:
+        from: [documents.normalized_asset, sap_wo.normalized_asset]
+      floc:
+        from: [sap_wo.floc, sap_wo.functional_location]
+      source_system:
+        from: [documents.source_system, sap_wo.source_system]
+      source_record_id:
+        from: [documents.source_record_id, sap_wo.source_record_id]

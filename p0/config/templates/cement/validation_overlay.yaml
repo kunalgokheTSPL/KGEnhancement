@@ -1,0 +1,219 @@
+# ================================================================
+# CEMENT INDUSTRY — Validation Overlay  (self-contained)
+# ================================================================
+# Merged from: maintenance, reliability, energy_optimization,
+#              process_optimization validations.
+# ================================================================
+
+validation_overlay:
+
+  additional_target_tables:
+    - asset_strategy
+    - repair_action
+    - equipment_class_taxonomy
+    - reliability_kpi
+    - operating_state_log
+    - energy_meter
+    - energy_consumption
+    - energy_baseline
+    - energy_kpi
+    - process_parameter
+    - process_alarm
+    - safety_instrumented_function
+    - safety_loop
+    - proof_test
+    - process_kpi
+
+  additional_required_after_rename_or_derive:
+    sap_wo:
+      - actual_start
+      - actual_finish
+      - maintenance_classification
+
+  additional_satisfiability:
+    # Maintenance
+    work_order.maintenance_classification:
+      satisfied_by:
+        - sap_wo.maintenance_classification
+      note: "ISO 14224 requires classification of maintenance type"
+    work_order.downtime_hours:
+      satisfied_by:
+        - sap_wo.downtime_hours
+      note: "Needed for MTTR calculations"
+    # Reliability
+    equipment.equipment_class_code:
+      satisfied_by:
+        - sap_assets.equipment_class_code
+        - documents.equipment_class_code
+      note: "ISO 14224 requires equipment classification for reliability benchmarking"
+    reliability_kpi.mtbf_hours:
+      satisfied_by:
+        - computed.mtbf_hours
+      note: "Computed from work_order actual_start/actual_finish and operating_state_log"
+    reliability_kpi.availability:
+      satisfied_by:
+        - computed.availability
+      note: "Availability = MTBF / (MTBF + MDT)"
+    # Energy
+    energy_meter.energy_type:
+      satisfied_by:
+        - documents.energy_type
+      note: "ISO 50001 requires energy type classification for all metering points"
+    energy_kpi.specific_energy_consumption:
+      satisfied_by:
+        - computed.sec
+      note: "ISO 50001 EnPI - computed from consumption and production volume"
+    # Process
+    safety_instrumented_function.sil_rating:
+      satisfied_by:
+        - documents.sil_rating
+      note: "IEC 61511 requires SIL classification for all SIFs"
+    proof_test.test_result:
+      satisfied_by:
+        - documents.test_result
+      note: "IEC 61511 Section 16 requires documented proof test results"
+
+  identity_resolution_overlay:
+    asset_strategy:
+      match_type: deterministic
+      keys: [plant_code_id, normalized_asset]
+      confidence: 1.0
+      null_handling: reject_if_any_key_null
+      case_insensitive: true
+      pre_normalize: true
+      dedupe_strategy: keep_latest_by_timestamp
+      latest_timestamp_field: updated_at
+
+    repair_action:
+      match_type: deterministic
+      keys: [plant_code_id, wo_number, action_seq]
+      confidence: 1.0
+      null_handling: reject_if_any_key_null
+      case_insensitive: false
+      pre_normalize: true
+      dedupe_strategy: keep_highest_confidence
+
+    equipment_class_taxonomy:
+      match_type: deterministic
+      keys: [class_code]
+      confidence: 1.0
+      null_handling: reject_if_any_key_null
+      case_insensitive: true
+      pre_normalize: true
+      dedupe_strategy: keep_highest_confidence
+
+    reliability_kpi:
+      match_type: deterministic
+      keys: [plant_code_id, normalized_asset, period_start]
+      confidence: 1.0
+      null_handling: reject_if_any_key_null
+      case_insensitive: false
+      pre_normalize: true
+      dedupe_strategy: keep_latest_by_timestamp
+      latest_timestamp_field: updated_at
+
+    operating_state_log:
+      match_type: deterministic
+      keys: [plant_code_id, normalized_asset, state_start]
+      confidence: 1.0
+      null_handling: reject_if_any_key_null
+      case_insensitive: false
+      pre_normalize: true
+      dedupe_strategy: keep_latest_by_timestamp
+      latest_timestamp_field: updated_at
+
+    energy_meter:
+      match_type: deterministic
+      keys: [plant_code_id, meter_id]
+      confidence: 1.0
+      null_handling: reject_if_any_key_null
+      case_insensitive: true
+      pre_normalize: true
+      dedupe_strategy: keep_highest_confidence
+
+    energy_consumption:
+      match_type: deterministic
+      keys: [plant_code_id, meter_id, period_start]
+      confidence: 1.0
+      null_handling: reject_if_any_key_null
+      case_insensitive: false
+      pre_normalize: true
+      dedupe_strategy: keep_latest_by_timestamp
+      latest_timestamp_field: updated_at
+
+    energy_baseline:
+      match_type: deterministic
+      keys: [plant_code_id, baseline_id]
+      confidence: 1.0
+      null_handling: reject_if_any_key_null
+      case_insensitive: true
+      pre_normalize: true
+      dedupe_strategy: keep_highest_confidence
+
+    energy_kpi:
+      match_type: deterministic
+      keys: [plant_code_id, process_unit_code, period_start, energy_type]
+      confidence: 1.0
+      null_handling: reject_if_any_key_null
+      case_insensitive: false
+      pre_normalize: true
+      dedupe_strategy: keep_latest_by_timestamp
+      latest_timestamp_field: updated_at
+
+    process_parameter:
+      match_type: deterministic
+      keys: [plant_code_id, tag_name, parameter_type]
+      confidence: 1.0
+      null_handling: reject_if_any_key_null
+      case_insensitive: true
+      pre_normalize: true
+      dedupe_strategy: keep_latest_by_timestamp
+      latest_timestamp_field: updated_at
+
+    process_alarm:
+      match_type: deterministic
+      keys: [plant_code_id, alarm_id]
+      confidence: 1.0
+      null_handling: reject_if_any_key_null
+      case_insensitive: false
+      pre_normalize: true
+      dedupe_strategy: keep_latest_by_timestamp
+      latest_timestamp_field: updated_at
+
+    safety_instrumented_function:
+      match_type: deterministic
+      keys: [plant_code_id, sif_id]
+      confidence: 1.0
+      null_handling: reject_if_any_key_null
+      case_insensitive: true
+      pre_normalize: true
+      dedupe_strategy: keep_highest_confidence
+
+    safety_loop:
+      match_type: deterministic
+      keys: [plant_code_id, sif_id, loop_element_seq]
+      confidence: 1.0
+      null_handling: reject_if_any_key_null
+      case_insensitive: false
+      pre_normalize: true
+      dedupe_strategy: keep_highest_confidence
+
+    proof_test:
+      match_type: deterministic
+      keys: [plant_code_id, sif_id, test_date]
+      confidence: 1.0
+      null_handling: reject_if_any_key_null
+      case_insensitive: false
+      pre_normalize: true
+      dedupe_strategy: keep_latest_by_timestamp
+      latest_timestamp_field: updated_at
+
+    process_kpi:
+      match_type: deterministic
+      keys: [plant_code_id, process_unit_code, kpi_name, period_start]
+      confidence: 1.0
+      null_handling: reject_if_any_key_null
+      case_insensitive: false
+      pre_normalize: true
+      dedupe_strategy: keep_latest_by_timestamp
+      latest_timestamp_field: updated_at

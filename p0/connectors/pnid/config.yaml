@@ -1,0 +1,63 @@
+# ═══════════════════════════════════════════════════════════════
+# P&ID Connector — All Sources Configuration
+# ═══════════════════════════════════════════════════════════════
+
+data_type: pnid
+
+# ── Common settings (shared across all sources) ─────────────
+common:
+  extensions: [".pdf", ".tif", ".tiff", ".png", ".jpg"]
+
+  filters:
+    max_file_size_mb: 200
+    filename_pattern: null
+    exclude_pattern: "^~\\$|^\\..*"
+
+# ── Source-specific settings ────────────────────────────────
+sources:
+
+  # ── Local Filesystem ──────────────────────
+  local:
+    base_path: "./data/staging/pnid"
+
+  # ── AWS S3 ────────────────────────────────
+  s3:
+    bucket: "${S3_PNID_BUCKET}"
+    prefix: "raw/pnid"
+    connection:
+      region: "${AWS_REGION:-us-east-1}"
+      access_key: "${AWS_ACCESS_KEY_ID}"
+      secret_key: "${AWS_SECRET_ACCESS_KEY}"
+      role_arn: "${AWS_ROLE_ARN:-}"
+      use_ssl: true
+
+  # ── Azure Data Lake Storage Gen2 ──────────
+  adls:
+    container: "${ADLS_PNID_CONTAINER}"
+    prefix: "raw/pnid"
+    connection:
+      account_name: "${ADLS_ACCOUNT_NAME}"
+      account_key: "${ADLS_ACCOUNT_KEY:-}"
+      sas_token: "${ADLS_SAS_TOKEN:-}"
+      tenant_id: "${AZURE_TENANT_ID:-}"
+      client_id: "${AZURE_CLIENT_ID:-}"
+      client_secret: "${AZURE_CLIENT_SECRET:-}"
+
+  # ── Google Cloud Storage ──────────────────
+  gcs:
+    bucket: "${GCS_PNID_BUCKET}"
+    prefix: "raw/pnid"
+    connection:
+      project_id: "${GCP_PROJECT_ID}"
+      service_account_json: "${GOOGLE_APPLICATION_CREDENTIALS:-}"
+
+  # ── Microsoft OneDrive / SharePoint ───────
+  onedrive:
+    folder_path: "/Documents/CDM/pnid"
+    drive_id: "${ONEDRIVE_DRIVE_ID:-}"
+    site_id: "${ONEDRIVE_SITE_ID:-}"
+    connection:
+      tenant_id: "${AZURE_TENANT_ID}"
+      client_id: "${ONEDRIVE_CLIENT_ID}"
+      client_secret: "${ONEDRIVE_CLIENT_SECRET}"
+      scopes: ["https://graph.microsoft.com/.default"]

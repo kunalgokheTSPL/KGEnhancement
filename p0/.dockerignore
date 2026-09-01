@@ -1,0 +1,34 @@
+# Exclude development artifacts from the Docker build context
+# (only config/ and src/ are COPYed in the Dockerfile, but this is belt-and-braces)
+
+# Virtual environments
+.venv*/
+*/.venv*/
+
+# IDE
+.idea/
+.vscode/
+
+# Local secrets — use deploy/k8s/09-p0-resources.yaml for K8s secrets
+.env
+*.env
+
+# Raw data / pipeline outputs — these live on the PVC at runtime, not in the image
+data/
+validation_ref/
+
+# Dev scripts and notebooks
+scripts/
+docs/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Excel/Word/tar artifacts
+*.xlsx
+*.docx
+*.tar
+*.tar.gz

@@ -1,0 +1,136 @@
+version: '1.0'
+notes:
+  - Mandatory SAP tables required by the CDM merge pipelines.
+  - Each table is grouped by its output dataset (pipeline).
+  - Tables shared across pipelines are listed under each pipeline that uses them.
+
+pipelines:
+  workorder:
+    description: Work Order merge pipeline
+    tables:
+      - name: AUFK
+        description: Work Order Master
+        key_columns: [AUFNR, OBJNR]
+      - name: AFKO
+        description: Work Order Header
+        key_columns: [AUFNR, AUFPL]
+      - name: AFVC
+        description: Work Order Operations
+        key_columns: [AUFPL, APLZL]
+      - name: AFVV
+        description: Operation Quantities/Dates
+        key_columns: [AUFPL, APLZL]
+      - name: QMEL
+        description: Quality Notifications
+        key_columns: [QMNUM, AUFNR]
+      - name: QMSM
+        description: Notification Tasks
+        key_columns: [QMNUM]
+      - name: JEST
+        description: Object Status
+        key_columns: [OBJNR, STAT]
+      - name: JSTO
+        description: Status Object
+        key_columns: [OBJNR]
+      - name: RESB
+        description: Material Reservations
+        key_columns: [AUFNR, MATNR]
+      - name: COEP
+        description: Cost Line Items
+        key_columns: [AUFNR]
+      - name: STXH
+        description: Long Text Headers
+        key_columns: [TDNAME, TDID]
+      - name: STXL
+        description: Long Text Lines
+        key_columns: [TDNAME, TDID]
+      - name: EQUI
+        description: Equipment Master
+        key_columns: [EQUNR]
+      - name: IFLOT
+        description: Functional Location
+        key_columns: [TPLNR]
+
+  floc:
+    description: Functional Location / Equipment merge pipeline
+    tables:
+      - name: IFLOT
+        description: Functional Location
+        key_columns: [TPLNR]
+      - name: ILOA
+        description: Location Account Assignment
+        key_columns: [ILOAN]
+      - name: EQUI
+        description: Equipment Master
+        key_columns: [EQUNR]
+      - name: AUFK
+        description: Work Order Master
+        key_columns: [AUFNR]
+      - name: COEP
+        description: Cost Line Items
+        key_columns: [AUFNR]
+      - name: JEST
+        description: Object Status
+        key_columns: [OBJNR, STAT]
+
+  tasklist:
+    description: Task List merge pipeline
+    tables:
+      - name: PLKO
+        description: Task List Header
+        key_columns: [PLNNR, PLNAL]
+      - name: PLPO
+        description: Task List Operations
+        key_columns: [PLNNR]
+      - name: MAPL
+        description: Material to Task List Assignment
+        key_columns: [PLNNR, PLNAL]
+      - name: EQUI
+        description: Equipment Master
+        key_columns: [EQUNR]
+      - name: AUFK
+        description: Work Order Master
+        key_columns: [AUFNR]
+
+  material:
+    description: Material merge pipeline
+    tables:
+      - name: MARA
+        description: Material Master General
+        key_columns: [MATNR]
+      - name: MARC
+        description: Material Plant Data
+        key_columns: [MATNR, WERKS]
+      - name: MARD
+        description: Material Storage Data
+        key_columns: [MATNR, WERKS, LGORT]
+      - name: RESB
+        description: Material Reservations
+        key_columns: [AUFNR, MATNR]
+      - name: COEP
+        description: Cost Line Items
+        key_columns: [AUFNR]
+
+# Unique table list (de-duplicated across pipelines)
+unique_tables:
+  - AUFK
+  - AFKO
+  - AFVC
+  - AFVV
+  - QMEL
+  - QMSM
+  - JEST
+  - JSTO
+  - RESB
+  - COEP
+  - STXH
+  - STXL
+  - EQUI
+  - IFLOT
+  - ILOA
+  - PLKO
+  - PLPO
+  - MAPL
+  - MARA
+  - MARC
+  - MARD

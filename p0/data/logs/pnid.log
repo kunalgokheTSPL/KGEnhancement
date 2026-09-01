@@ -1,0 +1,8 @@
+2026-08-13T12:50:32  DEBUG     cdm.connector.pnid:256  [pnid/existing] GET — listing files under s3://staging-pt/p0/staging-pt/plant_1_testcase/pnid
+2026-08-13T12:51:22  INFO      cdm.connector.pnid:328  [pnid/upload] POST — 1 file(s) received  job_id=b879df29-3205-47c0-bf33-7256862c3de9  plant_code_id=e2e_95b004da_testcase
+2026-08-13T12:51:23  DEBUG     cdm.connector.pnid:384  [pnid/upload] uploaded e2e_pid.pdf → RustFS:staging-pt/p0/staging-pt/e2e_95b004da_testcase/pnid/e2e_pid.pdf  (794 B)
+2026-08-13T12:51:24  INFO      cdm.connector.pnid:431  [pnid/upload] accepted=1  rejected=0  RustFS=s3://staging-pt/p0/staging-pt/e2e_95b004da_testcase/pnid
+2026-08-25T18:24:35  DEBUG     cdm.connector.pnid:288  [pnid/existing] GET — listing files under s3://bronze/p0/staging-pt/plant_1_testcase/pnid
+2026-08-25T18:25:12  INFO      cdm.connector.pnid:349  [pnid/upload] POST — 1 file(s) received  job_id=e4b4fa60-ffbc-44c7-82b9-985c39976006  plant_code_id=e2e_51fc708e_testcase
+2026-08-25T18:25:12  DEBUG     cdm.connector.pnid:405  [pnid/upload] uploaded e2e_pid.pdf → RustFS:bronze/p0/staging-pt/e2e_51fc708e_testcase/pnid/e2e_pid.pdf  (794 B)
+2026-08-25T18:25:13  INFO      cdm.connector.pnid:496  [pnid/upload] accepted=1  rejected=0  RustFS=s3://bronze/p0/staging-pt/e2e_51fc708e_testcase/pnid

@@ -1,0 +1,478 @@
+# ================================================================
+# CEMENT INDUSTRY — Schema Overlay  (self-contained)
+# ================================================================
+# Merged from: maintenance, reliability, energy_optimization,
+#              process_optimization schemas.
+# ================================================================
+
+schema_overlay:
+
+  # ── Equipment extensions ─────────────────────────────────────────────────────
+  equipment:
+    additional_columns:
+      equipment_section: VARCHAR(60)
+      clinker_line: VARCHAR(40)
+      equipment_class_code: VARCHAR(40)
+      installation_date: TIMESTAMP
+      design_life_years: NUMERIC(8,2)
+    additional_indexes:
+      - {name: idx_equip_section, columns: [plant_code_id, equipment_section]}
+      - {name: idx_equip_class, columns: [plant_code_id, equipment_class_code]}
+      - {name: idx_equip_install, columns: [installation_date]}
+
+  # ── Work order extensions ────────────────────────────────────────────────────
+  work_order:
+    additional_columns:
+      actual_start: TIMESTAMP
+      actual_finish: TIMESTAMP
+      downtime_hours: NUMERIC(18,4)
+      labor_hours: NUMERIC(18,4)
+      maintenance_classification: VARCHAR(40)
+      cost_total: NUMERIC(18,2)
+      production_impact: NUMERIC(18,4)
+      shutdown_required: BOOLEAN
+    additional_indexes:
+      - {name: idx_wo_maint_class, columns: [plant_code_id, maintenance_classification]}
+      - {name: idx_wo_actual_dates, columns: [actual_start, actual_finish]}
+
+  # ── Notification extensions ──────────────────────────────────────────────────
+  notification:
+    additional_columns:
+      consequence_code: VARCHAR(60)
+      detection_method_code: VARCHAR(60)
+      downtime_hours: NUMERIC(18,4)
+
+  # ── Failure mode extensions ──────────────────────────────────────────────────
+  failure_mode:
+    additional_columns:
+      failure_mechanism: VARCHAR(80)
+      end_effect: TEXT
+      local_effect: TEXT
+      equipment_class_code: VARCHAR(40)
+    additional_indexes:
+      - {name: idx_fm_mechanism, columns: [failure_mechanism]}
+      - {name: idx_fm_class, columns: [equipment_class_code]}
+
+  # ── Timeseries metadata extensions ───────────────────────────────────────────
+  timeseries_metadata:
+    additional_columns:
+      is_energy_meter: BOOLEAN
+      energy_type: VARCHAR(40)
+      is_safety_critical: BOOLEAN
+      sif_id: VARCHAR(80)
+    additional_indexes:
+      - {name: idx_ts_sif, columns: [sif_id]}
+
+  # ── Asset Strategy ───────────────────────────────────────────────────────────
+  asset_strategy:
+    primary_key: strategy_uid
+    columns:
+      strategy_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      normalized_asset: VARCHAR(120)
+      strategy_type: VARCHAR(40)
+      criticality_rank: VARCHAR(40)
+      review_date: TIMESTAMP
+      notes: TEXT
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_strategy_asset, columns: [plant_code_id, normalized_asset]}
+    indexes:
+      - {name: idx_strategy_plant, columns: [plant_code_id]}
+      - {name: idx_strategy_type, columns: [strategy_type]}
+    foreign_keys: []
+
+  # ── Repair Action ────────────────────────────────────────────────────────────
+  repair_action:
+    primary_key: action_uid
+    columns:
+      action_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      wo_number: VARCHAR(60)
+      action_seq: VARCHAR(30)
+      action_type: VARCHAR(40)
+      component_replaced: VARCHAR(200)
+      spare_material_code: VARCHAR(120)
+      labor_hours: NUMERIC(18,4)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_repair_action, columns: [plant_code_id, wo_number, action_seq]}
+    indexes:
+      - {name: idx_repair_wo, columns: [plant_code_id, wo_number]}
+      - {name: idx_repair_type, columns: [action_type]}
+    foreign_keys:
+      - {column: wo_number, ref_table: work_order, ref_column: wo_number, on_delete: CASCADE}
+      - {column: spare_material_code, ref_table: material, ref_column: material_code, on_delete: SET NULL}
+
+  # ── Equipment Class Taxonomy ─────────────────────────────────────────────────
+  equipment_class_taxonomy:
+    primary_key: class_uid
+    columns:
+      class_uid: BIGSERIAL
+      class_code: VARCHAR(40)
+      class_name: VARCHAR(200)
+      parent_class_code: VARCHAR(40)
+      level: INTEGER
+      equipment_category: VARCHAR(40)
+      typical_failure_modes: JSON
+      description: TEXT
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_class_code, columns: [class_code]}
+    indexes:
+      - {name: idx_class_parent, columns: [parent_class_code]}
+      - {name: idx_class_category, columns: [equipment_category]}
+      - {name: idx_class_level, columns: [level]}
+    foreign_keys:
+      - {column: parent_class_code, ref_table: equipment_class_taxonomy, ref_column: class_code, on_delete: SET NULL}
+
+  # ── Reliability KPI ─────────────────────────────────────────────────────────
+  reliability_kpi:
+    primary_key: kpi_uid
+    columns:
+      kpi_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      normalized_asset: VARCHAR(120)
+      equipment_class_code: VARCHAR(40)
+      period_start: TIMESTAMP
+      period_end: TIMESTAMP
+      mtbf_hours: NUMERIC(18,4)
+      mttr_hours: NUMERIC(18,4)
+      mdt_hours: NUMERIC(18,4)
+      availability: NUMERIC(8,6)
+      failure_rate: NUMERIC(18,8)
+      failure_count: INTEGER
+      total_downtime_hours: NUMERIC(18,4)
+      total_operating_hours: NUMERIC(18,4)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_kpi_asset_period, columns: [plant_code_id, normalized_asset, period_start]}
+    indexes:
+      - {name: idx_kpi_plant_asset, columns: [plant_code_id, normalized_asset]}
+      - {name: idx_kpi_period, columns: [period_start, period_end]}
+      - {name: idx_kpi_avail, columns: [plant_code_id, availability]}
+      - {name: idx_kpi_class, columns: [equipment_class_code]}
+    foreign_keys: []
+
+  # ── Operating State Log ──────────────────────────────────────────────────────
+  operating_state_log:
+    primary_key: state_uid
+    columns:
+      state_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      normalized_asset: VARCHAR(120)
+      operating_state: VARCHAR(40)
+      state_start: TIMESTAMP
+      state_end: TIMESTAMP
+      duration_hours: NUMERIC(18,4)
+      related_wo_number: VARCHAR(60)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_state_asset_start, columns: [plant_code_id, normalized_asset, state_start]}
+    indexes:
+      - {name: idx_state_asset, columns: [plant_code_id, normalized_asset]}
+      - {name: idx_state_type, columns: [plant_code_id, operating_state]}
+      - {name: idx_state_dates, columns: [state_start, state_end]}
+    foreign_keys: []
+
+  # ── Energy Meter ─────────────────────────────────────────────────────────────
+  energy_meter:
+    primary_key: meter_uid
+    columns:
+      meter_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      meter_id: VARCHAR(80)
+      meter_name: VARCHAR(200)
+      energy_type: VARCHAR(40)
+      unit_of_measure: VARCHAR(20)
+      normalized_asset: VARCHAR(120)
+      process_unit_code: VARCHAR(120)
+      is_main_meter: BOOLEAN
+      parent_meter_id: VARCHAR(80)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_meter, columns: [plant_code_id, meter_id]}
+    indexes:
+      - {name: idx_meter_plant, columns: [plant_code_id]}
+      - {name: idx_meter_type, columns: [energy_type]}
+      - {name: idx_meter_asset, columns: [plant_code_id, normalized_asset]}
+      - {name: idx_meter_pu, columns: [plant_code_id, process_unit_code]}
+    foreign_keys:
+      - {column: parent_meter_id, ref_table: energy_meter, ref_column: meter_id, on_delete: SET NULL}
+
+  # ── Energy Consumption ──────────────────────────────────────────────────────
+  energy_consumption:
+    primary_key: ec_uid
+    columns:
+      ec_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      meter_id: VARCHAR(80)
+      period_start: TIMESTAMP
+      period_end: TIMESTAMP
+      consumption_value: NUMERIC(18,4)
+      peak_demand: NUMERIC(18,4)
+      load_factor: NUMERIC(8,6)
+      cost: NUMERIC(18,2)
+      currency: VARCHAR(10)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_ec_meter_period, columns: [plant_code_id, meter_id, period_start]}
+    indexes:
+      - {name: idx_ec_meter, columns: [plant_code_id, meter_id]}
+      - {name: idx_ec_period, columns: [period_start, period_end]}
+    foreign_keys:
+      - {column: meter_id, ref_table: energy_meter, ref_column: meter_id, on_delete: CASCADE}
+
+  # ── Energy Baseline ─────────────────────────────────────────────────────────
+  energy_baseline:
+    primary_key: baseline_uid
+    columns:
+      baseline_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      baseline_id: VARCHAR(80)
+      process_unit_code: VARCHAR(120)
+      energy_type: VARCHAR(40)
+      baseline_period_start: TIMESTAMP
+      baseline_period_end: TIMESTAMP
+      baseline_consumption: NUMERIC(18,4)
+      baseline_production_volume: NUMERIC(18,4)
+      sec_baseline: NUMERIC(18,6)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_baseline, columns: [plant_code_id, baseline_id]}
+    indexes:
+      - {name: idx_baseline_pu, columns: [plant_code_id, process_unit_code]}
+      - {name: idx_baseline_type, columns: [energy_type]}
+    foreign_keys: []
+
+  # ── Energy KPI ──────────────────────────────────────────────────────────────
+  energy_kpi:
+    primary_key: ekpi_uid
+    columns:
+      ekpi_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      process_unit_code: VARCHAR(120)
+      energy_type: VARCHAR(40)
+      period_start: TIMESTAMP
+      period_end: TIMESTAMP
+      total_consumption: NUMERIC(18,4)
+      specific_energy_consumption: NUMERIC(18,6)
+      energy_intensity: NUMERIC(18,6)
+      improvement_vs_baseline_pct: NUMERIC(8,4)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_ekpi, columns: [plant_code_id, process_unit_code, period_start, energy_type]}
+    indexes:
+      - {name: idx_ekpi_pu, columns: [plant_code_id, process_unit_code]}
+      - {name: idx_ekpi_period, columns: [period_start]}
+    foreign_keys: []
+
+  # ── Process Parameter ───────────────────────────────────────────────────────
+  process_parameter:
+    primary_key: pp_uid
+    columns:
+      pp_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      tag_name: VARCHAR(255)
+      parameter_type: VARCHAR(40)
+      value_low: NUMERIC(18,6)
+      value_target: NUMERIC(18,6)
+      value_high: NUMERIC(18,6)
+      unit: VARCHAR(50)
+      process_unit_code: VARCHAR(120)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_pp, columns: [plant_code_id, tag_name, parameter_type]}
+    indexes:
+      - {name: idx_pp_tag, columns: [plant_code_id, tag_name]}
+      - {name: idx_pp_pu, columns: [plant_code_id, process_unit_code]}
+    foreign_keys: []
+
+  # ── Process Alarm ───────────────────────────────────────────────────────────
+  process_alarm:
+    primary_key: alarm_uid
+    columns:
+      alarm_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      alarm_id: VARCHAR(80)
+      tag_name: VARCHAR(255)
+      alarm_type: VARCHAR(40)
+      alarm_priority: VARCHAR(20)
+      alarm_time: TIMESTAMP
+      return_to_normal_time: TIMESTAMP
+      acknowledged_time: TIMESTAMP
+      duration_seconds: NUMERIC(18,2)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_alarm, columns: [plant_code_id, alarm_id]}
+    indexes:
+      - {name: idx_alarm_tag, columns: [plant_code_id, tag_name]}
+      - {name: idx_alarm_time, columns: [alarm_time]}
+      - {name: idx_alarm_priority, columns: [alarm_priority]}
+    foreign_keys: []
+
+  # ── Safety Instrumented Function ─────────────────────────────────────────────
+  safety_instrumented_function:
+    primary_key: sif_uid
+    columns:
+      sif_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      sif_id: VARCHAR(80)
+      sif_name: VARCHAR(200)
+      sil_rating: INTEGER
+      process_unit_code: VARCHAR(120)
+      hazard_description: TEXT
+      demand_mode: VARCHAR(30)
+      pfd_avg: NUMERIC(12,8)
+      proof_test_interval_months: INTEGER
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_sif, columns: [plant_code_id, sif_id]}
+    indexes:
+      - {name: idx_sif_plant, columns: [plant_code_id]}
+      - {name: idx_sif_sil, columns: [sil_rating]}
+      - {name: idx_sif_pu, columns: [plant_code_id, process_unit_code]}
+    foreign_keys: []
+
+  # ── Safety Loop ─────────────────────────────────────────────────────────────
+  safety_loop:
+    primary_key: sl_uid
+    columns:
+      sl_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      sif_id: VARCHAR(80)
+      loop_element_seq: INTEGER
+      element_type: VARCHAR(30)
+      tag_name: VARCHAR(255)
+      normalized_asset: VARCHAR(120)
+      manufacturer: VARCHAR(200)
+      model: VARCHAR(200)
+      failure_rate: NUMERIC(18,8)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_sl, columns: [plant_code_id, sif_id, loop_element_seq]}
+    indexes:
+      - {name: idx_sl_sif, columns: [plant_code_id, sif_id]}
+      - {name: idx_sl_tag, columns: [plant_code_id, tag_name]}
+    foreign_keys:
+      - {column: sif_id, ref_table: safety_instrumented_function, ref_column: sif_id, on_delete: CASCADE}
+
+  # ── Proof Test ──────────────────────────────────────────────────────────────
+  proof_test:
+    primary_key: pt_uid
+    columns:
+      pt_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      sif_id: VARCHAR(80)
+      test_date: TIMESTAMP
+      test_result: VARCHAR(30)
+      test_coverage_pct: NUMERIC(6,2)
+      tester: VARCHAR(200)
+      related_wo_number: VARCHAR(60)
+      findings: TEXT
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_pt, columns: [plant_code_id, sif_id, test_date]}
+    indexes:
+      - {name: idx_pt_sif, columns: [plant_code_id, sif_id]}
+      - {name: idx_pt_date, columns: [test_date]}
+      - {name: idx_pt_result, columns: [test_result]}
+    foreign_keys:
+      - {column: sif_id, ref_table: safety_instrumented_function, ref_column: sif_id, on_delete: CASCADE}
+
+  # ── Process KPI ─────────────────────────────────────────────────────────────
+  process_kpi:
+    primary_key: pkpi_uid
+    columns:
+      pkpi_uid: BIGSERIAL
+      plant_code_id: VARCHAR(50)
+      process_unit_code: VARCHAR(120)
+      kpi_name: VARCHAR(80)
+      period_start: TIMESTAMP
+      period_end: TIMESTAMP
+      kpi_value: NUMERIC(18,6)
+      kpi_unit: VARCHAR(30)
+      target_value: NUMERIC(18,6)
+      source_system: VARCHAR(80)
+      source_record_id: VARCHAR(200)
+      confidence: NUMERIC(6,4)
+      created_at: TIMESTAMP
+      updated_at: TIMESTAMP
+      is_active: BOOLEAN
+    constraints:
+      - {type: unique, name: uq_pkpi, columns: [plant_code_id, process_unit_code, kpi_name, period_start]}
+    indexes:
+      - {name: idx_pkpi_pu, columns: [plant_code_id, process_unit_code]}
+      - {name: idx_pkpi_name, columns: [kpi_name]}
+      - {name: idx_pkpi_period, columns: [period_start]}
+    foreign_keys: []

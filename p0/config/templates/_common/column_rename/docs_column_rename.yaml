@@ -1,0 +1,29 @@
+version: '1.0'
+notes:
+- Document extraction output should be a structured table per document (or per chunk)
+  with these canonical columns.
+- If using an LLM extractor, force it to output these field names.
+sources:
+  documents:
+    mappings:
+      Document ID: document_id
+      document_id: document_id
+      Doc ID: document_id
+      Title: title
+      title: title
+      Document Type: document_type
+      document_type: document_type
+      Equipment: equipment_id
+      equipment_id: equipment_id
+      Equipment Tag: equipment_tag
+      equipment_tag: equipment_tag
+      # equipment_label holds the human-readable name – must NOT be renamed to equipment_id
+      equipment_label: equipment_label
+      Functional Location: functional_location
+      functional_location: functional_location
+      Process Unit: process_unit
+      process_unit: process_unit
+      Description: description
+      description: description
+      Criticality: criticality
+      criticality: criticality

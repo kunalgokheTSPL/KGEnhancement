@@ -1,0 +1,213 @@
+# ================================================================
+# OIL & GAS INDUSTRY — Validation Overlay  (self-contained)
+# ================================================================
+# Merged from: maintenance, reliability, asset_integrity,
+#              process_optimization, sustainability_esg validations.
+# ================================================================
+
+validation:
+
+  # ── Target tables ────────────────────────────────────────────────────────────
+  target_tables:
+    - equipment
+    - work_order
+    - notification
+    - failure_mode
+    - timeseries_metadata
+    - asset_strategy
+    - repair_action
+    - equipment_class_taxonomy
+    - reliability_kpi
+    - operating_state_log
+    - inspection_record
+    - corrosion_loop
+    - thickness_measurement
+    - condition_assessment
+    - process_parameter
+    - process_alarm
+    - safety_instrumented_function
+    - safety_loop
+    - proof_test
+    - process_kpi
+    - emission_record
+    - emission_factor
+    - water_record
+    - waste_record
+    - environmental_permit
+    - esg_kpi
+
+  # ── Satisfiability rules ────────────────────────────────────────────────────
+  satisfiability:
+
+    maintenance_classification:
+      allowed: [corrective, preventive, predictive, condition_based, shutdown, turnaround, emergency]
+
+    strategy_type:
+      allowed: [run_to_failure, time_based, condition_based, predictive, design_out, proactive]
+
+    criticality_rank:
+      allowed: [critical, high, medium, low]
+
+    operating_state:
+      allowed: [running, idle, planned_shutdown, unplanned_shutdown, standby, start_up, turnaround]
+
+    alarm_priority:
+      allowed: [emergency, high, medium, low, diagnostic, journal]
+
+    demand_mode:
+      allowed: [low_demand, high_demand, continuous]
+
+    test_result:
+      allowed: [pass, fail, partial, deferred]
+
+    inspection_result:
+      allowed: [acceptable, needs_repair, unacceptable, deferred]
+
+    condition_grade:
+      allowed: [A, B, C, D, E]
+
+    ghg_scope:
+      allowed: [scope_1, scope_2, scope_3]
+
+    waste_classification:
+      allowed: [hazardous, non_hazardous, inert]
+
+    disposal_method:
+      allowed: [landfill, incineration, recycled, treated, deep_well, composted]
+
+    compliance_status:
+      allowed: [compliant, non_compliant, under_review, expired]
+
+    reporting_framework:
+      allowed: [GRI, SASB, TCFD, CDP, internal]
+
+    record_type:
+      allowed: [intake, discharge, recycled, consumed]
+
+  # ── Identity resolution ──────────────────────────────────────────────────────
+  identity_resolution:
+
+    equipment:
+      match_keys: [plant_code_id, equipment_id]
+      merge_strategy: latest_wins
+      confidence_threshold: 0.80
+
+    work_order:
+      match_keys: [plant_code_id, wo_number]
+      merge_strategy: latest_wins
+      confidence_threshold: 0.85
+
+    notification:
+      match_keys: [plant_code_id, notification_number]
+      merge_strategy: latest_wins
+      confidence_threshold: 0.85
+
+    failure_mode:
+      match_keys: [plant_code_id, equipment_id, mode_code]
+      merge_strategy: latest_wins
+      confidence_threshold: 0.75
+
+    asset_strategy:
+      match_keys: [plant_code_id, normalized_asset]
+      merge_strategy: latest_wins
+      confidence_threshold: 0.80
+
+    repair_action:
+      match_keys: [plant_code_id, wo_number, action_seq]
+      merge_strategy: latest_wins
+      confidence_threshold: 0.80
+
+    equipment_class_taxonomy:
+      match_keys: [class_code]
+      merge_strategy: latest_wins
+      confidence_threshold: 0.90
+
+    reliability_kpi:
+      match_keys: [plant_code_id, normalized_asset, period_start]
+      merge_strategy: latest_wins
+      confidence_threshold: 0.85
+
+    operating_state_log:
+      match_keys: [plant_code_id, normalized_asset, state_start]
+      merge_strategy: latest_wins
+      confidence_threshold: 0.80
+
+    inspection_record:
+      match_keys: [plant_code_id, inspection_id]
+      merge_strategy: latest_wins
+      confidence_threshold: 0.85
+
+    corrosion_loop:
+      match_keys: [plant_code_id, loop_id]
+      merge_strategy: latest_wins
+      confidence_threshold: 0.85
+
+    thickness_measurement:
+      match_keys: [plant_code_id, normalized_asset, measurement_point, measurement_date]
+      merge_strategy: latest_wins
+      confidence_threshold: 0.80
+
+    condition_assessment:
+      match_keys: [plant_code_id, normalized_asset, assessment_date]
+      merge_strategy: latest_wins
+      confidence_threshold: 0.80
+
+    process_parameter:
+      match_keys: [plant_code_id, tag_name, parameter_type]
+      merge_strategy: latest_wins
+      confidence_threshold: 0.85
+
+    process_alarm:
+      match_keys: [plant_code_id, alarm_id]
+      merge_strategy: latest_wins
+      confidence_threshold: 0.80
+
+    safety_instrumented_function:
+      match_keys: [plant_code_id, sif_id]
+      merge_strategy: latest_wins
+      confidence_threshold: 0.90
+
+    safety_loop:
+      match_keys: [plant_code_id, sif_id, loop_element_seq]
+      merge_strategy: latest_wins
+      confidence_threshold: 0.85
+
+    proof_test:
+      match_keys: [plant_code_id, sif_id, test_date]
+      merge_strategy: latest_wins
+      confidence_threshold: 0.85
+
+    process_kpi:
+      match_keys: [plant_code_id, process_unit_code, kpi_name, period_start]
+      merge_strategy: latest_wins
+      confidence_threshold: 0.85
+
+    emission_record:
+      match_keys: [plant_code_id, emission_source_id, period_start]
+      merge_strategy: latest_wins
+      confidence_threshold: 0.85
+
+    emission_factor:
+      match_keys: [factor_id]
+      merge_strategy: latest_wins
+      confidence_threshold: 0.90
+
+    water_record:
+      match_keys: [plant_code_id, water_source_id, period_start]
+      merge_strategy: latest_wins
+      confidence_threshold: 0.85
+
+    waste_record:
+      match_keys: [plant_code_id, waste_stream_id, period_start]
+      merge_strategy: latest_wins
+      confidence_threshold: 0.85
+
+    environmental_permit:
+      match_keys: [plant_code_id, permit_id]
+      merge_strategy: latest_wins
+      confidence_threshold: 0.90
+
+    esg_kpi:
+      match_keys: [plant_code_id, kpi_name, reporting_period_start]
+      merge_strategy: latest_wins
+      confidence_threshold: 0.85

@@ -1,0 +1,9 @@
+# Worker-mode dependencies (Kubernetes Redis Stream consumer + storage)
+# These are NOT needed when running p0 pipelines directly from the CLI.
+redis>=5.0
+boto3>=1.34
+psycopg2-binary>=2.9
+requests>=2.31
+s3fs==2026.4.0
+fsspec==2026.4.0
+adlfs

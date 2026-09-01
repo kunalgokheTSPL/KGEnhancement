@@ -1,0 +1,182 @@
+version: '1.0'
+notes:
+- Defines SAP table-level extraction for PM/MM using technical field names.
+- Downstream join/merge logic in code should produce source datasets matching CDM
+  source keys (sap_assets, sap_wo, sap_notification, etc.).
+sap_pm_mm:
+  technical_objects:
+    equipment:
+      table: EQUI
+      key:
+      - MANDT
+      - EQUNR
+      fields:
+      - EQUNR
+      - TPLNR
+      - EQTYP
+      - SWERK
+      - HERST
+      - TYPBZ
+      - OBJNR
+    equipment_text:
+      table: EQKT
+      key:
+      - MANDT
+      - EQUNR
+      - SPRAS
+      fields:
+      - EQUNR
+      - EQKTX
+    functional_location:
+      table: IFLOT
+      key:
+      - MANDT
+      - TPLNR
+      fields:
+      - TPLNR
+      - TPLMA
+      - SWERK
+      - FLTYP
+    functional_location_text:
+      table: IFLOTX
+      key:
+      - MANDT
+      - TPLNR
+      - SPRAS
+      fields:
+      - TPLNR
+      - PLTXT
+  notifications:
+    header:
+      table: QMEL
+      key:
+      - MANDT
+      - QMNUM
+      fields:
+      - QMNUM
+      - QMART
+      - QMTXT
+      - PRIOK
+      - ERDAT
+      - ERNAM
+      - EQUNR
+      - TPLNR
+  work_orders:
+    header:
+      table: AUFK
+      key:
+      - MANDT
+      - AUFNR
+      fields:
+      - AUFNR
+      - AUART
+      - OBJNR
+      - ERDAT
+      - KTEXT
+      - PRIOK
+    dates:
+      table: AFKO
+      key:
+      - MANDT
+      - AUFNR
+      fields:
+      - AUFNR
+      - GSTRP
+      - GLTRP
+    operations:
+      table: AFVC
+      key:
+      - MANDT
+      - AUFPL
+      - APLZL
+      fields:
+      - AUFPL
+      - APLZL
+      - VORNR
+      - LTXA1
+      - ARBID
+      - STEUS
+  work_centers:
+    header:
+      table: CRHD
+      key:
+      - MANDT
+      - OBJID
+      fields:
+      - OBJID
+      - ARBPL
+      - KTEXT
+  materials:
+    master:
+      table: MARA
+      key:
+      - MANDT
+      - MATNR
+      fields:
+      - MATNR
+      - MTART
+      - MEINS
+    text:
+      table: MAKT
+      key:
+      - MANDT
+      - MATNR
+      - SPRAS
+      fields:
+      - MATNR
+      - MAKTX
+  vendors:
+    master:
+      table: LFA1
+      key:
+      - MANDT
+      - LIFNR
+      fields:
+      - LIFNR
+      - NAME1
+      - LAND1
+      - REGIO
+      - TELF1
+  procurement:
+    purchase_orders:
+      tables:
+      - EKKO
+      - EKPO
+      join_keys:
+      - EKKO.EBELN = EKPO.EBELN
+      fields:
+      - EBELN
+      - EBELP
+      - LIFNR
+      - MATNR
+      - MENGE
+      - NETWR
+      - WAERS
+      - BEDAT
+    goods_receipts:
+      tables:
+      - MKPF
+      - MSEG
+      join_keys:
+      - MKPF.MBLNR = MSEG.MBLNR
+      fields:
+      - MBLNR
+      - ZEILE
+      - EBELN
+      - EBELP
+      - MATNR
+      - MENGE
+      - BUDAT
+    invoices:
+      tables:
+      - RBKP
+      - RSEG
+      join_keys:
+      - RBKP.BELNR = RSEG.BELNR
+      fields:
+      - BELNR
+      - EBELN
+      - EBELP
+      - WRBTR
+      - WAERS
+      - BUDAT

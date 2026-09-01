@@ -1,0 +1,10 @@
+2026-08-13T12:50:22  WARNING   cdm.connector.timeseries:77  [ts/ingest] degenerate device stem from '___.csv' — using 'file'
+2026-08-13T12:50:22  WARNING   cdm.connector.timeseries:77  [ts/ingest] degenerate device stem from '已经.csv' — using 'file_abcd1234'
+2026-08-13T12:51:25  INFO      cdm.connector.timeseries:1622  [ts/upload] POST — 1 file(s) received  job_id=6b80b4cf-c3a3-49a5-99bd-d4637a7f6467  file_type=metadata  plant_code_id=e2e_95b004da_testcase  rustfs=s3://staging-pt/p0/staging-pt/e2e_95b004da_testcase/timeseries/metadata
+2026-08-13T12:51:26  INFO      cdm.connector.timeseries:1740  [ts/upload] SUMMARY  job_id=6b80b4cf-c3a3-49a5-99bd-d4637a7f6467  file_type=metadata  accepted=1  rejected=0  (RustFS+ingest backgrounded)
+2026-08-13T12:51:26  INFO      cdm.connector.timeseries:1929  [ts/upload] RustFS push + ingest scheduled  job_id=6b80b4cf-c3a3-49a5-99bd-d4637a7f6467  files=1
+2026-08-13T12:51:27  INFO      cdm.connector.timeseries:1784  [ts/upload] UPLOADED e2e_ts.csv → s3://staging-pt/p0/staging-pt/e2e_95b004da_testcase/timeseries/metadata/e2e_ts.csv
+2026-08-13T12:51:27  INFO      cdm.connector.timeseries:688  [retention] no retention configured — skipping prune
+2026-08-13T12:51:27  INFO      cdm.connector.timeseries:1921  [ts/upload] IoTDB ingest done  job_id=6b80b4cf-c3a3-49a5-99bd-d4637a7f6467  rows=0  dropped_pre_retention=0
+2026-08-25T18:24:30  WARNING   cdm.connector.timeseries:77  [ts/ingest] degenerate device stem from '___.csv' — using 'file'
+2026-08-25T18:24:30  WARNING   cdm.connector.timeseries:77  [ts/ingest] degenerate device stem from '已经.csv' — using 'file_abcd1234'

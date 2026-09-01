@@ -1,0 +1,190 @@
+# ================================================================
+# COMMON — Core Validation Contracts
+# ================================================================
+
+version: '2.0'
+notes:
+  - Validation contracts ensure that, after rename+derive, CDM required attributes can be satisfied.
+  - Fail fast with explicit missing-field messages.
+  - Use-case overlays append additional validation rules.
+
+source_natural_keys:
+  sap_assets: [equipment_id, functional_location]
+  sap_wo: [wo_number]
+  sap_notification: [notification_id]
+  sap_task_list: [task_list_group, task_list_counter, task_list_type]
+  sap_maintenance_plan: [plan_id]
+  sap_work_center: [work_center_id]
+  sap_material_master: [material_code]
+  sap_bom: [bom_id, item_no]
+  sap_vendor_master: [vendor_code]
+  sap_po: [po_number, po_item]
+  sap_gr: [gr_number, gr_item]
+  sap_invoice: [invoice_number]
+  timeseries: [tag_name]
+  documents: [document_id]
+  fmea: [fmea_id]
+  safety_limits: [tag_name]
+  standards: [standard_name, standard_version, entity_name, canonical_field]
+
+required_after_rename_or_derive:
+  sap_assets:
+    - plant_code_id
+    - equipment_id
+    - functional_location
+    - normalized_asset
+    - source_system
+    - source_record_id
+    - updated_at
+  pid:
+    - plant_code_id
+    - equipment_tag
+    - source_system
+    - source_record_id
+    - updated_at
+  timeseries:
+    - plant_code_id
+    - tag_name
+    - unit
+    - data_type
+    - equipment_id
+    - source_system
+    - source_record_id
+    - updated_at
+  documents:
+    - plant_code_id
+    - document_id
+    - document_type
+    - title
+    - source_system
+    - source_record_id
+    - updated_at
+  sap_wo:
+    - plant_code_id
+    - wo_number
+    - wo_type
+    - created_on
+    - source_system
+    - source_record_id
+    - updated_at
+  sap_notification:
+    - plant_code_id
+    - notification_id
+    - notification_type
+    - created_on
+    - source_system
+    - source_record_id
+    - updated_at
+  sap_task_list:
+    - plant_code_id
+    - task_list_group
+    - task_list_counter
+    - task_list_type
+    - source_system
+    - source_record_id
+    - updated_at
+  sap_maintenance_plan:
+    - plant_code_id
+    - plan_id
+    - source_system
+    - source_record_id
+    - updated_at
+  sap_material_master:
+    - material_code
+    - source_system
+    - source_record_id
+    - updated_at
+  sap_bom:
+    - bom_id
+    - item_no
+    - material_code
+    - quantity
+    - uom
+    - source_system
+    - source_record_id
+    - updated_at
+  sap_vendor_master:
+    - vendor_code
+    - vendor_name
+    - source_system
+    - source_record_id
+    - updated_at
+  sap_po:
+    - po_number
+    - po_item
+    - vendor_code
+    - material_code
+    - quantity
+    - uom
+    - currency
+    - source_system
+    - source_record_id
+    - updated_at
+  sap_gr:
+    - gr_number
+    - gr_item
+    - po_number
+    - material_code
+    - quantity_received
+    - posting_date
+    - source_system
+    - source_record_id
+    - updated_at
+  sap_invoice:
+    - invoice_number
+    - po_number
+    - amount
+    - currency
+    - posting_date
+    - source_system
+    - source_record_id
+    - updated_at
+  fmea:
+    - fmea_id
+    - failure_mode
+    - failure_cause
+    - failure_mechanism
+    - source_system
+    - source_record_id
+    - updated_at
+  safety_limits:
+    - tag_name
+    - source_system
+    - source_record_id
+    - updated_at
+  standards:
+    - standard_name
+    - standard_version
+    - entity_name
+    - canonical_field
+    - data_type
+    - required
+    - source_system
+    - source_record_id
+    - updated_at
+
+  pid_post_equipment: [plant_code_id, equipment_tag, source_system, source_record_id]
+  pid_post_connectivity: [plant_code_id, from_equipment_tag, to_equipment_tag, source_system]
+  equipment: [plant_code_id, normalized_asset, equipment_tag]
+  equipment_connection: [plant_code_id, from_equipment_ref, to_equipment_ref]
+  asset_relationship: [plant_code_id, relationship_type]
+  osi_pi: [plant_code_id, tag_name, normalized_asset]
+  alerts_protean: [plant_code_id, tag_name, normalized_asset]
+  alerts_prime_alarms: [plant_code_id, tag_name, normalized_asset]
+  alerts_prime_excursions: [plant_code_id, tag_name, normalized_asset]
+
+required_attribute_satisfiability:
+  equipment.normalized_asset:
+    satisfied_by:
+      - sap_assets.normalized_asset
+      - pid.normalized_asset
+      - documents.normalized_asset
+      - timeseries.normalized_asset
+    note: At least one must be produced; recommended sap_assets via deterministic rule.
+  timeseries_metadata.op_limit_h:
+    satisfied_by:
+      - timeseries.op_limit_h
+    note: Operating limits should come from TS export; if absent keep nullable.
+  timeseries_metadata.safety_limit_h:
+    satisfied_by:
+      - safety_limits.safety_limit_h

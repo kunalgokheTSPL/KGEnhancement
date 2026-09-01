@@ -1,0 +1,697 @@
+{
+  "_metadata": {
+    "title": "Industrial Tag Naming Convention Reference",
+    "description": "Comprehensive mapping of instrument tag codes to human-readable descriptions. Based on ISA 5.1 (ANSI/ISA-5.1-2009), ISO 14617-6, and industry-specific conventions for cement and oil & gas industries. Used by CDM pipeline to generate human-readable tag descriptions for frontend display.",
+    "version": "1.0.0",
+    "standards_referenced": [
+      "ANSI/ISA-5.1-2009 (Instrumentation Symbols and Identification)",
+      "ISO 14617-6 (Graphical symbols for diagrams - Measurement and control functions)",
+      "IEC 62424 (Representation of process control engineering)",
+      "API RP 14C (Analysis, Design, Installation of Basic Surface Safety Systems)",
+      "API RP 551 (Process Measurement Instrumentation)"
+    ],
+    "industries": ["cement", "oil_and_gas", "petrochemical", "general_process"],
+    "last_updated": "2026-04-08"
+  },
+
+  "isa_5_1": {
+    "_description": "ISA 5.1 standard letter codes used in P&ID instrument tag identification. Tags follow the format: [First Letter(s)][Succeeding Letters][Loop Number], e.g., FIC-045 = Flow Indicating Controller, loop 045.",
+
+    "first_letter": {
+      "_description": "First letter identifies the measured or initiating variable.",
+      "A": { "variable": "Analysis", "description": "Composition or property analysis (e.g., pH, O2, CO, conductivity, chromatography)" },
+      "B": { "variable": "Burner / Combustion", "description": "Burner or combustion-related measurement" },
+      "C": { "variable": "User Choice", "description": "Commonly used for Conductivity in many plants" },
+      "D": { "variable": "User Choice", "description": "Commonly used for Density or Differential" },
+      "E": { "variable": "Voltage", "description": "Electrical voltage measurement" },
+      "F": { "variable": "Flow Rate", "description": "Volumetric or mass flow rate" },
+      "G": { "variable": "User Choice", "description": "Commonly used for Gauging or Gas detection" },
+      "H": { "variable": "Hand", "description": "Manual or hand-operated" },
+      "I": { "variable": "Current (Electrical)", "description": "Electrical current measurement" },
+      "J": { "variable": "Power", "description": "Electrical power measurement" },
+      "K": { "variable": "Time / Time Schedule", "description": "Time-related measurement or scheduling" },
+      "L": { "variable": "Level", "description": "Liquid or solid level measurement" },
+      "M": { "variable": "User Choice", "description": "Commonly used for Moisture in cement industry" },
+      "N": { "variable": "User Choice", "description": "Commonly used for Torque" },
+      "O": { "variable": "User Choice", "description": "User-defined variable" },
+      "P": { "variable": "Pressure / Vacuum", "description": "Pressure or vacuum measurement" },
+      "Q": { "variable": "Quantity", "description": "Quantity or event count" },
+      "R": { "variable": "Radiation", "description": "Radiation measurement (also used for nuclear level gauges)" },
+      "S": { "variable": "Speed / Frequency", "description": "Rotational speed or frequency measurement" },
+      "T": { "variable": "Temperature", "description": "Temperature measurement" },
+      "U": { "variable": "Multivariable", "description": "Multiple measured variables combined" },
+      "V": { "variable": "Vibration / Mechanical Analysis", "description": "Vibration or mechanical analysis measurement" },
+      "W": { "variable": "Weight / Force", "description": "Weight or force measurement" },
+      "X": { "variable": "Unclassified", "description": "Unclassified variable; commonly used for on-off valve (XV)" },
+      "Y": { "variable": "Event / State / Presence", "description": "Event, binary state, or presence detection" },
+      "Z": { "variable": "Position / Dimension", "description": "Position or dimensional measurement" }
+    },
+
+    "modifier_letter": {
+      "_description": "Modifier letter (optional, appears after first letter to modify its meaning).",
+      "D": { "modifier": "Differential", "description": "Differential measurement (e.g., PD = Differential Pressure)" },
+      "F": { "modifier": "Ratio / Fraction", "description": "Ratio or fraction of a measurement (e.g., FF = Flow Ratio)" },
+      "J": { "modifier": "Scan", "description": "Scanning function" },
+      "K": { "modifier": "Time Rate of Change", "description": "Rate of change over time" },
+      "M": { "modifier": "Momentary", "description": "Momentary or temporary" },
+      "Q": { "modifier": "Integrate / Totalize", "description": "Integrated or totalized value (e.g., FQ = Flow Totalizer)" },
+      "S": { "modifier": "Safety", "description": "Safety-instrumented function (e.g., PS = Pressure Safety)" },
+      "X": { "modifier": "X-Axis", "description": "X-axis measurement" },
+      "Y": { "modifier": "Y-Axis", "description": "Y-axis measurement" },
+      "Z": { "modifier": "Z-Axis", "description": "Z-axis measurement" }
+    },
+
+    "readout_passive_function": {
+      "_description": "Succeeding letter(s) indicating readout or passive function.",
+      "A": { "function": "Alarm", "description": "Alarm notification function" },
+      "B": { "function": "User Choice", "description": "User-defined readout function" },
+      "E": { "function": "Sensor / Primary Element", "description": "Sensing element (e.g., TE = Temperature Element/Sensor)" },
+      "G": { "function": "Glass / Viewing Device", "description": "Sight glass or gauge glass" },
+      "I": { "function": "Indicate", "description": "Indicator or indication function" },
+      "L": { "function": "Light / Pilot", "description": "Pilot light or indicator light" },
+      "N": { "function": "User Choice", "description": "User-defined passive function" },
+      "O": { "function": "Orifice / Restriction", "description": "Orifice plate or flow restriction" },
+      "P": { "function": "Point / Test Connection", "description": "Test point or connection" },
+      "R": { "function": "Record", "description": "Recording function (chart recorder, data logger)" },
+      "U": { "function": "Multifunction", "description": "Multiple passive functions combined" },
+      "W": { "function": "Well / Probe", "description": "Thermowell or instrument probe" },
+      "X": { "function": "Unclassified", "description": "Unclassified passive function" }
+    },
+
+    "output_active_function": {
+      "_description": "Succeeding letter(s) indicating output or active/control function.",
+      "B": { "function": "User Choice", "description": "User-defined output function" },
+      "C": { "function": "Control", "description": "Automatic control function (e.g., TIC = Temperature Indicating Controller)" },
+      "K": { "function": "Control Station", "description": "Control station or manual loading station" },
+      "N": { "function": "User Choice", "description": "User-defined output function" },
+      "S": { "function": "Switch", "description": "Switching function (on/off, high/low)" },
+      "T": { "function": "Transmit", "description": "Transmitter function (e.g., TT = Temperature Transmitter)" },
+      "U": { "function": "Multifunction", "description": "Multiple output functions combined" },
+      "V": { "function": "Valve / Damper / Louver", "description": "Final control element: valve, damper, or louver" },
+      "X": { "function": "Unclassified", "description": "Unclassified output function" },
+      "Y": { "function": "Relay / Compute / Convert", "description": "Relay, computation, or signal conversion function" },
+      "Z": { "function": "Driver / Actuator", "description": "Actuator or driver for final control element" }
+    },
+
+    "function_modifier": {
+      "_description": "Final letter modifier indicating alarm level or operating point.",
+      "B": { "modifier": "User Choice", "description": "User-defined modifier" },
+      "C": { "modifier": "Close", "description": "Close position or closed state" },
+      "D": { "modifier": "Deviation", "description": "Deviation from setpoint" },
+      "H": { "modifier": "High", "description": "High-level alarm or setpoint (e.g., TAH = Temperature Alarm High)" },
+      "HH": { "modifier": "High-High", "description": "High-high critical alarm (e.g., TAHH = Temperature Alarm High-High)" },
+      "L": { "modifier": "Low", "description": "Low-level alarm or setpoint (e.g., PAL = Pressure Alarm Low)" },
+      "LL": { "modifier": "Low-Low", "description": "Low-low critical alarm (e.g., PALL = Pressure Alarm Low-Low)" },
+      "M": { "modifier": "Middle / Intermediate", "description": "Middle or intermediate value" },
+      "N": { "modifier": "User Choice", "description": "User-defined modifier" },
+      "O": { "modifier": "Open", "description": "Open position or opened state" },
+      "R": { "modifier": "Run", "description": "Running state" },
+      "S": { "modifier": "Stop", "description": "Stopped state" },
+      "U": { "modifier": "Multifunction", "description": "Multiple modifier functions" },
+      "X": { "modifier": "Unclassified", "description": "Unclassified modifier" }
+    }
+  },
+
+  "common_tag_combinations": {
+    "_description": "Frequently encountered instrument tag letter combinations with full human-readable meanings. These combine first letter + succeeding letters per ISA 5.1.",
+
+    "instruments": {
+      "AI": "Analysis Indicator",
+      "AIC": "Analysis Indicating Controller",
+      "AIT": "Analysis Indicating Transmitter",
+      "AT": "Analysis Transmitter",
+      "AAH": "Analysis Alarm High",
+      "AAL": "Analysis Alarm Low",
+
+      "BAL": "Burner Alarm Low (flame failure)",
+
+      "DPI": "Differential Pressure Indicator",
+      "DPIC": "Differential Pressure Indicating Controller",
+      "DPT": "Differential Pressure Transmitter",
+
+      "ESD": "Emergency Shutdown",
+      "ESDV": "Emergency Shutdown Valve",
+
+      "FAH": "Flow Alarm High",
+      "FAL": "Flow Alarm Low",
+      "FC": "Flow Controller",
+      "FCV": "Flow Control Valve",
+      "FDA": "Flow Differential Alarm",
+      "FE": "Flow Element (sensor/orifice)",
+      "FI": "Flow Indicator",
+      "FIC": "Flow Indicating Controller",
+      "FIQ": "Flow Indicating Totalizer (custody metering)",
+      "FO": "Flow Orifice (restriction)",
+      "FQ": "Flow Quantity Totalizer",
+      "FQI": "Flow Quantity Indicator (totalized flow)",
+      "FR": "Flow Recorder",
+      "FS": "Flow Switch",
+      "FSH": "Flow Switch High",
+      "FSHH": "Flow Switch High-High",
+      "FSL": "Flow Switch Low",
+      "FSLL": "Flow Switch Low-Low",
+      "FT": "Flow Transmitter",
+      "FV": "Flow Valve (control valve)",
+      "FY": "Flow Relay / Converter",
+
+      "HIC": "Hand Indicating Controller (manual setpoint station)",
+      "HS": "Hand Switch",
+      "HV": "Hand Valve (manual valve)",
+
+      "II": "Current Indicator",
+      "IT": "Current Transmitter",
+
+      "JI": "Power Indicator",
+      "JT": "Power Transmitter",
+
+      "KI": "Time Indicator",
+      "KIC": "Time Indicating Controller",
+      "KS": "Time Switch (timer)",
+
+      "LAH": "Level Alarm High",
+      "LAHH": "Level Alarm High-High",
+      "LAL": "Level Alarm Low",
+      "LALL": "Level Alarm Low-Low",
+      "LC": "Level Controller",
+      "LCV": "Level Control Valve",
+      "LE": "Level Element (sensor)",
+      "LG": "Level Gauge / Sight Glass",
+      "LI": "Level Indicator",
+      "LIC": "Level Indicating Controller",
+      "LR": "Level Recorder",
+      "LS": "Level Switch",
+      "LSH": "Level Switch High",
+      "LSHH": "Level Switch High-High",
+      "LSL": "Level Switch Low",
+      "LSLL": "Level Switch Low-Low",
+      "LT": "Level Transmitter",
+      "LV": "Level Valve",
+
+      "MI": "Moisture Indicator",
+      "MT": "Moisture Transmitter",
+
+      "PAH": "Pressure Alarm High",
+      "PAHH": "Pressure Alarm High-High",
+      "PAL": "Pressure Alarm Low",
+      "PALL": "Pressure Alarm Low-Low",
+      "PC": "Pressure Controller",
+      "PCV": "Pressure Control Valve",
+      "PDI": "Pressure Differential Indicator",
+      "PDIC": "Pressure Differential Indicating Controller",
+      "PDT": "Pressure Differential Transmitter",
+      "PE": "Pressure Element (sensor)",
+      "PI": "Pressure Indicator",
+      "PIC": "Pressure Indicating Controller",
+      "PR": "Pressure Recorder",
+      "PS": "Pressure Switch",
+      "PSE": "Pressure Safety Element (Rupture Disc)",
+      "PSH": "Pressure Switch High",
+      "PSHH": "Pressure Switch High-High",
+      "PSL": "Pressure Switch Low",
+      "PSLL": "Pressure Switch Low-Low",
+      "PSV": "Pressure Safety Valve (Relief Valve)",
+      "PT": "Pressure Transmitter",
+      "PV": "Pressure Valve",
+      "PXA": "Pressure Accessory Alarm (rupture disc indicator)",
+      "PZA": "Pressure Position Alarm (safety valve lift indicator)",
+
+      "QI": "Quantity Indicator (counter/totalizer)",
+      "QIT": "Quantity Indicating Transmitter",
+
+      "RI": "Radiation Indicator",
+      "RT": "Radiation Transmitter",
+
+      "SC": "Speed Controller",
+      "SE": "Speed Element (sensor)",
+      "SI": "Speed Indicator",
+      "SIC": "Speed Indicating Controller",
+      "SS": "Speed Switch",
+      "SSL": "Speed Switch Low",
+      "SSH": "Speed Switch High",
+      "ST": "Speed Transmitter",
+
+      "TAH": "Temperature Alarm High",
+      "TAHH": "Temperature Alarm High-High",
+      "TAL": "Temperature Alarm Low",
+      "TALL": "Temperature Alarm Low-Low",
+      "TC": "Temperature Controller",
+      "TCV": "Temperature Control Valve",
+      "TE": "Temperature Element (sensor/thermocouple/RTD)",
+      "TI": "Temperature Indicator",
+      "TIC": "Temperature Indicating Controller",
+      "TR": "Temperature Recorder",
+      "TS": "Temperature Switch",
+      "TSH": "Temperature Switch High",
+      "TSHH": "Temperature Switch High-High",
+      "TSL": "Temperature Switch Low",
+      "TSLL": "Temperature Switch Low-Low",
+      "TT": "Temperature Transmitter",
+      "TV": "Temperature Valve",
+      "TW": "Temperature Well (thermowell)",
+
+      "UA": "Multivariable Alarm",
+
+      "VA": "Vibration Alarm",
+      "VAH": "Vibration Alarm High",
+      "VAHH": "Vibration Alarm High-High",
+      "VE": "Vibration Element (sensor)",
+      "VI": "Vibration Indicator",
+      "VS": "Vibration Switch",
+      "VSH": "Vibration Switch High",
+      "VT": "Vibration Transmitter",
+
+      "WE": "Weight Element (load cell)",
+      "WI": "Weight Indicator",
+      "WIC": "Weight Indicating Controller",
+      "WR": "Weight Recorder",
+      "WT": "Weight Transmitter",
+
+      "XA": "Unclassified Alarm (e.g., pig signaller, general event alarm)",
+      "XV": "On-Off Valve (Shutoff Valve / Block Valve)",
+      "XY": "Unclassified Relay",
+
+      "YS": "Event Switch",
+      "YI": "Event Indicator",
+
+      "ZI": "Position Indicator",
+      "ZIC": "Position Indicating Controller",
+      "ZS": "Position Switch",
+      "ZSC": "Position Switch Closed",
+      "ZSH": "Position Switch High (fully open)",
+      "ZSL": "Position Switch Low (fully closed)",
+      "ZSO": "Position Switch Open",
+      "ZT": "Position Transmitter"
+    }
+  },
+
+  "signal_variable_suffixes": {
+    "_description": "DCS/SCADA/PLC tag suffixes appended to instrument tags to identify the type of signal or variable. These are critical for interpreting control loop data.",
+
+    "control_loop_variables": {
+      "PV": { "name": "Process Variable", "description": "The actual measured value from the field sensor/transmitter. This is what the process IS doing. Example: actual temperature reading." },
+      "SP": { "name": "Setpoint", "description": "The desired target value that the controller is trying to maintain. This is what you WANT the process to do." },
+      "SV": { "name": "Setpoint Variable", "description": "Alternative notation for Setpoint (same as SP). Common in some DCS systems." },
+      "MV": { "name": "Manipulated Variable", "description": "The controller output signal sent to the final control element (valve, damper, VFD). This is what the controller DOES to control the process. Usually expressed as 0-100%." },
+      "CV": { "name": "Control Variable / Controller Output", "description": "Alternative notation for Manipulated Variable (same as MV). The output of the controller." },
+      "OP": { "name": "Output", "description": "Controller output percentage (0-100%). Same concept as MV/CV, commonly used in some DCS platforms." },
+      "OUT": { "name": "Output", "description": "Alternative notation for controller output." },
+      "ERR": { "name": "Error", "description": "Difference between SP and PV (Error = SP - PV)." },
+      "DEV": { "name": "Deviation", "description": "Same as Error. The deviation of PV from SP." }
+    },
+
+    "controller_mode": {
+      "AUTO": { "name": "Automatic Mode", "description": "Controller is automatically adjusting MV based on PV-SP error." },
+      "MAN": { "name": "Manual Mode", "description": "Operator manually sets the MV/output; controller computation is bypassed." },
+      "CAS": { "name": "Cascade Mode", "description": "Setpoint is received from an upstream (master) controller rather than being set manually." },
+      "REM": { "name": "Remote Mode", "description": "Setpoint or output is set remotely by another system (e.g., advanced process control)." },
+      "RSP": { "name": "Remote Setpoint", "description": "Setpoint provided by a remote/advanced controller." },
+      "LCL": { "name": "Local Mode", "description": "Controller accepts local (field) commands rather than DCS commands." },
+      "TRK": { "name": "Tracking Mode", "description": "Controller output tracks an external signal." }
+    },
+
+    "tuning_parameters": {
+      "KP": { "name": "Proportional Gain (Kp)", "description": "Proportional gain constant of PID controller." },
+      "KI": { "name": "Integral Gain (Ki)", "description": "Integral gain constant of PID controller." },
+      "KD": { "name": "Derivative Gain (Kd)", "description": "Derivative gain constant of PID controller." },
+      "TI": { "name": "Integral Time (Ti)", "description": "Integral time constant (minutes/repeats). Ti = Kp / Ki." },
+      "TD": { "name": "Derivative Time (Td)", "description": "Derivative time constant (minutes). Td = Kd / Kp." },
+      "PB": { "name": "Proportional Band", "description": "Proportional band percentage. PB = 100 / Kp." },
+      "DB": { "name": "Dead Band", "description": "Dead band / hysteresis around setpoint." },
+      "BIAS": { "name": "Bias / Manual Reset", "description": "Output bias value added to controller output." }
+    },
+
+    "alarm_suffixes": {
+      "ALM": { "name": "Alarm", "description": "Generic alarm state" },
+      "HI": { "name": "High Alarm", "description": "Value has exceeded high alarm limit" },
+      "HIHI": { "name": "High-High Alarm", "description": "Value has exceeded critical high alarm limit (trip level)" },
+      "LO": { "name": "Low Alarm", "description": "Value has dropped below low alarm limit" },
+      "LOLO": { "name": "Low-Low Alarm", "description": "Value has dropped below critical low alarm limit (trip level)" },
+      "H": { "name": "High", "description": "High limit value" },
+      "HH": { "name": "High-High", "description": "High-high critical limit value" },
+      "L": { "name": "Low", "description": "Low limit value" },
+      "LL": { "name": "Low-Low", "description": "Low-low critical limit value" }
+    },
+
+    "status_suffixes": {
+      "STS": { "name": "Status", "description": "General status of instrument or device" },
+      "RUN": { "name": "Running", "description": "Equipment is running/operating" },
+      "STOP": { "name": "Stopped", "description": "Equipment is stopped" },
+      "TRIP": { "name": "Tripped", "description": "Equipment has tripped (emergency stop)" },
+      "FLT": { "name": "Fault", "description": "Equipment fault/failure detected" },
+      "FAIL": { "name": "Failure", "description": "Instrument or device failure" },
+      "RDY": { "name": "Ready", "description": "Equipment is ready to start" },
+      "FB": { "name": "Feedback", "description": "Position or status feedback signal" },
+      "CMD": { "name": "Command", "description": "Command signal sent to device" },
+      "ENB": { "name": "Enable", "description": "Enable/disable signal" },
+      "OPN": { "name": "Open", "description": "Valve or damper open status" },
+      "CLS": { "name": "Closed", "description": "Valve or damper closed status" },
+      "OPNG": { "name": "Opening", "description": "Valve or damper is opening (transitioning)" },
+      "CLSG": { "name": "Closing", "description": "Valve or damper is closing (transitioning)" }
+    },
+
+    "engineering_units_common": {
+      "EU": { "name": "Engineering Units", "description": "Scaled value in physical engineering units" },
+      "RAW": { "name": "Raw Value", "description": "Unscaled raw analog input value" },
+      "PCT": { "name": "Percent (%)", "description": "Value expressed as percentage" },
+      "RATE": { "name": "Rate", "description": "Rate of change of the measured variable" }
+    }
+  },
+
+  "equipment_codes": {
+    "_description": "Common equipment type abbreviations used in tag naming across industries. These typically appear as prefixes or within the tag structure.",
+
+    "general_process_equipment": {
+      "AG": "Agitator / Stirrer",
+      "BL": "Blower",
+      "BLR": "Boiler",
+      "CL": "Cooler",
+      "CMP": "Compressor",
+      "CNV": "Conveyor",
+      "COL": "Column / Tower",
+      "CRN": "Crane",
+      "CYC": "Cyclone / Cyclone Separator",
+      "DMP": "Damper",
+      "DR": "Dryer",
+      "EJ": "Ejector",
+      "EL": "Elevator (Bucket Elevator)",
+      "ESP": "Electrostatic Precipitator",
+      "EXP": "Expander / Turbo-Expander",
+      "FD": "Feeder",
+      "FLT": "Filter",
+      "FN": "Fan",
+      "GEN": "Generator",
+      "GT": "Gas Turbine",
+      "HX": "Heat Exchanger",
+      "MOT": "Motor",
+      "MX": "Mixer",
+      "PP": "Pump",
+      "PMP": "Pump",
+      "RCT": "Reactor",
+      "SCR": "Screen / Screening Equipment",
+      "SEP": "Separator",
+      "SI": "Silo",
+      "ST": "Stripper / Steam Trap",
+      "TK": "Tank",
+      "TRF": "Transformer",
+      "VE": "Vessel",
+      "VSD": "Variable Speed Drive",
+      "VFD": "Variable Frequency Drive",
+      "WG": "Weigher / Weighing System"
+    },
+
+    "cement_industry_equipment": {
+      "_description": "Equipment codes specific to cement manufacturing plants.",
+      "AF": "Alternative Fuel System",
+      "APH": "Air Preheater",
+      "BC": "Belt Conveyor",
+      "BE": "Bucket Elevator",
+      "BF": "Bag Filter / Baghouse",
+      "BH": "Baghouse",
+      "BM": "Ball Mill",
+      "BN": "Burner (Kiln Burner)",
+      "CAL": "Calciner",
+      "CC": "Clinker Cooler",
+      "CF": "Coal Feeder",
+      "CK": "Clinker",
+      "CM": "Cement Mill (Finish Mill)",
+      "CR": "Crusher",
+      "CRU": "Crusher",
+      "CS": "Cement Silo",
+      "CV": "Conveyor",
+      "CYL": "Cyclone (Preheater Cyclone)",
+      "DC": "Dust Collector",
+      "DD": "Drag Chain / Dust Duct",
+      "ES": "Electrostatic Precipitator",
+      "FF": "Finish Mill Fan",
+      "FK": "Fuel / Firing (Kiln Fuel)",
+      "GC": "Grate Cooler",
+      "GR": "Grate",
+      "GY": "Gyratory Crusher",
+      "HC": "Hammer Crusher",
+      "HM": "Hammer Mill",
+      "ID": "Induced Draft (ID Fan)",
+      "KN": "Kiln (Rotary Kiln)",
+      "KLN": "Kiln (Rotary Kiln)",
+      "LS": "Limestone",
+      "MF": "Main Fan",
+      "PH": "Preheater",
+      "PKR": "Packer / Packing Machine",
+      "RK": "Rotary Kiln",
+      "RM": "Raw Mill",
+      "RP": "Roller Press",
+      "RS": "Raw Silo / Raw Meal Silo",
+      "SEP": "Separator (Air Separator / Classifier)",
+      "SP": "Suspension Preheater",
+      "TR": "Tripper (Conveyor Tripper)",
+      "VM": "Vertical Mill / Vertical Roller Mill",
+      "VRM": "Vertical Roller Mill",
+      "WF": "Weigh Feeder"
+    },
+
+    "oil_and_gas_equipment": {
+      "_description": "Equipment codes specific to oil and gas / petrochemical industries.",
+      "AB": "Absorber",
+      "ACC": "Accumulator",
+      "AHU": "Air Handling Unit",
+      "CH": "Chiller",
+      "CRU": "Crude Oil System",
+      "CT": "Cooling Tower",
+      "DES": "Desalter",
+      "DH": "Dehydrator / Dehydration Unit",
+      "DS": "Desander / De-sander",
+      "FD": "Flash Drum",
+      "FL": "Flare",
+      "FLS": "Flare Stack",
+      "FP": "Fire Pump",
+      "FWP": "Firewater Pump",
+      "GAI": "Gas Injection",
+      "GLY": "Glycol System",
+      "HC": "Hydrocarbon",
+      "HP": "High Pressure",
+      "IC": "Intercooler",
+      "KOD": "Knock-Out Drum",
+      "LP": "Low Pressure",
+      "LNG": "Liquefied Natural Gas",
+      "LPG": "Liquefied Petroleum Gas",
+      "MCC": "Motor Control Center",
+      "MP": "Medium Pressure",
+      "NGL": "Natural Gas Liquids",
+      "PIG": "Pig Launcher / Receiver",
+      "PL": "Pipeline",
+      "PSV": "Pressure Safety Valve",
+      "REB": "Reboiler",
+      "REG": "Regenerator",
+      "SD": "Slug Catcher / Sand",
+      "SEP": "Separator (2-phase / 3-phase)",
+      "SRU": "Sulphur Recovery Unit",
+      "STR": "Strainer",
+      "SW": "Seawater",
+      "TEG": "Triethylene Glycol",
+      "UPS": "Uninterruptible Power Supply",
+      "VRU": "Vapor Recovery Unit",
+      "WH": "Wellhead",
+      "WHRU": "Waste Heat Recovery Unit"
+    }
+  },
+
+  "area_codes": {
+    "_description": "Common plant area / unit numbering conventions. These typically appear as numeric prefixes in tag numbers.",
+
+    "cement_plant_areas": {
+      "100": { "area": "Quarry / Raw Material Extraction", "description": "Limestone quarry, clay pit, raw material crushing" },
+      "200": { "area": "Raw Material Preparation / Crushing", "description": "Primary and secondary crushers, raw material transport" },
+      "300": { "area": "Raw Mill / Raw Grinding", "description": "Raw meal grinding (ball mill or VRM), raw meal drying" },
+      "350": { "area": "Coal Mill / Fuel Preparation", "description": "Coal grinding, petcoke preparation, alternative fuel preparation" },
+      "400": { "area": "Blending / Homogenization", "description": "Raw meal blending silo, homogenization, storage" },
+      "500": { "area": "Preheater / Calciner", "description": "Cyclone preheater tower, calciner vessel" },
+      "600": { "area": "Kiln", "description": "Rotary kiln system, kiln drive, kiln burner" },
+      "700": { "area": "Clinker Cooler", "description": "Grate cooler, clinker transport, clinker storage" },
+      "800": { "area": "Cement Mill / Finish Grinding", "description": "Cement grinding (ball mill, VRM, or roller press), gypsum addition" },
+      "900": { "area": "Packing / Dispatch", "description": "Cement silos, packing machines, bulk loading, dispatch" },
+      "950": { "area": "Utilities / Common Services", "description": "Compressed air, water treatment, electrical systems, workshops" }
+    },
+
+    "oil_and_gas_areas": {
+      "_note": "Oil and gas area numbering is heavily project-specific. Below are common unit operations.",
+      "10": { "area": "Wellhead / Production Manifold", "description": "Well gathering, production manifolds, choke valves" },
+      "20": { "area": "Separation", "description": "1st/2nd/3rd stage separators, test separator" },
+      "30": { "area": "Compression", "description": "Gas compression, scrubbers, coolers" },
+      "40": { "area": "Dehydration / Gas Treatment", "description": "Glycol dehydration, gas sweetening, amine treatment" },
+      "50": { "area": "Metering / Export", "description": "Fiscal metering, export pump, pipeline" },
+      "60": { "area": "Utilities", "description": "Power generation, fuel gas, instrument air, water" },
+      "70": { "area": "Flare / Relief", "description": "HP flare, LP flare, flare drums, vent systems" },
+      "80": { "area": "Water Treatment / Injection", "description": "Produced water treatment, water injection" },
+      "90": { "area": "Chemical Injection", "description": "Corrosion inhibitor, scale inhibitor, demulsifier" }
+    }
+  },
+
+  "cement_industry_process_tags": {
+    "_description": "Cement-industry-specific process measurement tags commonly found in DCS/SCADA systems. These combine ISA codes with cement process context.",
+
+    "kiln_system": {
+      "TI_KLN_IN": "Kiln Inlet Temperature Indicator",
+      "TI_KLN_OUT": "Kiln Outlet Temperature Indicator",
+      "TI_BZ": "Burning Zone Temperature Indicator",
+      "TI_PH": "Preheater Temperature Indicator",
+      "TI_CAL": "Calciner Temperature Indicator",
+      "SI_KLN": "Kiln Speed Indicator (RPM)",
+      "II_KLN_MOT": "Kiln Main Drive Motor Current Indicator",
+      "PI_KLN_HOOD": "Kiln Hood Pressure Indicator",
+      "PI_PH": "Preheater Pressure Indicator",
+      "FI_FUEL": "Kiln Fuel Flow Indicator",
+      "AI_O2_KLN": "Kiln Exhaust O2 Analyzer",
+      "AI_CO_KLN": "Kiln Exhaust CO Analyzer",
+      "AI_NOX_KLN": "Kiln Exhaust NOx Analyzer",
+      "AI_SO2_KLN": "Kiln Exhaust SO2 Analyzer"
+    },
+
+    "mill_system": {
+      "II_BM_MOT": "Ball Mill Motor Current Indicator",
+      "SI_SEP": "Separator Speed Indicator (RPM)",
+      "TI_BM_OUT": "Mill Outlet Temperature Indicator",
+      "PI_BM_IN": "Mill Inlet Pressure Indicator",
+      "PI_BM_OUT": "Mill Outlet Pressure Indicator",
+      "DPI_BM": "Mill Differential Pressure Indicator",
+      "WI_FEED": "Mill Feed Weight Indicator",
+      "FI_WATER": "Mill Water Injection Flow Indicator",
+      "LI_BM": "Mill Level Indicator (material level in ball mill)",
+      "VI_BM": "Ball Mill Vibration Indicator"
+    },
+
+    "cooler_system": {
+      "TI_CC_IN": "Cooler Inlet Temperature Indicator",
+      "TI_CC_OUT": "Cooler Clinker Outlet Temperature Indicator",
+      "PI_CC": "Cooler Undergrate Pressure Indicator",
+      "SI_CC_GR": "Cooler Grate Speed Indicator"
+    },
+
+    "common_fans": {
+      "SI_ID_FN": "ID Fan Speed Indicator",
+      "DMP_ID_FN": "ID Fan Damper Position",
+      "II_ID_FN": "ID Fan Motor Current Indicator",
+      "VI_ID_FN": "ID Fan Vibration Indicator",
+      "TI_ID_FN_BRG": "ID Fan Bearing Temperature Indicator"
+    }
+  },
+
+  "oil_gas_process_tags": {
+    "_description": "Oil and gas industry-specific process measurement tags commonly found in offshore/onshore DCS/SCADA systems.",
+
+    "separator": {
+      "LIC_SEP": "Separator Level Indicating Controller",
+      "PIC_SEP": "Separator Pressure Indicating Controller",
+      "TI_SEP": "Separator Temperature Indicator",
+      "LCV_SEP": "Separator Level Control Valve",
+      "PCV_SEP": "Separator Pressure Control Valve",
+      "LSHH_SEP": "Separator Level Switch High-High (shutdown)",
+      "LSLL_SEP": "Separator Level Switch Low-Low (shutdown)",
+      "PSHH_SEP": "Separator Pressure Switch High-High (shutdown)"
+    },
+
+    "compressor": {
+      "FIC_COMP_AS": "Compressor Anti-Surge Flow Controller",
+      "PT_COMP_SUC": "Compressor Suction Pressure Transmitter",
+      "PT_COMP_DIS": "Compressor Discharge Pressure Transmitter",
+      "TT_COMP_SUC": "Compressor Suction Temperature Transmitter",
+      "TT_COMP_DIS": "Compressor Discharge Temperature Transmitter",
+      "VT_COMP": "Compressor Vibration Transmitter",
+      "SI_COMP": "Compressor Speed Indicator",
+      "SC_COMP": "Compressor Speed Controller"
+    },
+
+    "pipeline": {
+      "FT_PL": "Pipeline Flow Transmitter",
+      "PT_PL": "Pipeline Pressure Transmitter",
+      "TT_PL": "Pipeline Temperature Transmitter",
+      "FDA_PL": "Pipeline Flow Differential Alarm (leak detection)",
+      "XA_PIG": "Pig Passage Indicator / Alarm"
+    }
+  },
+
+  "tag_structure_patterns": {
+    "_description": "Common patterns for how industrial tags are structured. These help parse and generate human-readable descriptions.",
+
+    "isa_standard_pattern": {
+      "format": "<InstrumentLetters><LoopNumber>",
+      "example": "FIC-045",
+      "parsed": "Flow (F) Indicating (I) Controller (C), Loop 045",
+      "regex_hint": "^([A-Z]{2,5})-?(\\d{2,5})$"
+    },
+
+    "area_prefixed_pattern": {
+      "format": "<AreaCode>-<InstrumentLetters>-<LoopNumber>",
+      "example": "600-TIC-001",
+      "parsed": "Area 600 (Kiln), Temperature (T) Indicating (I) Controller (C), Loop 001"
+    },
+
+    "equipment_tagged_pattern": {
+      "format": "<EquipmentCode><Number>_<InstrumentLetters><LoopNumber>",
+      "example": "FN301_TI_001",
+      "parsed": "Fan 301, Temperature Indicator 001"
+    },
+
+    "dcs_point_pattern": {
+      "format": "<Tag>.<Suffix>",
+      "examples": {
+        "FIC045.PV": "Flow Indicating Controller 045, Process Variable (actual flow reading)",
+        "FIC045.SP": "Flow Indicating Controller 045, Setpoint (target flow value)",
+        "FIC045.MV": "Flow Indicating Controller 045, Manipulated Variable (valve output %)",
+        "FIC045.AUTO": "Flow Indicating Controller 045, Auto/Manual mode status",
+        "TT100.PV": "Temperature Transmitter 100, Process Variable (actual temperature)",
+        "LIC200.OP": "Level Indicating Controller 200, Output percentage"
+      }
+    },
+
+    "cement_common_patterns": [
+      {
+        "example": "811FN01",
+        "interpretation": "Area 8 (Cement Mill), Unit 11, Fan 01",
+        "pattern": "<Area><Unit><EquipmentType><SeqNumber>"
+      },
+      {
+        "example": "531TI001",
+        "interpretation": "Area 5 (Preheater), Unit 31, Temperature Indicator 001",
+        "pattern": "<Area><Unit><InstrumentCode><SeqNumber>"
+      },
+      {
+        "example": "KN1_TI_BZ_01",
+        "interpretation": "Kiln 1, Temperature Indicator, Burning Zone, Sensor 01",
+        "pattern": "<Equipment><Number>_<InstrumentCode>_<Location>_<SeqNumber>"
+      }
+    ],
+
+    "oil_gas_common_patterns": [
+      {
+        "example": "20-PT-001",
+        "interpretation": "Area 20 (Separation), Pressure Transmitter 001",
+        "pattern": "<AreaCode>-<InstrumentCode>-<SeqNumber>"
+      },
+      {
+        "example": "30-FIC-002A",
+        "interpretation": "Area 30 (Compression), Flow Indicating Controller 002, redundant A",
+        "pattern": "<AreaCode>-<InstrumentCode>-<SeqNumber><Suffix>"
+      },
+      {
+        "example": "V-2001",
+        "interpretation": "Vessel 2001 (Area 20, equipment 01)",
+        "pattern": "<EquipmentType>-<AreaEquipmentNumber>"
+      }
+    ]
+  },
+
+  "measurement_units": {
+    "_description": "Common engineering units associated with process measurements.",
+    "temperature": ["°C", "°F", "K"],
+    "pressure": ["bar", "barg", "psi", "psig", "kPa", "MPa", "mbar", "mmH2O", "mmHg", "inH2O", "atm"],
+    "flow_volumetric": ["m³/h", "m³/min", "l/min", "l/h", "GPM", "BPD", "SCFM", "Nm³/h"],
+    "flow_mass": ["kg/h", "kg/min", "t/h", "TPH", "lb/h"],
+    "level": ["%", "mm", "m", "ft", "in"],
+    "speed": ["RPM", "Hz", "rad/s"],
+    "weight": ["kg", "t", "lb", "ton"],
+    "current": ["A", "mA"],
+    "voltage": ["V", "kV", "mV"],
+    "power": ["kW", "MW", "HP", "kVA"],
+    "vibration": ["mm/s", "g", "mil", "μm"],
+    "analysis": ["%", "ppm", "ppb", "pH", "mg/l", "NTU"]
+  }
+}

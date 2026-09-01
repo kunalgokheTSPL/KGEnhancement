@@ -1,0 +1,20 @@
+timeseries:
+  retention:
+    value: '90'
+    unit: days
+industry: oil_gas
+document_processing:
+  document_types:
+    sol:
+      document_type: SOL
+      source_columns:
+      - Process System
+      - Equipment Name
+      - Threat and consequence
+    bncpp:
+      document_type: bncpp
+      source_columns:
+      - Main Equipment
+      - Tag No.
+      - Tag Type
+      - Description

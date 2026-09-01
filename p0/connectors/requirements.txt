@@ -1,0 +1,34 @@
+# Connector Dependencies
+# ─────────────────────────────────────────────────────────────
+# Core (always required)
+pandas>=2.0
+pyarrow>=14.0
+pyyaml>=6.0
+
+# Cloud — S3 / RustFS
+boto3>=1.28
+
+# Cloud — Azure Data Lake Storage Gen2
+azure-storage-file-datalake>=12.14
+azure-identity>=1.15
+
+# Cloud — Google Cloud Storage
+google-cloud-storage>=2.10
+
+# SAP System — RFC (requires SAP NW RFC SDK installed)
+# pyrfc>=3.0
+
+# SAP System — HANA
+# hdbcli>=2.18
+
+# SAP System — OData (S/4HANA Cloud)
+requests>=2.31
+
+# Historians — SQL-based (Wonderware, Exaquantum, DeltaV)
+# pyodbc>=5.0
+
+# Historians — OSIsoft PI Kerberos auth
+# requests-kerberos>=0.14
+
+# General
+python-dotenv>=1.0

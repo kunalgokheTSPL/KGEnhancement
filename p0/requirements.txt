@@ -1,0 +1,71 @@
+# p0 runtime dependencies — self-contained; shared pins match backend/requirements.txt.
+
+# web / API
+fastapi==0.136.3
+uvicorn==0.48.0
+pydantic==2.13.4
+pydantic-settings==2.14.1
+python-multipart==0.0.29
+email-validator==2.3.0
+
+# auth
+cryptography==47.0.0
+python-jose==3.5.0
+argon2-cffi==25.1.0
+httpx==0.28.1
+
+# databases
+psycopg2-binary==2.9.12
+SQLAlchemy==2.0.50
+
+# core data
+pandas==3.0.3
+numpy==2.4.6
+pyarrow==24.0.0
+PyYAML==6.0.3
+python-dotenv==1.2.2
+openpyxl==3.1.5
+pyxlsb==1.0.10
+xlsxwriter>=3.2.0
+
+# object storage — keep fsspec/s3fs paired
+fsspec==2026.4.0
+s3fs==2026.4.0
+boto3==1.43.0
+botocore==1.43.0
+
+# document / image processing
+Pillow==12.2.0
+PyMuPDF==1.27.2.3
+pytesseract==0.3.13
+python-docx>=1.1.0
+pdf2image>=1.17.0
+pdfminer.six>=20221105
+
+# LLM extractors
+google-generativeai==0.8.6
+langchain-aws==1.5.0
+langchain-core==1.4.0
+
+# misc
+requests==2.34.2
+chardet>=5.0.0
+
+# azure mode
+adlfs==2026.5.0
+azure-core==1.41.0
+azure-identity==1.25.3
+azure-keyvault-secrets==4.11.0
+azure-storage-blob==12.30.0
+pyodbc==5.3.0
+# pyodbc also needs OS packages: unixodbc, msodbcsql18
+
+# utility/ pulls these in at import time — the app cannot start without them
+hvac==2.4.0
+redis==8.1.0
+redis-entraid==1.2.1
+
+# optional connector extras — guarded imports, enable per deployment
+# pyrfc
+# hdbcli
+# requests-kerberos

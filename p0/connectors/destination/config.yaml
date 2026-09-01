@@ -1,0 +1,84 @@
+# ─────────────────────────────────────────────────────────────
+# Destination Configuration — Consolidated
+# ─────────────────────────────────────────────────────────────
+# Single config file for all destination backends.
+# Select the destination at runtime via --destination-type flag
+# or set DESTINATION_TYPE env var.
+#
+# common: settings shared across all destination types
+# destinations: per-backend connection + overrides
+# ─────────────────────────────────────────────────────────────
+
+common:
+  # Per-data-type subfolder layout
+  layout:
+    documents: "documents/{document_type}"         # e.g. staging/documents/maintenance/
+    pnid: "pnid"                                   # e.g. staging/pnid/
+    sap: "sap/{table_name}"                        # e.g. staging/sap/EQUI/
+    timeseries: "timeseries/{file_type}"           # e.g. staging/timeseries/metadata/ or staging/timeseries/values/
+
+  # Output format per data type (parquet recommended for analytics)
+  format:
+    documents: parquet
+    pnid: parquet
+    sap: parquet
+    timeseries: parquet
+
+  # Write options
+  options:
+    overwrite: true                   # overwrite existing files on re-run
+    partition_by: null                # optional: partition parquet by column
+    compression: snappy               # snappy | gzip | zstd | none
+    max_file_size_mb: 256             # split files exceeding this size
+
+destinations:
+  # ── Local filesystem ────────────────────────────────────
+  local:
+    type: local
+    base_path: "./data/staging"
+
+  # ── RustFS / MinIO (S3-compatible) ──────────────────────
+  rustfs:
+    type: rustfs
+    bucket: staging
+    base_prefix: staging
+    connection:
+      endpoint_url: "${RUSTFS_ENDPOINT:-http://rustfs.cdm.svc.cluster.local:9000}"
+      access_key: "${RUSTFS_ACCESS_KEY}"
+      secret_key: "${RUSTFS_SECRET_KEY}"
+      region: "us-east-1"
+      use_ssl: false
+
+  # ── AWS S3 ──────────────────────────────────────────────
+  s3:
+    type: s3
+    bucket: "${S3_STAGING_BUCKET}"
+    base_prefix: staging
+    connection:
+      region: "${AWS_REGION:-us-east-1}"
+      access_key: "${AWS_ACCESS_KEY_ID}"
+      secret_key: "${AWS_SECRET_ACCESS_KEY}"
+      role_arn: "${AWS_ROLE_ARN:-}"
+      use_ssl: true
+
+  # ── Azure Data Lake Storage Gen2 ────────────────────────
+  adls:
+    type: adls
+    container: "${ADLS_STAGING_CONTAINER:-staging}"
+    base_prefix: staging
+    connection:
+      account_name: "${ADLS_ACCOUNT_NAME}"
+      account_key: "${ADLS_ACCOUNT_KEY:-}"
+      sas_token: "${ADLS_SAS_TOKEN:-}"
+      tenant_id: "${AZURE_TENANT_ID:-}"
+      client_id: "${AZURE_CLIENT_ID:-}"
+      client_secret: "${AZURE_CLIENT_SECRET:-}"
+
+  # ── Google Cloud Storage ────────────────────────────────
+  gcs:
+    type: gcs
+    bucket: "${GCS_STAGING_BUCKET}"
+    base_prefix: staging
+    connection:
+      project_id: "${GCP_PROJECT_ID:-}"
+      service_account_json: "${GCP_SA_JSON:-}"
