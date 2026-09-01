@@ -1,0 +1,93 @@
+import os
+import psycopg2
+from sqlalchemy import create_engine
+from utility.middleware import plant_code_ctx, DatabaseNotFoundError
+
+######################### OnpremPostgresDriver #######################################
+class OnpremPostgresDriver:
+    def __init__(self):
+        self.config = {
+            "host": os.getenv("POSTGRES_HOST"),
+            "database": "decisionops",
+            "user": os.getenv("POSTGRES_USER"),
+            "password": os.getenv("POSTGRES_PASSWORD") or "",
+            "port": int(os.getenv("POSTGRES_PORT") or 5432),
+        }
+ 
+        plant_code_id = plant_code_ctx.get()
+        if plant_code_id:
+            self.config["database"] = (
+                f"{self.config['database']}_{plant_code_id.lower().replace('-','_')}"
+            )
+
+        self.conn = None
+        self.engine = None
+ 
+    def connect(self, **kwargs):
+        if not self.conn:
+            params = {
+                "host": self.config["host"],
+                "dbname": self.config["database"],
+                "user": self.config["user"],
+                "password": self.config["password"],
+                "port": self.config["port"],
+                "connect_timeout": kwargs.get("connect_timeout", 10),
+            }
+            if self.config.get("sslmode"):
+                params["sslmode"] = self.config["sslmode"]
+            try:
+                self.conn = psycopg2.connect(**params)
+            except psycopg2.OperationalError as e:
+                err_str = str(e).lower()
+                if (getattr(e, "pgcode", None) == "3D000" or "does not exist" in err_str) and self.config.get("database") == "decisionops":
+                    try:
+                        # Connect to system database 'postgres' to run CREATE DATABASE
+                        sys_params = params.copy()
+                        sys_params["dbname"] = "postgres"
+                        sys_params["connect_timeout"] = 5
+                        sys_conn = psycopg2.connect(**sys_params)
+                        sys_conn.autocommit = True
+                        with sys_conn.cursor() as cur:
+                            cur.execute(f'CREATE DATABASE "{self.config["database"]}"')
+                        sys_conn.close()
+                        # Retry connection to target database
+                        self.conn = psycopg2.connect(**params)
+                    except Exception:
+                        raise e
+                else:
+                    # Plant-specific DB missing → don't auto-create, surface as 404
+                    raise DatabaseNotFoundError(
+                        f"Database '{self.config['database']}' does not exist."
+                    ) from e
+
+        return self.conn
+ 
+    def get_engine(self):
+        if not self.engine:
+            try:
+                self.connect()
+            except Exception:
+                pass
+ 
+            _url = (
+                f"postgresql+psycopg2://{self.config['user']}:{self.config['password']}"
+                f"@{self.config['host']}:{self.config['port']}/{self.config['database']}"
+            )
+ 
+            if self.config.get("sslmode"):
+                _url += f"?sslmode={self.config['sslmode']}"
+            self.engine = create_engine(
+                _url,
+                pool_pre_ping=True,
+            )
+ 
+        return self.engine
+ 
+    def close(self):
+        if self.conn:
+            self.conn.close()
+            self.conn = None
+ 
+        if self.engine:
+            self.engine.dispose()
+            self.engine = None

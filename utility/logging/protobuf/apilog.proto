@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package apilog;
+
+message ApiLog {
+  int64 request_timestamp = 1;      // UNIX timestamp in milliseconds
+  string api_endpoint = 2;          // API Endpoint path
+  string http_method = 3;           // HTTP Verb (GET, POST, etc.)
+  int32 status_code = 4;            // HTTP Status Code
+  bool success = 5;                 // Boolean flag for success
+  string error_message = 6;         // Error message if failed
+  double latency_ms = 7;            // Request latency in milliseconds
+  map<string, string> context = 8;  // Flexible metadata key-values for future-proofing
+}
+
+message ApiBatch {
+  int64 batch_start_timestamp = 1;  // Start UNIX timestamp of the batch
+  int64 batch_end_timestamp = 2;    // End UNIX timestamp of the batch
+  string instance_id = 3;           // Server/Pod instance identifier
+  int64 batch_sequence = 4;         // Monotonic sequence number
+  repeated ApiLog logs = 5;         // Collection of API log entries
+}
