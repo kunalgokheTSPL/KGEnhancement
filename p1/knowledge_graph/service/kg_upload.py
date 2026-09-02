@@ -1,6 +1,5 @@
 from fastapi import Body
 import io
-import json
 import uuid
 from datetime import datetime
 from http import HTTPStatus
@@ -38,20 +37,62 @@ def clean_str(value):
     return text or None
 
 
-def parse_properties(value):
-    """Turn an Excel cell into a jsonb-friendly value (always returns Json(...))."""
+def clean_cell(value):
+    """Trim a cell if it's text, or None if blank. Non-string types pass through as-is."""
     if is_blank(value):
-        return Json({})
-    if isinstance(value, dict):
-        return Json(value)
-    text = str(value).strip()
-    if not text:
-        return Json({})
-    try:
-        return Json(json.loads(text))
-    except (json.JSONDecodeError, TypeError, ValueError):
-        # cell wasn't valid JSON -> keep the raw text so nothing is lost
-        return Json({"value": text})
+        return None
+    if isinstance(value, str):
+        text = value.strip()
+        return text or None
+    return value
+
+
+def properties_all_blank(props: dict) -> bool:
+    """True if a flattened properties dict has no real values (every sub-key is null)."""
+    return not props or all(v is None for v in props.values())
+
+
+def flatten_properties_header(df: pd.DataFrame) -> pd.DataFrame:
+    """Collapse a two-row header sheet (plain top-level columns + one merged 'properties'
+    group of sub-keys) into a flat frame. Plain columns are kept as-is; 'properties'
+    becomes a dict per row, with blank sub-columns kept as null rather than dropped."""
+    top = df.columns.get_level_values(0)
+    flat = {
+        name: df.loc[:, top == name].iloc[:, 0].values
+        for name in dict.fromkeys(top)
+        if name != "properties"
+    }
+
+    props_df = df.loc[:, top == "properties"]
+    props_df.columns = props_df.columns.get_level_values(1)
+    flat["properties"] = [
+        {key: clean_cell(prop_row[key]) for key in props_df.columns}
+        for _, prop_row in props_df.iterrows()
+    ]
+    return pd.DataFrame(flat)
+
+
+def read_two_row_sheet(content: bytes, sheet_name: str, required_groups: set[str]) -> pd.DataFrame:
+    """Read a sheet with a 2-row header (plain columns + merged 'properties' sub-keys)
+    and flatten it. Raises ValueError if the expected top-level columns aren't present,
+    or if row 2 isn't actually a header row (a sheet with only one real header row gets
+    its first data row silently swallowed as the sub-header by pandas otherwise)."""
+    df_raw = pd.read_excel(io.BytesIO(content), sheet_name=sheet_name, header=[0, 1], dtype=object)
+    top_level = set(df_raw.columns.get_level_values(0))
+    missing = required_groups - top_level
+    if missing:
+        raise ValueError(f"missing column(s): {', '.join(sorted(missing))}.")
+
+    # every plain (non-'properties') column must have a BLANK row-2 cell; if it doesn't,
+    # row 2 was real data, not a sub-header row -> this sheet only has one header row.
+    for top, sub in zip(df_raw.columns.get_level_values(0), df_raw.columns.get_level_values(1)):
+        if top != "properties" and not str(sub).startswith("Unnamed:"):
+            raise ValueError(
+                f'row 2 must be blank under "{top}" (found "{sub}"); this sheet appears '
+                f"to have only one header row instead of two."
+            )
+
+    return flatten_properties_header(df_raw)
 
 
 # --------------------------------------------------------------------------- #
@@ -132,8 +173,49 @@ async def upload_excel(
             },
         )
 
-    node_df = sheets[NODE_SHEET]
-    rel_df = sheets[REL_SHEET]
+    # both sheets use a 2-row header: plain columns + a merged 'properties' group of sub-keys
+    try:
+        node_df = read_two_row_sheet(content, NODE_SHEET, {"label", "name", "properties"})
+    except Exception as exc:
+        return JSONResponse(
+            status_code=HTTPStatus.BAD_REQUEST,
+            content={
+                "success": False,
+                "message": "Failed to read Excel file",
+                "errors": [
+                    {
+                        "field": "file",
+                        "message": (
+                            f'Sheet "{NODE_SHEET}" header format not recognized '
+                            f"(expected a 2-row header: label, name, properties>sub-keys): {exc}"
+                        ),
+                    }
+                ],
+            },
+        )
+
+    try:
+        rel_df = read_two_row_sheet(
+            content, REL_SHEET, {"rel_type", "properties", "from_name", "to_name"}
+        )
+    except Exception as exc:
+        return JSONResponse(
+            status_code=HTTPStatus.BAD_REQUEST,
+            content={
+                "success": False,
+                "message": "Failed to read Excel file",
+                "errors": [
+                    {
+                        "field": "file",
+                        "message": (
+                            f'Sheet "{REL_SHEET}" header format not recognized '
+                            f"(expected a 2-row header: rel_type, properties>sub-keys, "
+                            f"from_name, to_name): {exc}"
+                        ),
+                    }
+                ],
+            },
+        )
 
     now = datetime.now()  # same value used for created_at and updated_at
     errors: list[str] = []
@@ -146,7 +228,7 @@ async def upload_excel(
         label = clean_str(row.get("label"))
         name = clean_str(row.get("name"))
         if not label or not name:
-            errors.append(f'node row {i + 2}: "label" and "name" are required.')
+            errors.append(f'node row {i + 3}: "label" and "name" are required.')
             continue
         node_id = str(uuid.uuid4())
         node_rows.append(
@@ -154,7 +236,7 @@ async def upload_excel(
                 node_id,
                 label,
                 name,
-                parse_properties(row.get("properties")),
+                Json(row["properties"]),
                 BLANK_LINEAGE,
                 now,
                 now,
@@ -162,7 +244,7 @@ async def upload_excel(
         )
         if name in name_to_id:
             errors.append(
-                f'node row {i + 2}: duplicate name "{name}" in sheet; '
+                f'node row {i + 3}: duplicate name "{name}" in sheet; '
                 f"relationships using this name may link to the wrong node."
             )
         name_to_id[name] = node_id  # last one wins on duplicate names
@@ -174,9 +256,16 @@ async def upload_excel(
         rel_type = clean_str(row.get("rel_type"))
         from_name = clean_str(row.get("from_name"))
         to_name = clean_str(row.get("to_name"))
+        if (
+            not rel_type
+            and not from_name
+            and not to_name
+            and properties_all_blank(row.get("properties"))
+        ):
+            continue  # fully blank row (e.g. template spacer row) -> ignore silently
         if not rel_type or not from_name or not to_name:
             errors.append(
-                f"relationship row {i + 2}: "
+                f"relationship row {i + 3}: "
                 f'"rel_type", "from_name" and "to_name" are required.'
             )
             continue
@@ -261,12 +350,12 @@ async def upload_excel(
             to_id = name_to_id.get(to_name)
             if not from_id:
                 errors.append(
-                    f'relationship row {i + 2}: no node found named "{from_name}".'
+                    f'relationship row {i + 3}: no node found named "{from_name}".'
                 )
                 continue
             if not to_id:
                 errors.append(
-                    f'relationship row {i + 2}: no node found named "{to_name}".'
+                    f'relationship row {i + 3}: no node found named "{to_name}".'
                 )
                 continue
             rel_rows.append(
@@ -275,7 +364,7 @@ async def upload_excel(
                     from_id,
                     to_id,
                     rel_type,
-                    parse_properties(props),
+                    Json(props),
                     BLANK_LINEAGE,
                     now,
                     now,
