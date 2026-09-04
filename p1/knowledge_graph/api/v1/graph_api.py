@@ -167,7 +167,6 @@ def handle_graph_sync(changes: List[BaseModel], action: str, service: GraphServi
             },
         )
 
-
 @router.get("/fullGraph")
 def full_graph(
     service: GraphService = Depends(get_graph_service),
@@ -216,17 +215,85 @@ def full_graph(
             },
         )
 
+@router.get("/fullGraph_dev")
+def full_graph(
+    entities: int = Query(
+        default=1000,
+        description="Maximum number of nodes/data points to return (1-1000)"
+    ),
+    service: GraphService = Depends(get_graph_service),
+    access_token: str = Cookie(default=None),
+    plant_code_id: str = Query(..., description="Plant code ID"),
+    expand_node_ids: Optional[List[str]] = Query(
+        default=None,
+        description="Node IDs whose 1-hop neighborhood should be expanded"
+    ),
+    loaded_relationship_ids: Optional[List[str]] = Query(
+        default=None,
+        description="Relationship IDs already loaded in the frontend"
+    ),
+):
+    if not access_token:
+        return JSONResponse(
+            status_code=HTTPStatus.UNAUTHORIZED,
+            content={
+                "success": False,
+                "message": "Authentication required",
+                "errors": [
+                    {"field": "access_token", "message": "Access token is required"}
+                ],
+            },
+        )
+
+    if not plant_code_id:
+        return JSONResponse(
+            status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
+            content={
+                "success": False,
+                "message": "Validation failed",
+                "errors": [{"field": "plant_code_id", "message": "Plant code ID is required"}],
+            },
+        )
+    try:
+        print("EXPAND NODE IDS:", expand_node_ids)
+        print("LOADED RELATIONSHIP IDS:", loaded_relationship_ids)
+        if expand_node_ids:
+            data = service.expand_graph(
+                expand_node_ids=expand_node_ids,
+                loaded_relationship_ids=loaded_relationship_ids or [],
+                capacity=entities,
+            )
+        else:
+            data = service.build_graph(capacity=entities)
+        return {
+            "success": True,
+            "message": "Operation completed successfully",
+            "data": {
+                "nodes": data["nodes"],
+                "relationships": data["relationships"],
+            },
+        }
+    except Exception as e:
+        print(f" Error: {e}")
+        return JSONResponse(
+            status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+            content={
+                "success": False,
+                "message": "Internal server error",
+                "errors": [{"field": "server", "message": str(e)}],
+            },
+        )
 
 @router.get("/kgExplore")
 def explore(
     node: str = Query(
         default=None, description="Node key (plant code or equipment ID) to explore"
     ),
-    total_nodes: int = Query(
-        default=50,
+    entities: int = Query(
+        default=1000,
         ge=1,
-        le=10000,
-        description="Total nodes to load on initial view or exploration view (default 50, max 10000)",
+        le=1000,
+        description="Total entities to load on initial view or exploration view (default 1000, max 1000)",
     ),
     parent_node: str = Query(
         default="Plant", description="Parent node label to start exploration from"
@@ -259,10 +326,10 @@ def explore(
         )
     try:
         if not node:
-            data = service.get_initial_graph_by_plants(total_nodes=total_nodes, parent_node=parent_node)
+            data = service.get_initial_graph_by_plants(total_nodes=entities, parent_node=parent_node)
         else:
             node_upper = str(node).strip().upper()
-            data = service.get_neighbors(node_upper, limit=total_nodes)
+            data = service.get_neighbors(node_upper, limit=entities)
         return success_response(data)
     except Exception as e:
         print(f" Error in explore: {e}")

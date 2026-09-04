@@ -1,5 +1,7 @@
 import json
+import math
 import pandas as pd
+from xlsxwriter import relationships
 from p1.knowledge_graph.service.ui_to_kg_db_converter import UItoKGConverter
 
 class GraphService:
@@ -310,14 +312,439 @@ class GraphService:
 
             self.ui_converter.upsert_rel(rel_type, src, tgt, props)
 
-    def build_graph(self):
+    def build_graph(self, capacity: int = 1000):
+        capacity = max(1, min(1000, capacity))
+
         self.kg_cur.execute("SELECT * FROM public.kg_nodes")
         nodes_out = [self._format_node(r) for r in self.kg_cur.fetchall()]
+        all_nodes = nodes_out
 
         self.kg_cur.execute("SELECT * FROM public.kg_relationships")
         rels_out = [self._format_rel(r) for r in self.kg_cur.fetchall()]
 
-        return {"nodes": nodes_out, "relationships": rels_out}
+        remaining_capacity = capacity
+
+        selected_nodes = []
+        selected_node_ids = set()
+        selected_relationships = []
+
+        node_index = 0
+
+        while node_index < len(all_nodes) and remaining_capacity >= 2:
+            node = all_nodes[node_index]
+
+            selected_nodes.append(
+                {
+                    "id": node["id"],
+                    "labels": node["labels"],
+                }
+            )
+
+            selected_node_ids.add(str(node["id"]))
+            remaining_capacity -= 2
+            node_index += 1
+
+            # After every 2 nodes, attempt to add 1 relationship.
+            if len(selected_nodes) % 2 == 0 and remaining_capacity >= 4:
+                valid_relationships = [
+                    rel
+                    for rel in rels_out
+                    if str(rel["source"]) in selected_node_ids
+                    and str(rel["target"]) in selected_node_ids
+                    and rel["id"] not in {
+                        selected_rel["id"]
+                        for selected_rel in selected_relationships
+                    }
+                ]
+
+                if valid_relationships:
+                    selected_relationships.append(valid_relationships[0])
+                    remaining_capacity -= 4
+
+            # After every 10 nodes, attempt to add 2 additional relationships.
+            if len(selected_nodes) % 10 == 0:
+                for _ in range(2):
+                    if remaining_capacity < 4:
+                        break
+
+                    valid_relationships = [
+                        rel
+                        for rel in rels_out
+                        if str(rel["source"]) in selected_node_ids
+                        and str(rel["target"]) in selected_node_ids
+                        and rel["id"] not in {
+                            selected_rel["id"]
+                            for selected_rel in selected_relationships
+                        }
+                    ]
+
+                    if not valid_relationships:
+                        break
+
+                    selected_relationships.append(valid_relationships[0])
+                    remaining_capacity -= 4
+
+        # Once all nodes are exhausted, use any remaining capacity
+        # to retrieve additional valid relationships.
+        if node_index >= len(all_nodes):
+            while remaining_capacity >= 4:
+                selected_relationship_ids = {
+                    selected_rel["id"]
+                    for selected_rel in selected_relationships
+                }
+
+                valid_relationships = [
+                    rel
+                    for rel in rels_out
+                    if str(rel["source"]) in selected_node_ids
+                    and str(rel["target"]) in selected_node_ids
+                    and rel["id"] not in selected_relationship_ids
+                ]
+
+                if not valid_relationships:
+                    break
+
+                selected_relationships.append(valid_relationships[0])
+                remaining_capacity -= 4
+
+        # Use any remaining capacity for properties.
+        if remaining_capacity > 0:
+            # Add node properties first.
+            for selected_node in selected_nodes:
+                if remaining_capacity <= 0:
+                    break
+
+                node_id = str(selected_node["id"])
+
+                source_node = next(
+                    (
+                        node
+                        for node in all_nodes
+                        if str(node["id"]) == node_id
+                    ),
+                    None,
+                )
+
+                if not source_node:
+                    continue
+
+                raw_props = source_node.get("properties") or {}
+
+                if not raw_props:
+                    continue
+
+                selected_props = {}
+
+                for key, value in raw_props.items():
+                    if remaining_capacity <= 0:
+                        break
+
+                    selected_props[key] = value
+                    remaining_capacity -= 1
+
+                if selected_props:
+                    selected_node["properties"] = selected_props
+
+            # Then use any remaining capacity for relationship properties.
+            if remaining_capacity > 0:
+                for relationship in selected_relationships:
+                    if remaining_capacity <= 0:
+                        break
+
+                    raw_props = relationship.get("properties") or {}
+
+                    if not raw_props:
+                        continue
+
+                    selected_props = {}
+
+                    for key, value in raw_props.items():
+                        if remaining_capacity <= 0:
+                            break
+
+                        selected_props[key] = value
+                        remaining_capacity -= 1
+
+                    if selected_props:
+                        relationship["properties"] = selected_props
+
+        return {
+            "nodes": selected_nodes,
+            "relationships": selected_relationships,
+        }
+
+    def _get_applicable_relationships(
+        self,
+        node_ids,
+        loaded_relationship_ids,
+        selected_relationship_ids,
+    ):
+        placeholders = ", ".join(["%s"] * len(node_ids))
+
+        query = f"""
+            SELECT *
+            FROM public.kg_relationships
+            WHERE from_node_id IN ({placeholders})
+              AND to_node_id IN ({placeholders})
+        """
+
+        params = list(node_ids) + list(node_ids)
+
+        self.kg_cur.execute(query, params)
+        relationship_rows = self.kg_cur.fetchall()
+
+        relationships = []
+
+        for row in relationship_rows:
+            relationship_id = str(row["relationship_id"])
+
+            if relationship_id in loaded_relationship_ids:
+                continue
+
+            if relationship_id in selected_relationship_ids:
+                continue
+
+            relationships.append(
+                {
+                    "id": relationship_id,
+                    "type": row["rel_type"],
+                    "source": str(row["from_node_id"]),
+                    "target": str(row["to_node_id"]),
+                }
+            )
+
+        return relationships
+
+    def expand_graph(
+        self,
+        expand_node_ids,
+        loaded_relationship_ids,
+        capacity,
+    ):
+        capacity = max(1, min(1000, capacity))
+    
+        input_node_ids = {
+            str(node_id)
+            for node_id in (expand_node_ids or [])
+        }
+    
+        loaded_relationship_ids = {
+            str(rel_id)
+            for rel_id in (loaded_relationship_ids or [])
+        }
+    
+        if not input_node_ids:
+            return {
+                "nodes": [],
+                "relationships": [],
+            }
+    
+        # ---------------------------------------------------------
+        # 1. Retrieve nodes and relationships using the same
+        #    database access pattern as build_graph()
+        # ---------------------------------------------------------
+    
+        self.kg_cur.execute(
+            "SELECT * FROM public.kg_nodes"
+        )
+    
+        all_nodes = [
+            self._format_node(row)
+            for row in self.kg_cur.fetchall()
+        ]
+    
+        self.kg_cur.execute(
+            "SELECT * FROM public.kg_relationships"
+        )
+    
+        all_relationships = [
+            self._format_rel(row)
+            for row in self.kg_cur.fetchall()
+        ]
+    
+        # ---------------------------------------------------------
+        # 2. Find all nodes directly connected to the input nodes
+        # ---------------------------------------------------------
+    
+        neighbor_node_ids = set()
+    
+        for relationship in all_relationships:
+            source_id = str(relationship["source"])
+            target_id = str(relationship["target"])
+    
+            if source_id in input_node_ids:
+                neighbor_node_ids.add(target_id)
+    
+            if target_id in input_node_ids:
+                neighbor_node_ids.add(source_id)
+    
+        # Seed nodes must never be returned as newly discovered nodes.
+        neighbor_node_ids -= input_node_ids
+    
+        if not neighbor_node_ids:
+            return {
+                "nodes": [],
+                "relationships": [],
+            }
+    
+        # ---------------------------------------------------------
+        # 3. Retrieve the actual neighborhood nodes
+        # ---------------------------------------------------------
+    
+        neighborhood_nodes = [
+            node
+            for node in all_nodes
+            if str(node["id"]) in neighbor_node_ids
+        ]
+    
+        # ---------------------------------------------------------
+        # 4. Select nodes and relationships using the shared budget
+        # ---------------------------------------------------------
+    
+        remaining_capacity = capacity
+    
+        selected_nodes = []
+        selected_node_ids = set()
+    
+        selected_relationships = []
+        selected_relationship_ids = set()
+    
+        node_index = 0
+    
+        while (
+            node_index < len(neighborhood_nodes)
+            and remaining_capacity >= 2
+        ):
+            node = neighborhood_nodes[node_index]
+    
+            selected_nodes.append(
+                {
+                    "id": node["id"],
+                    "labels": node["labels"],
+                }
+            )
+    
+            selected_node_ids.add(str(node["id"]))
+    
+            remaining_capacity -= 2
+            node_index += 1
+    
+            # The relationship universe includes:
+            # seed nodes + newly selected nodes.
+            all_node_ids = input_node_ids | selected_node_ids
+    
+            # After every 2 newly selected nodes,
+            # attempt to add 1 relationship.
+            if len(selected_nodes) % 2 == 0 and remaining_capacity >= 4:
+            
+                valid_relationships = [
+                    rel
+                    for rel in all_relationships
+                    if str(rel["source"]) in all_node_ids
+                    and str(rel["target"]) in all_node_ids
+                    and str(rel["id"]) not in loaded_relationship_ids
+                    and str(rel["id"]) not in selected_relationship_ids
+                ]
+    
+                if valid_relationships:
+                    relationship = valid_relationships[0]
+    
+                    selected_relationships.append(
+                        {
+                            "id": relationship["id"],
+                            "type": relationship["type"],
+                            "source": relationship["source"],
+                            "target": relationship["target"],
+                        }
+                    )
+    
+                    selected_relationship_ids.add(
+                        str(relationship["id"])
+                    )
+    
+                    remaining_capacity -= 4
+    
+            # After every 10 newly selected nodes,
+            # attempt to add 2 additional relationships.
+            if len(selected_nodes) % 10 == 0:
+            
+                for _ in range(2):
+                
+                    if remaining_capacity < 4:
+                        break
+                    
+                    all_node_ids = input_node_ids | selected_node_ids
+    
+                    valid_relationships = [
+                        rel
+                        for rel in all_relationships
+                        if str(rel["source"]) in all_node_ids
+                        and str(rel["target"]) in all_node_ids
+                        and str(rel["id"]) not in loaded_relationship_ids
+                        and str(rel["id"]) not in selected_relationship_ids
+                    ]
+    
+                    if not valid_relationships:
+                        break
+                    
+                    relationship = valid_relationships[0]
+    
+                    selected_relationships.append(
+                        {
+                            "id": relationship["id"],
+                            "type": relationship["type"],
+                            "source": relationship["source"],
+                            "target": relationship["target"],
+                        }
+                    )
+    
+                    selected_relationship_ids.add(
+                        str(relationship["id"])
+                    )
+    
+                    remaining_capacity -= 4
+    
+        # ---------------------------------------------------------
+        # 5. Use remaining capacity for additional relationships
+        # ---------------------------------------------------------
+    
+        if remaining_capacity >= 4:
+        
+            all_node_ids = input_node_ids | selected_node_ids
+    
+            valid_relationships = [
+                rel
+                for rel in all_relationships
+                if str(rel["source"]) in all_node_ids
+                and str(rel["target"]) in all_node_ids
+                and str(rel["id"]) not in loaded_relationship_ids
+                and str(rel["id"]) not in selected_relationship_ids
+            ]
+    
+            for relationship in valid_relationships:
+            
+                if remaining_capacity < 4:
+                    break
+                
+                selected_relationships.append(
+                    {
+                        "id": relationship["id"],
+                        "type": relationship["type"],
+                        "source": relationship["source"],
+                        "target": relationship["target"],
+                    }
+                )
+    
+                selected_relationship_ids.add(
+                    str(relationship["id"])
+                )
+    
+                remaining_capacity -= 4
+    
+        return {
+            "nodes": selected_nodes,
+            "relationships": selected_relationships,
+        }
 
     def get_initial_plants(self):
         self.kg_cur.execute("SELECT * FROM public.kg_nodes WHERE label = 'Plant'")
