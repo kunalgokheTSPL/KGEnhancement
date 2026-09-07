@@ -232,6 +232,14 @@ def full_graph(
         default=None,
         description="Relationship IDs already loaded in the frontend"
     ),
+    node_id: Optional[str] = Query(
+        default=None,
+        description="If provided, skip graph building and return only this node's full set of properties"
+    ),
+    relationship_id: Optional[str] = Query(
+        default=None,
+        description="If provided, skip graph building and return only this relationship's full set of properties"
+    ),
 ):
     if not access_token:
         return JSONResponse(
@@ -255,6 +263,50 @@ def full_graph(
             },
         )
     try:
+        if node_id:
+            node = service.get_node_by_id(node_id)
+            if not node:
+                return JSONResponse(
+                    status_code=HTTPStatus.NOT_FOUND,
+                    content={
+                        "success": False,
+                        "message": "Node not found",
+                        "errors": [
+                            {"field": "node_id", "message": f"No node found for node_id '{node_id}'"}
+                        ],
+                    },
+                )
+            return {
+                "success": True,
+                "message": "Operation completed successfully",
+                "data": {
+                    "nodes": [node],
+                    "relationships": [],
+                },
+            }
+
+        if relationship_id:
+            relationship = service.get_relationship_by_id(relationship_id)
+            if not relationship:
+                return JSONResponse(
+                    status_code=HTTPStatus.NOT_FOUND,
+                    content={
+                        "success": False,
+                        "message": "Relationship not found",
+                        "errors": [
+                            {"field": "relationship_id", "message": f"No relationship found for relationship_id '{relationship_id}'"}
+                        ],
+                    },
+                )
+            return {
+                "success": True,
+                "message": "Operation completed successfully",
+                "data": {
+                    "nodes": [],
+                    "relationships": [relationship],
+                },
+            }
+
         print("EXPAND NODE IDS:", expand_node_ids)
         print("LOADED RELATIONSHIP IDS:", loaded_relationship_ids)
         if expand_node_ids:

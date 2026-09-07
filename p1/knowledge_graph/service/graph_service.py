@@ -768,6 +768,50 @@ class GraphService:
 
         return {"nodes": nodes_out, "relationships": rels_out}
 
+    def get_node_by_id(self, node_id: str):
+        """Fetch a single node with its full set of properties by node_id.
+
+        Used when the frontend needs the complete properties of one node that is
+        already on screen (the graph endpoints trim properties to stay within the
+        capacity budget). Returns None if the node_id does not exist.
+        """
+        node_id = str(node_id).strip()
+        if not node_id:
+            return None
+
+        self.kg_cur.execute(
+            "SELECT * FROM public.kg_nodes WHERE node_id = %s LIMIT 1",
+            (node_id,),
+        )
+        row = self.kg_cur.fetchone()
+
+        if not row:
+            print(f"Node '{node_id}' not found in KG DB.")
+            return None
+
+        return self._format_node(row)
+
+    def get_relationship_by_id(self, relationship_id: str):
+        """Fetch a single relationship with its full set of properties by
+        relationship_id. Mirror of get_node_by_id for edges. Returns None if
+        the relationship_id does not exist.
+        """
+        relationship_id = str(relationship_id).strip()
+        if not relationship_id:
+            return None
+
+        self.kg_cur.execute(
+            "SELECT * FROM public.kg_relationships WHERE relationship_id::text = %s LIMIT 1",
+            (relationship_id,),
+        )
+        row = self.kg_cur.fetchone()
+
+        if not row:
+            print(f"Relationship '{relationship_id}' not found in KG DB.")
+            return None
+
+        return self._format_rel(row)
+
     def get_neighbors(self, node: str, limit: int = 50):
         limit_val = limit if limit and limit > 0 else 50
         node = str(node).strip().upper()
